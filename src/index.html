@@ -4,11 +4,16 @@
         <title>Advent of Code Charts</title>
     </head>
     <body>
-        <h1>Advent of Code Charts</h1>
+        <canvas id="starsOverTime" width="1000" height="500"></canvas>
+        <canvas id="pointsOverTime" width="1000" height="500"></canvas>
         
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.3/moment.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+        <script src="lib/palette.js"></script>
         <script src="js/dal.js"></script>
         <script src="js/app.js"></script>
-        <script>document.addEventListener("DOMContentLoaded", () => new aoc.App());</script>
+        <script>document.addEventListener("DOMContentLoaded", () => new aoc.App(new aoc.Dal()));</script>
         
         <script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script> 
     </body>
