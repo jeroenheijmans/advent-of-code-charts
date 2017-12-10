@@ -63,7 +63,7 @@
                 },
                 "id": "123456",
                 "stars": 13,
-                "name": "John Doe"
+                "name": null // happens for anonymous users
             },
             "190664": {
                 "local_score": 20,

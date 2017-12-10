@@ -42,6 +42,7 @@
             .map(m => {
                 let i = 0;
                 m.stars = [];
+                m.name = m.name || `(anonymous user ${m.id})`;
 
                 for (let dayKey of Object.keys(m.completion_day_level)) {
                     for (let starKey of Object.keys(m.completion_day_level[dayKey])) {
