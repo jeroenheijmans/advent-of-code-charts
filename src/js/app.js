@@ -5,7 +5,7 @@
         var r = parseInt(hex.slice(1, 3), 16),
             g = parseInt(hex.slice(3, 5), 16),
             b = parseInt(hex.slice(5, 7), 16);
-    
+
         if (alpha) {
             return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
         } else {
@@ -17,8 +17,66 @@
         constructor(dal) {
             dal.getLeaderboardJson()
                 .then(data => this.loadStarsOverTime(data))
+                .then(data => this.loadDayVsTime(data))
                 .then(data => this.loadPointsOverTime(data))
                 .then(data => this.loadTimePerStar(data));
+        }
+
+        loadDayVsTime(data) {
+            let datasets = data.members.map(m => {
+                return {
+                    label: m.name,
+                    backgroundColor: m.color,
+                    borderWidth: 1,
+                    borderColor: "#000",
+                    pointRadius: 6,
+                    data: m.stars.map(s => {
+                        return {
+                            x: s.dayNr + s.starNr / 2 - 1,
+                            y: Math.log10(s.timeTaken)
+                        };
+                    })
+                };                
+            });
+
+            let chart = new Chart(document.getElementById("dayVsTime").getContext("2d"), {
+                type: "scatter",
+                data: {
+                    datasets: datasets,
+                },
+                options: {
+                    responsive: true,
+                    legend: {
+                        position: "left",
+                    },
+                    title: {
+                        display: true,
+                        text: "Stars vs Log10(minutes taken per star)",
+                        fontSize: 24,
+                    },
+                    scales: {
+                        xAxes: [{
+                            ticks: {
+                                min: 0,
+                                max: 25,
+                                stepSize: 1,
+                            },
+                            scaleLabel: {
+                                display: true,
+                                labelString: "minutes taken per star (log scale)"
+                            },
+                        }],
+                        yAxes: [{
+                            scaleLabel: {
+                                display: true,
+                                labelString: "star progress"
+                            },
+                        }]
+                    }
+                }
+            });
+
+            return data;
         }
 
         loadTimePerStar(data) {
@@ -52,7 +110,7 @@
                 // Workaround for bug with "logarithmic" axes: https://github.com/chartjs/Chart.js/issues/4934
                 star1DataSet.data = star1DataSet.data.map(x => Math.log10(x));
                 star2DataSet.data = star2DataSet.data.map(x => Math.log10(x));
-                
+
                 datasets.push(star1DataSet);
                 datasets.push(star2DataSet);
             }
@@ -71,15 +129,23 @@
                     },
                     title: {
                         display: true,
-                        text: `Log10(minutes) taken per star (top ${n} players)`,
+                        text: `Log10(minutes taken per star) of top ${n} players`,
                         fontSize: 24,
                     },
                     scales: {
                         xAxes: [{
                             stacked: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: "Day of Advent"
+                            },
                         }],
                         yAxes: [{
                             stacked: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: "minutes taken per star (log scale)"
+                            }
                         }],
                     }
                 }
@@ -118,7 +184,7 @@
                     },
                     title: {
                         display: true,
-                        text: "Points over time",
+                        text: "Leaderbord (points)",
                         fontSize: 24,
                     },
                     scales: {
@@ -131,10 +197,18 @@
                                 stepSize: 1,
                                 displayFormats: { day: "D" },
                             },
+                            scaleLabel: {
+                                display: true,
+                                labelString: "Day of Advent"
+                            },
                         }],
                         yAxes: [{
-                            ticks: {                               
+                            ticks: {
                                 min: 0,
+                            },
+                            scaleLabel: {
+                                display: true,
+                                labelString: "cumulative points"
                             },
                         }],
                     }
@@ -174,7 +248,7 @@
                     },
                     title: {
                         display: true,
-                        text: "Stars over time",
+                        text: "Leaderboard (stars)",
                         fontSize: 24,
                     },
                     scales: {
@@ -186,12 +260,20 @@
                                 unit: "day",
                                 stepSize: 1,
                                 displayFormats: { day: "D" },
-                            }
+                            },
+                            scaleLabel: {
+                                display: true,
+                                labelString: "Day of Advent"
+                            },
                         }],
                         yAxes: [{
                             ticks: {
                                 stepSize: 1,
                                 min: 0,
+                            },
+                            scaleLabel: {
+                                display: true,
+                                labelString: "nr of stars"
                             },
                         }],
                     }
