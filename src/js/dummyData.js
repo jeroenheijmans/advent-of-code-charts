@@ -1,5 +1,5 @@
 (function (aoc) {
-    const dummyData = {
+    aoc["dummyData"] = {
         "event": "2017",
         "members": {
             "123456": {
@@ -158,96 +158,4 @@
         },
         "owner_id": "190664"
     };
-
-    const starSorter = (a, b) => a.getStarTimestamp.localeCompare(b.getStarTimestamp);
-
-    class Dal {
-        getLeaderboardJson() {
-            return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    let stars = [];
-
-                    let members = _.values(dummyData.members)
-                        .map(m => {
-                            let i = 0;
-                            m.stars = [];
-
-                            for (let dayKey of Object.keys(m.completion_day_level)) {
-                                for (let starKey of Object.keys(m.completion_day_level[dayKey])) {
-                                    let starMoment = moment(m.completion_day_level[dayKey][starKey].get_star_ts).utc();
-
-                                    let star = {
-                                        memberId: m.id,
-                                        dayNr: parseInt(dayKey, 10),
-                                        dayKey: dayKey,
-                                        starNr: parseInt(starKey, 10),
-                                        starKey: starKey,
-                                        getStarDay: parseInt(`${dayKey}.${starKey}`, 10),
-                                        getStarTimestamp: m.completion_day_level[dayKey][starKey].get_star_ts,
-                                        getStarMoment: starMoment,
-                                        timeTaken: null, // adding this later on, which is easier :D
-                                    };
-
-                                    stars.push(star);
-                                    m.stars.push(star);
-                                }
-                            }
-
-                            m.stars = m.stars.sort(starSorter);
-
-                            m.stars.forEach((s, idx) => {
-                                s.nrOfStarsAfterThisOne = idx + 1;
-
-                                let startOfDay = moment.utc([2017, 11, s.dayNr, 5, 0, 0]); // AoC starts at 05:00 UTC
-                                s.timeTaken = s.getStarMoment.diff(startOfDay, "minutes");
-                            });
-
-                            return m;
-                        })
-                        .filter(m => m.stars.length > 0)
-                        .sort((a, b) => a.name.localeCompare(b.name));
-
-                    let colors = palette('tol-rainbow', members.length).map(c => `#${c}`);
-                    members.forEach((m, idx) => m.color = colors[idx]);
-
-                    let allMoments = stars.map(s => s.getStarMoment).concat([moment("2017-12-25T00:00:00-0000")]);
-                    let maxMoment = moment.min([moment.max(allMoments), moment("2017-12-31T00:00:00-0000")]);
-
-                    let availablePoints = {};
-
-                    for (let i = 1; i <= 25; i++) {
-                        availablePoints[i] = {};
-                        for (let j = 1; j <= 2; j++) {
-                            availablePoints[i][j] = members.length;
-                        }
-                    }
-
-                    let orderedStars = stars.sort(starSorter);
-
-                    let rawDataSets = {};
-
-                    for (let star of orderedStars) {
-                        star.points = availablePoints[star.dayKey][star.starKey]--;
-                    }
-
-                    for (let m of members) {
-                        let accumulatedPoints = 0;
-                        for (let s of m.stars.sort(starSorter)) {
-                            accumulatedPoints += s.points;
-                            s.nrOfPointsAfterThisOne = accumulatedPoints;
-                            m.score = accumulatedPoints;
-                        }
-                    }
-
-                    resolve({
-                        maxMoment: maxMoment,
-                        stars: stars,
-                        members: members
-                    });
-                });
-            }, 100);
-        }
-    }
-
-    aoc["Dal"] = Dal;
 }(window.aoc = window.aoc || {}));

@@ -1,4 +1,8 @@
 (function(aoc) {
+    function range(from, to) {
+        return [...Array(to - from).keys()].map(k => k + 1 + from);
+    }
+
     function hexToRGB(hex, alpha) {
         // By @AJFarkas, from https://stackoverflow.com/a/28056903/419956
 
@@ -12,13 +16,123 @@
             return "rgb(" + r + ", " + g + ", " + b + ")";
         }
     }
+    
+    function starSorter(a, b) { 
+        return a.getStarTimestamp.localeCompare(b.getStarTimestamp); 
+    }
+
+    function transformRawAocJson(json) {
+        let stars = [];
+
+        let members = Object.keys(json.members)
+            .map(k => json.members[k])
+            .map(m => {
+                let i = 0;
+                m.stars = [];
+
+                for (let dayKey of Object.keys(m.completion_day_level)) {
+                    for (let starKey of Object.keys(m.completion_day_level[dayKey])) {
+                        let starMoment = moment(m.completion_day_level[dayKey][starKey].get_star_ts).utc();
+
+                        let star = {
+                            memberId: m.id,
+                            dayNr: parseInt(dayKey, 10),
+                            dayKey: dayKey,
+                            starNr: parseInt(starKey, 10),
+                            starKey: starKey,
+                            getStarDay: parseInt(`${dayKey}.${starKey}`, 10),
+                            getStarTimestamp: m.completion_day_level[dayKey][starKey].get_star_ts,
+                            getStarMoment: starMoment,
+                            timeTaken: null, // adding this later on, which is easier :D
+                        };
+
+                        stars.push(star);
+                        m.stars.push(star);
+                    }
+                }
+
+                m.stars = m.stars.sort(starSorter);
+
+                m.stars.forEach((s, idx) => {
+                    s.nrOfStarsAfterThisOne = idx + 1;
+
+                    let startOfDay = moment.utc([2017, 11, s.dayNr, 5, 0, 0]); // AoC starts at 05:00 UTC
+                    s.timeTaken = s.getStarMoment.diff(startOfDay, "minutes");
+                });
+
+                return m;
+            })
+            .filter(m => m.stars.length > 0)
+            .sort((a, b) => a.name.localeCompare(b.name));
+
+        let colors = palette('tol-rainbow', members.length).map(c => `#${c}`);
+        members.forEach((m, idx) => m.color = colors[idx]);
+
+        let allMoments = stars.map(s => s.getStarMoment).concat([moment("2017-12-25T00:00:00-0000")]);
+        let maxMoment = moment.min([moment.max(allMoments), moment("2017-12-31T00:00:00-0000")]);
+
+        let availablePoints = {};
+
+        for (let i = 1; i <= 25; i++) {
+            availablePoints[i] = {};
+            for (let j = 1; j <= 2; j++) {
+                availablePoints[i][j] = members.length;
+            }
+        }
+
+        let orderedStars = stars.sort(starSorter);
+
+        let rawDataSets = {};
+
+        for (let star of orderedStars) {
+            star.points = availablePoints[star.dayKey][star.starKey]--;
+        }
+
+        for (let m of members) {
+            let accumulatedPoints = 0;
+            for (let s of m.stars.sort(starSorter)) {
+                accumulatedPoints += s.points;
+                s.nrOfPointsAfterThisOne = accumulatedPoints;
+                m.score = accumulatedPoints;
+            }
+        }
+
+        return{
+            maxMoment: maxMoment,
+            stars: stars,
+            members: members
+        };
+    }
+
+    function getLeaderboardJson() {
+        // 1. Check if dummy data was loaded...
+        if (!!aoc.dummyData) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve(transformRawAocJson(aoc.dummyData));
+                });
+            }, 100);
+        }
+        // 2. Apparently we can use real calls...
+        else {
+            let url = "http://adventofcode.com/2017/leaderboard/private/view/110810.json";
+            return fetch(url, { credentials: "same-origin" })
+                .then(data => data.json())
+                .then(json => { console.log(json); return json; }) // debug!
+                .then(json => transformRawAocJson(json));
+        }
+    }
 
     class App {
-        constructor(dal) {
-            dal.getLeaderboardJson()
+        constructor() {
+            this.wrapper = document.createElement("div");
+            this.wrapper.style.maxWidth = "1000px";
+            document.body.appendChild(this.wrapper);
+
+            getLeaderboardJson()
+                .then(data => this.loadPointsOverTime(data))
                 .then(data => this.loadStarsOverTime(data))
                 .then(data => this.loadDayVsTime(data))
-                .then(data => this.loadPointsOverTime(data))
                 .then(data => this.loadTimePerStar(data));
         }
 
@@ -39,7 +153,10 @@
                 };                
             });
 
-            let chart = new Chart(document.getElementById("dayVsTime").getContext("2d"), {
+            let element = document.createElement("canvas");
+            this.wrapper.appendChild(element);
+
+            let chart = new Chart(element.getContext("2d"), {
                 type: "scatter",
                 data: {
                     datasets: datasets,
@@ -63,13 +180,13 @@
                             },
                             scaleLabel: {
                                 display: true,
-                                labelString: "minutes taken per star (log scale)"
+                                labelString: "Day of Advent"
                             },
                         }],
                         yAxes: [{
                             scaleLabel: {
                                 display: true,
-                                labelString: "star progress"
+                                labelString: "minutes taken per star (log scale)"
                             },
                         }]
                     }
@@ -115,11 +232,13 @@
                 datasets.push(star2DataSet);
             }
 
+            let element = document.createElement("canvas");
+            this.wrapper.appendChild(element);
 
-            let pointsOverTimeChart = new Chart(document.getElementById("timePerStar").getContext("2d"), {
+            let chart = new Chart(element.getContext("2d"), {
                 type: "bar",
                 data: {
-                    labels: _.range(1, 26),
+                    labels: range(1, 25),
                     datasets: datasets,
                 },
                 options: {
@@ -172,7 +291,10 @@
                 };
             });
 
-            let pointsOverTimeChart = new Chart(document.getElementById("pointsOverTime").getContext("2d"), {
+            let element = document.createElement("canvas");
+            this.wrapper.appendChild(element);
+
+            let chart = new Chart(element.getContext("2d"), {
                 type: "line",
                 data: {
                     datasets: datasets,
@@ -236,7 +358,10 @@
                 }
             });
 
-            let starsOverTimeChart = new Chart(document.getElementById("starsOverTime").getContext("2d"), {
+            let element = document.createElement("canvas");
+            this.wrapper.appendChild(element);
+
+            let chart = new Chart(element.getContext("2d"), {
                 type: "line",
                 data: {
                     datasets: datasets,
@@ -285,4 +410,6 @@
     }
 
     aoc["App"] = App;
+
+    document.addEventListener("DOMContentLoaded", () => new aoc.App());
 }(window.aoc = window.aoc || {}));
