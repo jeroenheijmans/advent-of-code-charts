@@ -6,7 +6,7 @@
     };
 
     function range(from, to) {
-        return [...Array(to - from).keys()].map(k => k + 1 + from);
+        return [...Array(to - from).keys()].map(k => k + from);
     }
 
     function hexToRGB(hex, alpha) {
@@ -276,7 +276,7 @@
             let chart = new Chart(element.getContext("2d"), {
                 type: "bar",
                 data: {
-                    labels: range(1, 25),
+                    labels: range(1, 26),
                     datasets: datasets,
                 },
                 options: {
