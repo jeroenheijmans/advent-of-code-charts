@@ -21,6 +21,13 @@
         return a.getStarTimestamp.localeCompare(b.getStarTimestamp); 
     }
 
+    function getPalette(n) {
+        // Including google/palette seems hard because there is no CDN so we just use this trick:
+        const basePalette = ["#781c81", "#6e1980", "#65187f", "#5e187e", "#58197e", "#531b7f", "#4f1d81", "#4c2182", "#492484", "#462987", "#442d8a", "#43328d", "#423791", "#413d94", "#404298", "#3f489c", "#3f4ea0", "#3f53a5", "#3f59a9", "#3f5fad", "#4064b1", "#4069b5", "#416fb8", "#4274bb", "#4379be", "#447dc0", "#4582c1", "#4686c2", "#488ac2", "#4a8ec1", "#4b92c0", "#4d95be", "#4f99bb", "#519cb8", "#549fb4", "#56a2b0", "#58a4ac", "#5ba7a7", "#5ea9a2", "#60ab9d", "#63ad98", "#66af93", "#69b18e", "#6cb289", "#70b484", "#73b580", "#77b67b", "#7ab877", "#7eb973", "#82ba6f", "#85ba6b", "#89bb68", "#8dbc65", "#91bd61", "#95bd5e", "#99bd5c", "#9dbe59", "#a1be56", "#a5be54", "#a9be52", "#adbe50", "#b1be4e", "#b5bd4c", "#b9bd4a", "#bcbc48", "#c0bb47", "#c3ba45", "#c7b944", "#cab843", "#cdb641", "#d0b540", "#d3b33f", "#d6b13e", "#d8ae3d", "#dbab3c", "#dda93b", "#dfa53a", "#e0a239", "#e29e38", "#e39a37", "#e49636", "#e59235", "#e68d34", "#e78833", "#e78332", "#e77d31", "#e77730", "#e7712f", "#e66b2d", "#e6642c", "#e55e2b", "#e4572a", "#e35029", "#e24928", "#e14226", "#df3b25", "#de3424", "#dc2e22", "#db2721", "#d92120"];
+        let step = basePalette.length / n;
+        return [...Array(n).keys()].map(i => basePalette[Math.floor(i * step, 0)]);
+    }
+
     function transformRawAocJson(json) {
         let stars = [];
 
@@ -65,7 +72,7 @@
             .filter(m => m.stars.length > 0)
             .sort((a, b) => a.name.localeCompare(b.name));
 
-        let colors = palette('tol-rainbow', members.length).map(c => `#${c}`);
+        let colors = getPalette(members.length);
         members.forEach((m, idx) => m.color = colors[idx]);
 
         let allMoments = stars.map(s => s.getStarMoment).concat([moment("2017-12-25T00:00:00-0000")]);
@@ -411,5 +418,23 @@
 
     aoc["App"] = App;
 
-    document.addEventListener("DOMContentLoaded", () => new aoc.App());
+    function loadAdditions() {
+        function loadScripts(url, callback) {
+            let element = document.createElement("script");
+            element.src = url;
+            element.onload = callback;
+            document.getElementsByTagName("head")[0].appendChild(element);
+        }
+
+        loadScripts("https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.3/moment.min.js",
+            () => loadScripts("https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js", 
+                () => new aoc.App()));
+    }
+    
+    if (document.readyState === "complete" || document.readyState === "loaded") {
+        loadAdditions();
+    } else {
+        document.addEventListener("DOMContentLoaded", () => loadAdditions());
+    }
+
 }(window.aoc = window.aoc || {}));
