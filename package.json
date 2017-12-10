@@ -2,8 +2,7 @@
   "name": "advent-of-code-charts",
   "version": "1.0.0",
   "description": "Adhoc solution for Advent of Code leaderboard charts",
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jeroenheijmans/advent-of-code-charts.git"
@@ -13,5 +12,9 @@
   "bugs": {
     "url": "https://github.com/jeroenheijmans/advent-of-code-charts/issues"
   },
-  "homepage": "https://github.com/jeroenheijmans/advent-of-code-charts#readme"
+  "homepage": "https://github.com/jeroenheijmans/advent-of-code-charts#readme",
+  "dependencies": {
+    "chart.js": "2.7.1",
+    "moment": "2.19.3"
+  }
 }

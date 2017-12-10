@@ -506,16 +506,7 @@
     aoc["App"] = App;
 
     function loadAdditions() {
-        function loadScripts(url, callback) {
-            let element = document.createElement("script");
-            element.src = url;
-            element.onload = callback;
-            document.getElementsByTagName("head")[0].appendChild(element);
-        }
-
-        loadScripts("https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.3/moment.min.js",
-            () => loadScripts("https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js", 
-                () => new aoc.App()));
+        new aoc.App();
     }
     
     if (document.readyState === "complete" || document.readyState === "loaded") {
