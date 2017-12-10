@@ -121,6 +121,8 @@
     function getLeaderboardJson() {
         // 1. Check if dummy data was loaded...
         if (!!aoc.dummyData) {
+            console.info("Loading dummyData");
+
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
                     resolve(transformRawAocJson(aoc.dummyData));
@@ -132,10 +134,14 @@
             let anchor = document.querySelector("#api_info a");
             if (!!anchor) {
                 let url = anchor.href;
+                
+                console.info(`Loading data from url ${url}`);
+
                 return fetch(url, { credentials: "same-origin" })
                     .then(data => data.json())
                     .then(json => transformRawAocJson(json));
             } else {
+                console.info("Could not find anchor to JSON feed, assuming no charts can be plotted here.");
                 return new Promise((resolve, reject) => { });
             }
         }
@@ -143,8 +149,9 @@
 
     class App {
         constructor() {
+            console.info("Constructing App");
+
             this.wrapper = document.createElement("div");
-            
             document.body.appendChild(this.wrapper);
 
             getLeaderboardJson()
@@ -512,12 +519,15 @@
     aoc["App"] = App;
 
     function loadAdditions() {
+        console.info("Going to construct App");
         new aoc.App();
     }
     
     if (document.readyState === "complete" || document.readyState === "loaded") {
+        console.info(`Loading via ${document.readyState} readyState`);
         loadAdditions();
     } else {
+        console.info("Loading via DOMContentLoaded");
         document.addEventListener("DOMContentLoaded", () => loadAdditions());
     }
 
