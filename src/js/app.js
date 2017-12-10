@@ -523,11 +523,11 @@
         new aoc.App();
     }
     
-    if (document.readyState === "complete" || document.readyState === "loaded") {
-        console.info(`Loading via ${document.readyState} readyState`);
+    if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive") {
+        console.info(`Loading via readyState = ${document.readyState}`);
         loadAdditions();
     } else {
-        console.info("Loading via DOMContentLoaded");
+        console.info(`Loading via DOMContentLoaded because readyState = ${document.readyState}`);
         document.addEventListener("DOMContentLoaded", () => loadAdditions());
     }
 

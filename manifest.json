@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "Advent of Code Charts",
     "short_name": "AocCharts",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "author": "Jeroen Heijmans",
     "description": "Inject charts in your private leaderboard page for Advent of Code - see https://github.com/jeroenheijmans/advent-of-code-charts",
     "icons": { 
@@ -14,7 +14,7 @@
         {
             "matches": ["http://adventofcode.com/*", "https://adventofcode.com/*"],
             "js": ["moment.min.js", "Chart.min.js", "app.js"],
-            "run_at": "document_start"
+            "run_at": "document_end"
         }
     ]
 }
