@@ -1,6 +1,6 @@
 {
   "name": "advent-of-code-charts",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Adhoc solution for Advent of Code leaderboard charts",
   "scripts": {},
   "repository": {
