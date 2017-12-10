@@ -128,10 +128,15 @@
         }
         // 2. Apparently we can use real calls...
         else {
-            let url = document.querySelector("#api_info a").href;
-            return fetch(url, { credentials: "same-origin" })
-                .then(data => data.json())
-                .then(json => transformRawAocJson(json));
+            let anchor = document.querySelector("#api_info a");
+            if (!!anchor) {
+                let url = anchor.href;
+                return fetch(url, { credentials: "same-origin" })
+                    .then(data => data.json())
+                    .then(json => transformRawAocJson(json));
+            } else {
+                return new Promise((resolve, reject) => { });
+            }
         }
     }
 
