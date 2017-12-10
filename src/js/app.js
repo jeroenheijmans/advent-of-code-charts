@@ -1,4 +1,10 @@
 (function(aoc) {
+    const aocColors = {
+        "main": "rgba(200, 200, 200, 0.9)",
+        "secondary": "rgba(150, 150, 150, 0.9)",
+        "tertiary": "rgba(100, 100, 100, 0.5)",
+    };
+
     function range(from, to) {
         return [...Array(to - from).keys()].map(k => k + 1 + from);
     }
@@ -122,10 +128,9 @@
         }
         // 2. Apparently we can use real calls...
         else {
-            let url = "http://adventofcode.com/2017/leaderboard/private/view/110810.json";
+            let url = document.querySelector("#api_info a").href;
             return fetch(url, { credentials: "same-origin" })
                 .then(data => data.json())
-                .then(json => { console.log(json); return json; }) // debug!
                 .then(json => transformRawAocJson(json));
         }
     }
@@ -133,7 +138,7 @@
     class App {
         constructor() {
             this.wrapper = document.createElement("div");
-            this.wrapper.style.maxWidth = "1000px";
+            
             document.body.appendChild(this.wrapper);
 
             getLeaderboardJson()
@@ -171,12 +176,18 @@
                 options: {
                     responsive: true,
                     legend: {
-                        position: "left",
+                        position: "right",
+                        labels: {
+                            fontColor: aocColors["main"],
+                        },
                     },
                     title: {
                         display: true,
                         text: "Stars vs Log10(minutes taken per star)",
                         fontSize: 24,
+                        fontStyle: "normal",
+                        fontColor: aocColors["main"],
+                        lineHeight: 2.0,
                     },
                     scales: {
                         xAxes: [{
@@ -184,16 +195,30 @@
                                 min: 0,
                                 max: 25,
                                 stepSize: 1,
+                                fontColor: aocColors["main"],
                             },
                             scaleLabel: {
                                 display: true,
-                                labelString: "Day of Advent"
+                                labelString: "Day of Advent",
+                                fontColor: aocColors["main"],
+                            },
+                            gridLines: {
+                                color: aocColors["tertiary"],
+                                zeroLineColor: aocColors["secondary"],
                             },
                         }],
                         yAxes: [{
+                            ticks: {
+                                fontColor: aocColors["main"],
+                            },
                             scaleLabel: {
                                 display: true,
-                                labelString: "minutes taken per star (log scale)"
+                                labelString: "minutes taken per star (log scale)",
+                                fontColor: aocColors["main"],
+                            },
+                            gridLines: {
+                                color: aocColors["tertiary"],
+                                zeroLineColor: aocColors["secondary"],
                             },
                         }]
                     }
@@ -251,27 +276,49 @@
                 options: {
                     responsive: true,
                     legend: {
-                        position: "left",
+                        position: "right",
+                        labels: {
+                            fontColor: aocColors["main"],
+                        },
                     },
                     title: {
                         display: true,
                         text: `Log10(minutes taken per star) of top ${n} players`,
                         fontSize: 24,
+                        fontStyle: "normal",
+                        fontColor: aocColors["main"],
+                        lineHeight: 2.0,
                     },
                     scales: {
                         xAxes: [{
                             stacked: true,
+                            ticks: {
+                                fontColor: aocColors["main"],
+                            },
                             scaleLabel: {
                                 display: true,
-                                labelString: "Day of Advent"
+                                labelString: "Day of Advent",
+                                fontColor: aocColors["main"],
+                            },
+                            gridLines: {
+                                color: aocColors["tertiary"],
+                                zeroLineColor: aocColors["secondary"],
                             },
                         }],
                         yAxes: [{
                             stacked: true,
+                            ticks: {
+                                fontColor: aocColors["main"],
+                            },
                             scaleLabel: {
                                 display: true,
-                                labelString: "minutes taken per star (log scale)"
-                            }
+                                labelString: "minutes taken per star (log scale)",
+                                fontColor: aocColors["main"],
+                            },
+                            gridLines: {
+                                color: aocColors["tertiary"],
+                                zeroLineColor: aocColors["secondary"],
+                            },
                         }],
                     }
                 }
@@ -309,12 +356,18 @@
                 options: {
                     responsive: true,
                     legend: {
-                        position: "left",
+                        position: "right",
+                        labels: {
+                            fontColor: aocColors["main"],
+                        },
                     },
                     title: {
                         display: true,
-                        text: "Leaderbord (points)",
+                        text: "Leaderboard (points)",
                         fontSize: 24,
+                        fontStyle: "normal",
+                        fontColor: aocColors["main"],
+                        lineHeight: 2.0,
                     },
                     scales: {
                         xAxes: [{
@@ -326,18 +379,32 @@
                                 stepSize: 1,
                                 displayFormats: { day: "D" },
                             },
+                            ticks: {
+                                fontColor: aocColors["main"],
+                            },
                             scaleLabel: {
                                 display: true,
-                                labelString: "Day of Advent"
+                                labelString: "Day of Advent",
+                                fontColor: aocColors["main"],
+                            },
+                            gridLines: {
+                                color: aocColors["tertiary"],
+                                zeroLineColor: aocColors["secondary"],
                             },
                         }],
                         yAxes: [{
                             ticks: {
                                 min: 0,
+                                fontColor: aocColors["main"],
                             },
                             scaleLabel: {
                                 display: true,
-                                labelString: "cumulative points"
+                                labelString: "cumulative points",
+                                fontColor: aocColors["main"],
+                            },
+                            gridLines: {
+                                color: aocColors["tertiary"],
+                                zeroLineColor: aocColors["secondary"],
                             },
                         }],
                     }
@@ -376,12 +443,18 @@
                 options: {
                     responsive: true,
                     legend: {
-                        position: "left",
+                        position: "right",
+                        labels: {
+                            fontColor: aocColors["main"],
+                        },
                     },
                     title: {
                         display: true,
                         text: "Leaderboard (stars)",
                         fontSize: 24,
+                        fontStyle: "normal",
+                        fontColor: aocColors["main"],
+                        lineHeight: 2.0,
                     },
                     scales: {
                         xAxes: [{
@@ -393,19 +466,33 @@
                                 stepSize: 1,
                                 displayFormats: { day: "D" },
                             },
+                            ticks: {
+                                fontColor: aocColors["main"],
+                            },
                             scaleLabel: {
                                 display: true,
-                                labelString: "Day of Advent"
+                                labelString: "Day of Advent",
+                                fontColor: aocColors["main"],
+                            },
+                            gridLines: {
+                                color: aocColors["tertiary"],
+                                zeroLineColor: aocColors["secondary"],
                             },
                         }],
                         yAxes: [{
                             ticks: {
                                 stepSize: 1,
                                 min: 0,
+                                fontColor: aocColors["main"],
                             },
                             scaleLabel: {
                                 display: true,
-                                labelString: "nr of stars"
+                                labelString: "nr of stars",
+                                fontColor: aocColors["main"],
+                            },
+                            gridLines: {
+                                color: aocColors["tertiary"],
+                                zeroLineColor: aocColors["secondary"],
                             },
                         }],
                     }
