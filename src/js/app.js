@@ -24,7 +24,7 @@
     }
     
     function starSorter(a, b) { 
-        return a.getStarTimestamp.localeCompare(b.getStarTimestamp); 
+        return (a.dayNr + (a.starNr-1) / 10) - (b.dayNr + (b.starNr-1) / 10);
     }
 
     function getPalette(n) {
