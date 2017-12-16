@@ -22,9 +22,11 @@
             return "rgb(" + r + ", " + g + ", " + b + ")";
         }
     }
-    
-    function starSorter(a, b) { 
-        return (a.dayNr + (a.starNr-1) / 10) - (b.dayNr + (b.starNr-1) / 10);
+
+    function starSorter(a, b) {
+        if (a.dayNr !== b.dayNr) { return a.dayNr - b.dayNr; }
+        if (a.starNr !== b.starNr) { return a.starNr - b.starNr; }
+        return a.getStarMoment.utc().diff(b.getStarMoment.utc());
     }
 
     function getPalette(n) {
@@ -111,8 +113,20 @@
             }
         }
 
+        let maxDay = Math.max.apply(Math, stars.filter(s => s.starNr === 2).map(s => s.dayNr))
+        let days = {};
+
+        for (let d = 1; d <= maxDay; d++) {
+            days[d] = {
+                dayNr: d,
+                podium: stars.filter(s => s.dayNr === d && s.starNr === 2).sort(starSorter),
+            };
+        }
+
         return{
+            maxDay: maxDay,
             maxMoment: maxMoment,
+            days: days,
             stars: stars,
             members: members
         };
@@ -134,7 +148,7 @@
             let anchor = document.querySelector("#api_info a");
             if (!!anchor) {
                 let url = anchor.href;
-                
+
                 console.info(`Loading data from url ${url}`);
 
                 return fetch(url, { credentials: "same-origin" })
@@ -147,18 +161,81 @@
         }
     }
 
+
     class App {
         constructor() {
             console.info("Constructing App");
 
-            this.wrapper = document.createElement("div");
-            document.body.appendChild(this.wrapper);
+            this.wrapper = document.body.appendChild(document.createElement("div"));
 
             getLeaderboardJson()
+                .then(data => this.loadMedalOverview(data))
                 .then(data => this.loadPointsOverTime(data))
                 .then(data => this.loadStarsOverTime(data))
                 .then(data => this.loadDayVsTime(data))
                 .then(data => this.loadTimePerStar(data));
+        }
+
+        loadMedalOverview(data) {
+            const podiumLength = 3;
+
+            let titleElement = this.wrapper.appendChild(document.createElement("h3"));
+            titleElement.innerText = "Podium per day (first to both stars)";
+            titleElement.style.fontFamily = "Helvetica, Arial, sans-serif";
+            titleElement.align = "center"
+            titleElement.style.fontWeight = "normal";
+
+            let gridElement = document.createElement("table");
+            gridElement.style.borderCollapse = "collapse";
+            gridElement.style.fontSize = "24px";
+
+            let grid = data.members;
+
+            let tr = gridElement.appendChild(document.createElement("tr"));
+            for (let d = 0; d <= data.maxDay; d++) {
+                let td = tr.appendChild(document.createElement("td"));
+                td.innerText = d === 0 ? "" : d;
+                td.align = "center";
+            }
+
+            for (let member of grid) {
+                let tr = document.createElement("tr");
+                let medalCount = new Array(podiumLength).fill(0);
+
+                let td = tr.appendChild(document.createElement("td"));
+                td.innerText = member.name;
+                td.style.border = "1px solid #333";
+                td.style.padding = "2px 16px";
+
+                for (let d = 1; d <= data.maxDay; d++) {
+                    let td = tr.appendChild(document.createElement("td"));
+                    td.style.border = "1px solid #333";
+                    td.style.padding = "8px";
+
+                    for (let n = 0; n < podiumLength; n++) {
+                        if (n < data.days[d].podium.length && data.days[d].podium[n].memberId === member.id) {
+                            let span = td.appendChild(document.createElement("span"));
+                            span.innerText = n === 0 ? "🥇" : n === 1 ? "🥈" : n === 2 ? "🥉" : `(${n})`;
+                            span.style.display = "block";
+                            span.style.borderRadius = "2px";
+                            span.style.border = "1px solid #333";
+                            span.style.backgroundColor = n === 0 ? "gold" : n === 1 ? "silver" : n === 2 ? "#945210" : "#0f0f23";
+                            span.style.opacity = 1.0 - (0.5 / (podiumLength - n));
+                            span.title = data.days[d].podium[n].getStarTimestamp;
+
+                            medalCount[n]++;
+                        }
+                    }
+                }
+
+                if (medalCount.reduce((a,b) => a+b, 0) > 0) { 
+                    gridElement.appendChild(tr); 
+                }
+            }
+
+            this.wrapper.appendChild(gridElement);
+
+            return data;
         }
 
         loadDayVsTime(data) {
@@ -175,7 +252,7 @@
                             y: Math.log10(s.timeTaken)
                         };
                     })
-                };                
+                };
             });
 
             let element = document.createElement("canvas");
@@ -522,7 +599,7 @@
         console.info("Going to construct App");
         new aoc.App();
     }
-    
+
     if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive") {
         console.info(`Loading via readyState = ${document.readyState}`);
         loadAdditions();
