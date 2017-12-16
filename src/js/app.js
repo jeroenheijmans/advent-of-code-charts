@@ -5,6 +5,8 @@
         "tertiary": "rgba(100, 100, 100, 0.5)",
     };
 
+    const podiumLength = 3;
+
     function range(from, to) {
         return [...Array(to - from).keys()].map(k => k + from);
     }
@@ -45,6 +47,7 @@
                 let i = 0;
                 m.stars = [];
                 m.name = m.name || `(anonymous user ${m.id})`;
+                m.podiumStars = [];
 
                 for (let dayKey of Object.keys(m.completion_day_level)) {
                     for (let starKey of Object.keys(m.completion_day_level[dayKey])) {
@@ -121,6 +124,14 @@
                 dayNr: d,
                 podium: stars.filter(s => s.dayNr === d && s.starNr === 2).sort(starSorter),
             };
+
+            for (let i = 0; i < days[d].podium.length; i++) {
+                days[d].podium[i].awardedPodiumPlace = i;
+            }
+        }
+
+        for (let m of members) {
+            m.podiumPlacesPerDay = getPodiumFor(m);
         }
 
         return{
@@ -130,6 +141,27 @@
             stars: stars,
             members: members
         };
+    }
+    
+    function getPodiumFor(member) {
+        let medals = [];
+        for (let p = 0; p < podiumLength; p++) {
+            medals.push(member.stars.filter(s => s.awardedPodiumPlace === p).length);
+        }
+        return medals;
+    }
+
+    function memberByPodiumSorter(a, b) {
+        let aMedals = getPodiumFor(a);
+        let bMedals = getPodiumFor(b);
+
+        for (let i = 0; i < aMedals.length; i++) {
+            if (aMedals[i] !== bMedals[i]) {
+                return bMedals[i] - aMedals[i];
+            }
+        }
+
+        return 0;
     }
 
     function getLeaderboardJson() {
@@ -177,7 +209,7 @@
         }
 
         loadMedalOverview(data) {
-            const podiumLength = 3;
+            const medalHtml = n => n === 0 ? "🥇" : n === 1 ? "🥈" : n === 2 ? "🥉" : `(${n})`;
 
             let titleElement = this.wrapper.appendChild(document.createElement("h3"));
             titleElement.innerText = "Podium per day (first to both stars)";
@@ -187,7 +219,7 @@
 
             let gridElement = document.createElement("table");
             gridElement.style.borderCollapse = "collapse";
-            gridElement.style.fontSize = "24px";
+            gridElement.style.fontSize = "16px";
 
             let grid = data.members;
 
@@ -197,25 +229,35 @@
                 td.innerText = d === 0 ? "" : d;
                 td.align = "center";
             }
+            tr.appendChild(document.createElement("td"));
+            for (let n = 0; n < podiumLength; n++) {
+                let td = tr.appendChild(document.createElement("td"));
+                let span = td.appendChild(document.createElement("span"));
+                span.innerText = medalHtml(n);
+                span.style.backgroundColor = n === 0 ? "gold" : n === 1 ? "silver" : n === 2 ? "#945210" : "#0f0f23";
+                span.style.padding = "1px";
+                td.style.padding = "4px";
+                td.align = "center";
+            }
 
-            for (let member of grid) {
+            for (let member of grid.sort(memberByPodiumSorter)) {
                 let tr = document.createElement("tr");
                 let medalCount = new Array(podiumLength).fill(0);
 
                 let td = tr.appendChild(document.createElement("td"));
                 td.innerText = member.name;
                 td.style.border = "1px solid #333";
-                td.style.padding = "2px 16px";
+                td.style.padding = "2px 8px";
 
                 for (let d = 1; d <= data.maxDay; d++) {
                     let td = tr.appendChild(document.createElement("td"));
                     td.style.border = "1px solid #333";
-                    td.style.padding = "8px";
+                    td.style.padding = "4px";
 
                     for (let n = 0; n < podiumLength; n++) {
                         if (n < data.days[d].podium.length && data.days[d].podium[n].memberId === member.id) {
                             let span = td.appendChild(document.createElement("span"));
-                            span.innerText = n === 0 ? "🥇" : n === 1 ? "🥈" : n === 2 ? "🥉" : `(${n})`;
+                            span.innerText = medalHtml(n);
                             span.style.display = "block";
                             span.style.borderRadius = "2px";
                             span.style.border = "1px solid #333";
@@ -228,8 +270,19 @@
                     }
                 }
 
-                if (medalCount.reduce((a,b) => a+b, 0) > 0) { 
-                    gridElement.appendChild(tr); 
+                let separator = tr.appendChild(document.createElement("td"));
+                separator.innerHTML = "&nbsp;";
+
+                for (let n = 0; n < podiumLength; n++) {
+                    let td = tr.appendChild(document.createElement("td"));
+                    td.innerText = member.podiumPlacesPerDay[n];
+                    td.style.border = "1px solid #333";
+                    td.style.padding = "2px 8px";
+                    td.align = "center";
+                }
+
+                if (medalCount.reduce((a,b) => a+b, 0) > 0) {
+                    gridElement.appendChild(tr);
                 }
             }
 
@@ -418,7 +471,7 @@
         }
 
         loadPointsOverTime(data) {
-            let datasets = data.members.map(m => {
+            let datasets = data.members.sort((a,b) => a.name.localeCompare(b.name)).map(m => {
                 return {
                     label: m.name,
                     cubicInterpolationMode: "monotone",
