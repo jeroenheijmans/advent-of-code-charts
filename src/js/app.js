@@ -51,7 +51,7 @@
 
                 for (let dayKey of Object.keys(m.completion_day_level)) {
                     for (let starKey of Object.keys(m.completion_day_level[dayKey])) {
-                        let starMoment = moment(m.completion_day_level[dayKey][starKey].get_star_ts).utc();
+                        let starMoment = moment.unix(m.completion_day_level[dayKey][starKey].get_star_ts).utc();
 
                         let star = {
                             memberId: m.id,
