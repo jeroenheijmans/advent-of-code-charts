@@ -31,7 +31,7 @@ The code in this project is MIT licensed, with the explicit exception of `dummyD
 That file contains JSON in a format thought up by the owner and creator of Advent of Code, but we suppose that using a small snippet of it like this falls under "fair use" (given for one that the AoC website itself suggests using the "JSON API" for integrations, albeit without spamming that API).
 
 Note that "Advent of Code" and "AoC" are Eric Wastl's.
-This project is not "official", and in no way directly or indirectly affiliated to Advent of Code, nor is it directly endorsed by the creator of Advent of Code.
+This project is not "official", and in no way (directly or indirectly) endorsed by- or affiliated to Advent of Code and its creator/owner.
 Read more [about Advent of Code](https://adventofcode.com/2018/about) to learn about the project itself.
 
 **Oh, and of course, please [consider donating to _Advent of Code_ itself](https://adventofcode.com/2018/support)!**
