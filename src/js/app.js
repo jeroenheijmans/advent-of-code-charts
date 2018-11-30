@@ -232,16 +232,14 @@
         }
     }
 
-
     class App {
         constructor() {
             console.info("Constructing App");
 
             this.wrapper = document.body.appendChild(document.createElement("div"));
 
-            this.loadCacheBustingButton();
-
             getLeaderboardJson()
+                .then(data => this.loadCacheBustingButton(data))
                 .then(data => this.loadMedalOverview(data))
                 .then(data => this.loadPointsOverTime(data))
                 .then(data => this.loadStarsOverTime(data))
@@ -249,12 +247,12 @@
                 .then(data => this.loadTimePerStar(data));
         }
 
-        loadCacheBustingButton() {
-            const wrapper = this.wrapper;
-            const a = wrapper.appendChild(document.createElement("a"));
+        loadCacheBustingButton(data) {
+            const a = this.wrapper.appendChild(document.createElement("a"));
             a.innerText = "Clear Charting Cache 👇";
             a.style.cursor = "pointer";
             a.addEventListener("click", () => clearCache());
+            return data;
         }
 
         loadMedalOverview(data) {
