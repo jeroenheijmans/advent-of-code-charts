@@ -40,6 +40,7 @@
 
     function transformRawAocJson(json) {
         let stars = [];
+        let year = parseInt(json.event);
 
         let members = Object.keys(json.members)
             .map(k => json.members[k])
@@ -75,7 +76,7 @@
                 m.stars.forEach((s, idx) => {
                     s.nrOfStarsAfterThisOne = idx + 1;
 
-                    let startOfDay = moment.utc([2017, 11, s.dayNr, 5, 0, 0]); // AoC starts at 05:00 UTC
+                    let startOfDay = moment.utc([year, 11, s.dayNr, 5, 0, 0]); // AoC starts at 05:00 UTC
                     s.timeTaken = s.getStarMoment.diff(startOfDay, "minutes");
                 });
 
@@ -87,8 +88,8 @@
         let colors = getPalette(members.length);
         members.forEach((m, idx) => m.color = colors[idx]);
 
-        let allMoments = stars.map(s => s.getStarMoment).concat([moment("2017-12-25T00:00:00-0000")]);
-        let maxMoment = moment.min([moment.max(allMoments), moment("2017-12-31T00:00:00-0000")]);
+        let allMoments = stars.map(s => s.getStarMoment).concat([moment("" + year + "-12-25T00:00:00-0000")]);
+        let maxMoment = moment.min([moment.max(allMoments), moment("" + year + "-12-31T00:00:00-0000")]);
 
         let availablePoints = {};
 
@@ -139,7 +140,8 @@
             maxMoment: maxMoment,
             days: days,
             stars: stars,
-            members: members
+            members: members,
+            year: year
         };
     }
     
@@ -516,7 +518,7 @@
                         xAxes: [{
                             type: "time",
                             time: {
-                                min: moment([2017,10,30,5,0,0]),
+                                min: moment([data.year,10,30,5,0,0]),
                                 max: data.maxMoment,
                                 unit: "day",
                                 stepSize: 1,
@@ -603,7 +605,7 @@
                         xAxes: [{
                             type: "time",
                             time: {
-                                min: moment([2017,10,30,5,0,0]),
+                                min: moment([data.year,10,30,5,0,0]),
                                 max: data.maxMoment,
                                 unit: "day",
                                 stepSize: 1,
