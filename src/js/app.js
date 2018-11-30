@@ -166,6 +166,26 @@
         return 0;
     }
 
+    function getCacheKey() {
+        return `aoc-data-v1-${document.location.pathname}`;
+    }
+
+    function getCache() {
+        console.info("Getting cache", getCacheKey());
+        return JSON.parse(localStorage.getItem(getCacheKey()));
+    }
+
+    function updateCache(data) {
+        console.log("Updating cache");
+        localStorage.setItem(getCacheKey(), JSON.stringify({ data: data, timestamp: Date.now() }));
+        return data;
+    }
+
+    function clearCache() {
+        console.log("Clearing cache", getCacheKey());
+        localStorage.setItem(getCacheKey(), null);
+    }
+
     function getLeaderboardJson() {
         // 1. Check if dummy data was loaded...
         if (!!aoc.dummyData) {
@@ -182,11 +202,28 @@
             let anchor = document.querySelector("#api_info a");
             if (!!anchor) {
                 let url = anchor.href;
+                
+                const cache = getCache();
 
+                console.info("Found cache", cache);
+                
+                if (cache) {
+                    const ttl = new Date(cache.timestamp + (5 * 60 * 1000));
+                    console.info("Found cached value valid until", ttl);
+
+                    if (Date.now() < ttl) {
+                        console.info("Cache was still valid!");
+
+                        return Promise.resolve(cache.data)
+                            .then(json => transformRawAocJson(json));
+                    }
+                } 
+                
                 console.info(`Loading data from url ${url}`);
-
+                
                 return fetch(url, { credentials: "same-origin" })
                     .then(data => data.json())
+                    .then(json => updateCache(json))
                     .then(json => transformRawAocJson(json));
             } else {
                 console.info("Could not find anchor to JSON feed, assuming no charts can be plotted here.");
@@ -202,12 +239,22 @@
 
             this.wrapper = document.body.appendChild(document.createElement("div"));
 
+            this.loadCacheBustingButton();
+
             getLeaderboardJson()
                 .then(data => this.loadMedalOverview(data))
                 .then(data => this.loadPointsOverTime(data))
                 .then(data => this.loadStarsOverTime(data))
                 .then(data => this.loadDayVsTime(data))
                 .then(data => this.loadTimePerStar(data));
+        }
+
+        loadCacheBustingButton() {
+            const wrapper = this.wrapper;
+            const a = wrapper.appendChild(document.createElement("a"));
+            a.innerText = "Clear Charting Cache 👇";
+            a.style.cursor = "pointer";
+            a.addEventListener("click", () => clearCache());
         }
 
         loadMedalOverview(data) {
