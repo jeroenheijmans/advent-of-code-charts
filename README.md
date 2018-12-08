@@ -12,13 +12,19 @@ Instead it's something fun I wanted to make, stepping out of my *normal* way of 
 
 ## Developing
 
-Install global dependencies:
+Install dependencies:
 
 ```sh
-npm install --global serve livereload
+npm install
 ```
 
-Then run both `serve src/.` and `livereload src/.` and open up `http://localhost:5000`. You should see a test website with the dummy data.
+Serve a test website with the dummy data:
+
+```sh
+npm run serve
+```
+
+And open up `http://localhost:5000`.
 
 ## Building
 
