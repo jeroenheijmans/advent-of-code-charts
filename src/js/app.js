@@ -124,6 +124,7 @@
             days[d] = {
                 dayNr: d,
                 podium: stars.filter(s => s.dayNr === d && s.starNr === 2).sort(starSorter),
+                podiumFirstPuzzle: stars.filter(s => s.dayNr === d && s.starNr === 1).sort(starSorter),
             };
 
             for (let i = 0; i < days[d].podium.length; i++) {
@@ -267,6 +268,7 @@
 
         loadMedalOverview(data) {
             const medalHtml = n => n === 0 ? "🥇" : n === 1 ? "🥈" : n === 2 ? "🥉" : `(${n})`;
+            const medalColor = n => n === 0 ? "gold" : n === 1 ? "silver" : n === 2 ? "#945210" : "#0f0f23";
 
             let titleElement = this.medals.appendChild(document.createElement("h3"));
             titleElement.innerText = "Podium per day (first to both stars)";
@@ -290,7 +292,7 @@
                 let td = tr.appendChild(document.createElement("td"));
                 let span = td.appendChild(document.createElement("span"));
                 span.innerText = medalHtml(n);
-                span.style.backgroundColor = n === 0 ? "gold" : n === 1 ? "silver" : n === 2 ? "#945210" : "#0f0f23";
+                span.style.backgroundColor = medalColor(n);
                 span.style.padding = "1px";
                 td.style.padding = "4px";
                 td.align = "center";
@@ -308,7 +310,7 @@
                 for (let d = 1; d <= data.maxDay; d++) {
                     let td = tr.appendChild(document.createElement("td"));
                     td.style.border = "1px solid #333";
-                    td.style.padding = "4px";
+                    td.style.padding = "5px 5px 3px 3px";
 
                     for (let n = 0; n < podiumLength; n++) {
                         if (n < data.days[d].podium.length && data.days[d].podium[n].memberId === member.id) {
@@ -317,7 +319,8 @@
                             span.style.display = "block";
                             span.style.borderRadius = "2px";
                             span.style.border = "1px solid #333";
-                            span.style.backgroundColor = n === 0 ? "gold" : n === 1 ? "silver" : n === 2 ? "#945210" : "#0f0f23";
+                            span.style.boxShadow = `2px -2px 0 0 ${medalColor(data.days[d].podiumFirstPuzzle.findIndex(n => n.memberId === member.id))}`;
+                            span.style.backgroundColor = medalColor(n);
                             span.style.opacity = 1.0 - (0.5 / (podiumLength - n));
                             span.title = data.days[d].podium[n].getStarTimestamp;
 
