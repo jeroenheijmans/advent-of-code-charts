@@ -209,7 +209,7 @@
             let chart = this.chart;
 
             // always show doubleclicked item
-            chart.getDatasetMeta(li.datasetIndex).hidden = false;
+            chart.getDatasetMeta(li.datasetIndex).hidden = null;
             
             // count how many hidden datasets are there
             let hiddenCnt = chart.data.datasets
@@ -223,7 +223,7 @@
             // if they are already mostly hidden
             let hide = true;
             if (hiddenCnt >= (chart.data.datasets.length - 1) * 0.5) {
-                hide = false;
+                hide = null;
             }
 
             chart.data.datasets.forEach(function(_dataSet, dataSetIndex) {
