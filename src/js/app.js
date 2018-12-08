@@ -237,6 +237,12 @@
             console.info("Constructing App");
 
             this.wrapper = document.body.appendChild(document.createElement("div"));
+            this.controls = this.wrapper.appendChild(document.createElement("div"));
+            this.medals = this.wrapper.appendChild(document.createElement("div"));
+            this.graphs = this.wrapper.appendChild(document.createElement("div"));
+            this.graphs.style.display = "flex";
+            this.graphs.style.flexWrap = "wrap";
+            this.graphs.style.flexDirection = "row";
 
             getLeaderboardJson()
                 .then(data => this.loadCacheBustingButton(data))
@@ -248,9 +254,13 @@
         }
 
         loadCacheBustingButton(data) {
-            const a = this.wrapper.appendChild(document.createElement("a"));
-            a.innerText = "Clear Charting Cache 👇";
+            const a = this.controls.appendChild(document.createElement("a"));
+            a.innerText = "Clear Charting Cache";
             a.style.cursor = "pointer";
+            a.style.background = aocColors.tertiary;
+            a.style.display = "inline-block";
+            a.style.padding = "2px 8px";
+            a.style.border = `1px solid ${aocColors.secondary}`;
             a.addEventListener("click", () => clearCache());
             return data;
         }
@@ -258,10 +268,9 @@
         loadMedalOverview(data) {
             const medalHtml = n => n === 0 ? "🥇" : n === 1 ? "🥈" : n === 2 ? "🥉" : `(${n})`;
 
-            let titleElement = this.wrapper.appendChild(document.createElement("h3"));
+            let titleElement = this.medals.appendChild(document.createElement("h3"));
             titleElement.innerText = "Podium per day (first to both stars)";
             titleElement.style.fontFamily = "Helvetica, Arial, sans-serif";
-            titleElement.align = "center"
             titleElement.style.fontWeight = "normal";
 
             let gridElement = document.createElement("table");
@@ -333,9 +342,15 @@
                 }
             }
 
-            this.wrapper.appendChild(gridElement);
+            this.medals.appendChild(gridElement);
 
             return data;
+        }
+
+        createGraphCanvas() {
+            var element = document.createElement("canvas");
+            element.style.maxWidth = window.matchMedia("(max-width: 1560px)").matches ? "100%" : "50%";
+            return element;
         }
 
         loadDayVsTime(data) {
@@ -355,8 +370,8 @@
                 };
             });
 
-            let element = document.createElement("canvas");
-            this.wrapper.appendChild(element);
+            let element = this.createGraphCanvas();
+            this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
                 type: "scatter",
@@ -454,8 +469,8 @@
                 datasets.push(star2DataSet);
             }
 
-            let element = document.createElement("canvas");
-            this.wrapper.appendChild(element);
+            let element = this.createGraphCanvas();
+            this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
                 type: "bar",
@@ -535,8 +550,8 @@
                 };
             });
 
-            let element = document.createElement("canvas");
-            this.wrapper.appendChild(element);
+            let element = this.createGraphCanvas();
+            this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
                 type: "line",
@@ -622,8 +637,8 @@
                 }
             });
 
-            let element = document.createElement("canvas");
-            this.wrapper.appendChild(element);
+            let element = this.createGraphCanvas();
+            this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
                 type: "line",
