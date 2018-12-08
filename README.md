@@ -1,6 +1,9 @@
 # Advent of Code Charts
 
 This is a small hacked-up set of charts for a private leaderboard for [Advent of Code](https://adventofcode.com/).
+Get it as an extension:
+
+[![browser-store-chrome.png](browser-store-chrome.png)](https://chrome.google.com/webstore/detail/advent-of-code-charts/ipbomkmbokofodhhjpipflmdplipblbe) [![browser-store-firefox.png](browser-store-firefox.png)](https://addons.mozilla.org/en-US/firefox/addon/advent-of-code-charts/)
 
 ## Disclaimers
 
@@ -35,3 +38,9 @@ This project is not "official", and in no way (directly or indirectly) endorsed 
 Read more [about Advent of Code](https://adventofcode.com/2018/about) to learn about the project itself.
 
 **Oh, and of course, please [consider donating to _Advent of Code_ itself](https://adventofcode.com/2018/support)!**
+
+## Example
+
+Here's what it should more or less look like:
+
+![example-001.png](example-001.png)

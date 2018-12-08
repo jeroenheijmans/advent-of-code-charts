@@ -330,7 +330,7 @@
                 }
 
                 let separator = tr.appendChild(document.createElement("td"));
-                separator.innerHTML = "&nbsp;";
+                separator.innerText = "\u00A0";
 
                 for (let n = 0; n < podiumLength; n++) {
                     let td = tr.appendChild(document.createElement("td"));
