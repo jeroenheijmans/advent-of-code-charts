@@ -1,7 +1,9 @@
 {
   "name": "advent-of-code-charts",
   "description": "Adhoc solution for Advent of Code leaderboard charts",
-  "scripts": {},
+  "scripts": {
+    "serve": "serve src/. & livereload src/."
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jeroenheijmans/advent-of-code-charts.git"
@@ -15,5 +17,9 @@
   "dependencies": {
     "chart.js": "^2.7.3",
     "moment": "^2.22.2"
+  },
+  "devDependencies": {
+    "livereload": "^0.7.0",
+    "serve": "^10.1.1"
   }
 }
