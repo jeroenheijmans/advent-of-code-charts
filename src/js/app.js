@@ -187,6 +187,58 @@
         localStorage.setItem(getCacheKey(), null);
     }
 
+    let prevClick;
+    function isDoubleClick() {
+        let now = new Date();
+        if (!prevClick) {
+            prevClick = now;
+            return false;
+        }
+
+        let diff = now - prevClick;
+        prevClick = now;
+
+        return diff < 300;
+    }
+
+    function legendOnClick(e, li) {
+        // always do default click behavior
+        Chart.defaults.global.legend.onClick.apply(this, [e, li]);
+        
+        if (isDoubleClick()) {
+            let chart = this.chart;
+
+            // always show doubleclicked item
+            chart.getDatasetMeta(li.datasetIndex).hidden = false;
+            
+            // count how many hidden datasets are there
+            let hiddenCnt = chart.data.datasets
+                .map(function(_dataSet, dataSetIndex) {
+                    return chart.getDatasetMeta(dataSetIndex);
+                }).filter(function(meta) {
+                    return meta.hidden;
+                }).length;
+
+            // deciding to invert items 'hidden' state depending 
+            // if they are already mostly hidden
+            let hide = true;
+            if (hiddenCnt >= (chart.data.datasets.length - 1) * 0.5) {
+                hide = false;
+            }
+
+            chart.data.datasets.forEach(function(_dataSet, dataSetIndex) {
+                if (dataSetIndex === li.datasetIndex) {
+                    return;
+                }
+
+                let dsMeta = chart.getDatasetMeta(dataSetIndex);
+                dsMeta.hidden = hide;
+            });
+
+            chart.update();
+        }
+    }
+
     function getLeaderboardJson() {
         // 1. Check if dummy data was loaded...
         if (!!aoc.dummyData) {
@@ -388,6 +440,7 @@
                         labels: {
                             fontColor: aocColors["main"],
                         },
+                        onClick: legendOnClick
                     },
                     title: {
                         display: true,
@@ -488,6 +541,7 @@
                         labels: {
                             fontColor: aocColors["main"],
                         },
+                        onClick: legendOnClick
                     },
                     title: {
                         display: true,
@@ -568,6 +622,7 @@
                         labels: {
                             fontColor: aocColors["main"],
                         },
+                        onClick: legendOnClick
                     },
                     title: {
                         display: true,
@@ -655,6 +710,7 @@
                         labels: {
                             fontColor: aocColors["main"],
                         },
+                        onClick: legendOnClick
                     },
                     title: {
                         display: true,
