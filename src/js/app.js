@@ -325,6 +325,7 @@
             const medalHtml = n => n === 0 ? "🥇" : n === 1 ? "🥈" : n === 2 ? "🥉" : `(${n})`;
             const medalColor = n => n === 0 ? "gold" : n === 1 ? "silver" : n === 2 ? "#945210" : "#0f0f23";
 
+            this.medals.title = "For each day, the top 3 to get the second star are shown. Behind each medal you can get a glimpse of the podium for the *first* star.";
             let titleElement = this.medals.appendChild(document.createElement("h3"));
             titleElement.innerText = "Podium per day";
             titleElement.style.fontFamily = "Helvetica, Arial, sans-serif";
@@ -408,9 +409,10 @@
             return data;
         }
 
-        createGraphCanvas() {
+        createGraphCanvas(title = "") {
             var element = document.createElement("canvas");
             element.style.maxWidth = window.matchMedia("(max-width: 1560px)").matches ? "100%" : "50%";
+            element.title = title;
             return element;
         }
 
@@ -431,7 +433,7 @@
                 };
             });
 
-            let element = this.createGraphCanvas();
+            let element = this.createGraphCanvas("Log10 function of the time taken for each user to get the stars");
             this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
@@ -511,7 +513,7 @@
                 let star2DataSet = {
                     label: `${member.name} (★★)`,
                     stack: `Stack ${member.name}`,
-                    backgroundColor: hexToRGB(member.color, 0.7),
+                    backgroundColor: hexToRGB(member.color, 0.5),
                     data: [],
                 };
 
@@ -523,15 +525,19 @@
                     star2DataSet.data.push(!!star2 ? star2.timeTaken - star1.timeTaken : 0);
                 }
 
-                // Workaround for bug with "logarithmic" axes: https://github.com/chartjs/Chart.js/issues/4934
-                star1DataSet.data = star1DataSet.data.map(x => Math.log10(x));
-                star2DataSet.data = star2DataSet.data.map(x => Math.log10(x));
+                // Over 240 minutes? Then just nullify the data, we assume folks didn't try.
+                for (var i = 0; i < star1DataSet.data.length; i++) {
+                    if (star1DataSet.data[i] + star2DataSet.data[i] > 240) {
+                        star1DataSet.data[i] = null;
+                        star2DataSet.data[i] = null;
+                    }
+                }
 
                 datasets.push(star1DataSet);
                 datasets.push(star2DataSet);
             }
 
-            let element = this.createGraphCanvas();
+            let element = this.createGraphCanvas("From the top players, show the number of minutes taken each day. (Exclude results over 4 hours.)");
             this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
@@ -551,7 +557,7 @@
                     },
                     title: {
                         display: true,
-                        text: `Log10(minutes taken per star) of top ${n} players`,
+                        text: `Minutes taken per star - top ${n} players`,
                         fontSize: 24,
                         fontStyle: "normal",
                         fontColor: aocColors["main"],
@@ -580,7 +586,7 @@
                             },
                             scaleLabel: {
                                 display: true,
-                                labelString: "minutes taken per star (log scale)",
+                                labelString: "minutes taken per star",
                                 fontColor: aocColors["main"],
                             },
                             gridLines: {
@@ -599,7 +605,7 @@
             let datasets = data.members.sort((a,b) => a.name.localeCompare(b.name)).map(m => {
                 return {
                     label: m.name,
-                    cubicInterpolationMode: "monotone",
+                    lineTension: 0.2,
                     fill: false,
                     borderWidth: 1.5,
                     borderColor: m.color,
@@ -613,7 +619,7 @@
                 };
             });
 
-            let element = this.createGraphCanvas();
+            let element = this.createGraphCanvas("Points over time per member. If folks do stars 'out of order' the line may be jumpy.");
             this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
@@ -687,7 +693,7 @@
             let datasets = data.members.map(m => {
                 return {
                     label: m.name,
-                    cubicInterpolationMode: "monotone",
+                    lineTension: 0.2,
                     fill: false,
                     borderWidth: 1.5,
                     borderColor: m.color,
@@ -701,7 +707,7 @@
                 }
             });
 
-            let element = this.createGraphCanvas();
+            let element = this.createGraphCanvas("Number of stars over time per member. If someone does stars 'out of order' the line might be jumpy.");
             this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
