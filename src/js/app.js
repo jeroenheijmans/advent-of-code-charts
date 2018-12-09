@@ -341,7 +341,7 @@
             cacheBustLink.style.padding = "2px 8px";
             cacheBustLink.style.border = `1px solid ${aocColors.secondary}`;
             cacheBustLink.addEventListener("click", () => clearCache());
-            
+
             const responsiveToggleLink = this.controls.appendChild(document.createElement("a"));
             responsiveToggleLink.innerText = (isResponsivenessToggled() ? "✅" : "❌") + " Responsive Mode > 1800px";
             responsiveToggleLink.title = "Trigger side-by-side graphs if the viewport is wider than 1800px";
@@ -352,7 +352,7 @@
             responsiveToggleLink.style.border = `1px solid ${aocColors.secondary}`;
             responsiveToggleLink.style.marginLeft = "8px";
             responsiveToggleLink.addEventListener("click", () => toggleResponsiveness());
-            
+
             return data;
         }
 
@@ -480,7 +480,7 @@
                 },
                 options: {
                     responsive: true,
-                    
+
                     chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
                     legend: {
                         position: "right",
@@ -587,7 +587,7 @@
                 },
                 options: {
                     responsive: true,
-                    
+
                     chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
                     legend: {
                         position: "right",
@@ -670,7 +670,7 @@
                 },
                 options: {
                     responsive: true,
-                    
+
                     chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
                     legend: {
                         position: "right",
@@ -760,7 +760,7 @@
                 },
                 options: {
                     responsive: true,
-                    
+
                     chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
                     legend: {
                         position: "right",
