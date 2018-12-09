@@ -212,21 +212,16 @@
             chart.getDatasetMeta(li.datasetIndex).hidden = null;
             
             // count how many hidden datasets are there
-            let hiddenCnt = chart.data.datasets
-                .map(function(_dataSet, dataSetIndex) {
-                    return chart.getDatasetMeta(dataSetIndex);
-                }).filter(function(meta) {
-                    return meta.hidden;
-                }).length;
+            let hiddenCount = chart.data.datasets
+                .map((_, dataSetIndex) => chart.getDatasetMeta(dataSetIndex))
+                .filter(meta => meta.hidden)
+                .length;
 
             // deciding to invert items 'hidden' state depending 
             // if they are already mostly hidden
-            let hide = true;
-            if (hiddenCnt >= (chart.data.datasets.length - 1) * 0.5) {
-                hide = null;
-            }
+            let hide = (hiddenCount >= (chart.data.datasets.length - 1) * 0.5) ? null : true;
 
-            chart.data.datasets.forEach(function(_dataSet, dataSetIndex) {
+            chart.data.datasets.forEach((_, dataSetIndex) => {
                 if (dataSetIndex === li.datasetIndex) {
                     return;
                 }
