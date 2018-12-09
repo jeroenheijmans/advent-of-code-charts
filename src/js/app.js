@@ -195,6 +195,15 @@
         localStorage.setItem(getCacheKey(), null);
     }
 
+    function toggleResponsiveness() {
+        localStorage.setItem("aoc-flag-v1-is-responsive", !isResponsivenessToggled());
+        location.reload();
+    }
+
+    function isResponsivenessToggled() {
+        return !!JSON.parse(localStorage.getItem("aoc-flag-v1-is-responsive"));
+    }
+
     let prevClick;
     function isDoubleClick() {
         let now = new Date();
@@ -310,14 +319,26 @@
         }
 
         loadCacheBustingButton(data) {
-            const a = this.controls.appendChild(document.createElement("a"));
-            a.innerText = "Clear Charting Cache";
-            a.style.cursor = "pointer";
-            a.style.background = aocColors.tertiary;
-            a.style.display = "inline-block";
-            a.style.padding = "2px 8px";
-            a.style.border = `1px solid ${aocColors.secondary}`;
-            a.addEventListener("click", () => clearCache());
+            const cacheBustLink = this.controls.appendChild(document.createElement("a"));
+            cacheBustLink.innerText = "🔄 Clear Charting Cache";
+            cacheBustLink.style.cursor = "pointer";
+            cacheBustLink.style.background = aocColors.tertiary;
+            cacheBustLink.style.display = "inline-block";
+            cacheBustLink.style.padding = "2px 8px";
+            cacheBustLink.style.border = `1px solid ${aocColors.secondary}`;
+            cacheBustLink.addEventListener("click", () => clearCache());
+            
+            const responsiveToggleLink = this.controls.appendChild(document.createElement("a"));
+            responsiveToggleLink.innerText = (isResponsivenessToggled() ? "✅" : "❌") + " Responsive Mode > 1800px";
+            responsiveToggleLink.title = "Trigger side-by-side graphs if the viewport is wider than 1800px";
+            responsiveToggleLink.style.cursor = "pointer";
+            responsiveToggleLink.style.background = aocColors.tertiary;
+            responsiveToggleLink.style.display = "inline-block";
+            responsiveToggleLink.style.padding = "2px 8px";
+            responsiveToggleLink.style.border = `1px solid ${aocColors.secondary}`;
+            responsiveToggleLink.style.marginLeft = "8px";
+            responsiveToggleLink.addEventListener("click", () => toggleResponsiveness());
+            
             return data;
         }
 
@@ -409,9 +430,11 @@
             return data;
         }
 
-        createGraphCanvas(title = "") {
-            var element = document.createElement("canvas");
-            element.style.maxWidth = window.matchMedia("(max-width: 1560px)").matches ? "100%" : "50%";
+        createGraphCanvas(data, title = "") {
+            var element = document.createElement("canvas");console.warn(data.members.length);
+            if (isResponsivenessToggled()) {
+                element.style.maxWidth = window.matchMedia("(min-width: 1800px)").matches ? "50%" : "100%";
+            }
             element.title = title;
             return element;
         }
@@ -433,7 +456,7 @@
                 };
             });
 
-            let element = this.createGraphCanvas("Log10 function of the time taken for each user to get the stars");
+            let element = this.createGraphCanvas(data, "Log10 function of the time taken for each user to get the stars");
             this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
@@ -537,7 +560,7 @@
                 datasets.push(star2DataSet);
             }
 
-            let element = this.createGraphCanvas("From the top players, show the number of minutes taken each day. (Exclude results over 4 hours.)");
+            let element = this.createGraphCanvas(data, "From the top players, show the number of minutes taken each day. (Exclude results over 4 hours.)");
             this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
@@ -619,7 +642,7 @@
                 };
             });
 
-            let element = this.createGraphCanvas("Points over time per member. If folks do stars 'out of order' the line may be jumpy.");
+            let element = this.createGraphCanvas(data, "Points over time per member. If folks do stars 'out of order' the line may be jumpy.");
             this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
@@ -707,7 +730,7 @@
                 }
             });
 
-            let element = this.createGraphCanvas("Number of stars over time per member. If someone does stars 'out of order' the line might be jumpy.");
+            let element = this.createGraphCanvas(data, "Number of stars over time per member. If someone does stars 'out of order' the line might be jumpy.");
             this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
