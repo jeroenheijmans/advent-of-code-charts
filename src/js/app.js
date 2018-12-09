@@ -19,6 +19,13 @@
         "tertiary": "rgba(100, 100, 100, 0.5)",
     };
 
+    const graphColorStyles = [
+        "rainbow alphabetic",
+        "rainbow score",
+        "mono alphabetic",
+        "mono score"
+    ];
+
     const podiumLength = 3;
 
     function range(from, to) {
@@ -218,6 +225,16 @@
         return !!JSON.parse(localStorage.getItem("aoc-flag-v1-is-responsive"));
     }
 
+    function getCurrentGraphColorStyle() {
+        return localStorage.getItem("aoc-flag-v1-color-style");
+    }
+
+    function toggleCurrentGraphColorStyle() {
+        let cur = graphColorStyles.indexOf(getCurrentGraphColorStyle());
+        localStorage.setItem("aoc-flag-v1-color-style", graphColorStyles[(cur + 1) % graphColorStyles.length]);
+        location.reload();
+    }
+
     let prevClick;
     function isDoubleClick() {
         let now = new Date();
@@ -323,6 +340,9 @@
             this.graphs.style.flexWrap = "wrap";
             this.graphs.style.flexDirection = "row";
 
+            if (!getCurrentGraphColorStyle())
+                toggleCurrentGraphColorStyle();
+
             getLeaderboardJson()
                 .then(data => this.loadCacheBustingButton(data))
                 .then(data => this.loadMedalOverview(data))
@@ -352,6 +372,17 @@
             responsiveToggleLink.style.border = `1px solid ${aocColors.secondary}`;
             responsiveToggleLink.style.marginLeft = "8px";
             responsiveToggleLink.addEventListener("click", () => toggleResponsiveness());
+
+            const colorToggleLink = this.controls.appendChild(document.createElement("a"));
+            colorToggleLink.innerText = `🎨 Color style: ${getCurrentGraphColorStyle()}`;
+            colorToggleLink.title = "Cycle through different graph color styles";
+            colorToggleLink.style.cursor = "pointer";
+            colorToggleLink.style.background = aocColors.tertiary;
+            colorToggleLink.style.display = "inline-block";
+            colorToggleLink.style.padding = "2px 8px";
+            colorToggleLink.style.border = `1px solid ${aocColors.secondary}`;
+            colorToggleLink.style.marginLeft = "8px";
+            colorToggleLink.addEventListener("click", () => toggleCurrentGraphColorStyle());
 
             return data;
         }
