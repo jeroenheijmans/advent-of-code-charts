@@ -1,4 +1,18 @@
 (function(aoc) {
+    // Based on https://stackoverflow.com/a/38493678/419956 by @user6586783
+    Chart.pluginService.register({
+        beforeDraw: function (chart, easing) {
+            if (chart.config.options.chartArea && chart.config.options.chartArea.backgroundColor) {
+                var ctx = chart.chart.ctx;
+                var chartArea = chart.chartArea;
+                ctx.save();
+                ctx.fillStyle = chart.config.options.chartArea.backgroundColor;
+                ctx.fillRect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
+                ctx.restore();
+            }
+        }
+    });
+
     const aocColors = {
         "main": "rgba(200, 200, 200, 0.9)",
         "secondary": "rgba(150, 150, 150, 0.9)",
@@ -431,7 +445,7 @@
         }
 
         createGraphCanvas(data, title = "") {
-            var element = document.createElement("canvas");console.warn(data.members.length);
+            var element = document.createElement("canvas");
             if (isResponsivenessToggled()) {
                 element.style.maxWidth = window.matchMedia("(min-width: 1800px)").matches ? "50%" : "100%";
             }
@@ -466,6 +480,8 @@
                 },
                 options: {
                     responsive: true,
+                    
+                    chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
                     legend: {
                         position: "right",
                         labels: {
@@ -571,6 +587,8 @@
                 },
                 options: {
                     responsive: true,
+                    
+                    chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
                     legend: {
                         position: "right",
                         labels: {
@@ -652,6 +670,8 @@
                 },
                 options: {
                     responsive: true,
+                    
+                    chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
                     legend: {
                         position: "right",
                         labels: {
@@ -740,6 +760,8 @@
                 },
                 options: {
                     responsive: true,
+                    
+                    chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
                     legend: {
                         position: "right",
                         labels: {
