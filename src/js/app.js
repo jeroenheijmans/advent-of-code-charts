@@ -38,6 +38,15 @@
         return [...Array(n).keys()].map(i => basePalette[Math.floor(i * step, 0)]);
     }
 
+    function adjustPoinstFor(year, dayKey, starKey, basePoints) {
+        // https://github.com/jeroenheijmans/advent-of-code-charts/issues/18
+        if (year === 2018 && dayKey === "6") {
+            return 0;
+        }
+
+        return basePoints;
+    }
+
     function transformRawAocJson(json) {
         let stars = [];
         let year = parseInt(json.event);
@@ -102,10 +111,9 @@
 
         let orderedStars = stars.sort(starSorter);
 
-        let rawDataSets = {};
-
         for (let star of orderedStars) {
-            star.points = availablePoints[star.dayKey][star.starKey]--;
+            const basePoints = availablePoints[star.dayKey][star.starKey]--;
+            star.points = adjustPoinstFor(year, star.dayKey, star.starKey, basePoints);
         }
 
         for (let m of members) {
@@ -145,7 +153,7 @@
             year: year
         };
     }
-    
+
     function getPodiumFor(member) {
         let medals = [];
         for (let p = 0; p < podiumLength; p++) {
@@ -204,20 +212,20 @@
     function legendOnClick(e, li) {
         // always do default click behavior
         Chart.defaults.global.legend.onClick.apply(this, [e, li]);
-        
+
         if (isDoubleClick()) {
             let chart = this.chart;
 
             // always show doubleclicked item
             chart.getDatasetMeta(li.datasetIndex).hidden = null;
-            
+
             // count how many hidden datasets are there
             let hiddenCount = chart.data.datasets
                 .map((_, dataSetIndex) => chart.getDatasetMeta(dataSetIndex))
                 .filter(meta => meta.hidden)
                 .length;
 
-            // deciding to invert items 'hidden' state depending 
+            // deciding to invert items 'hidden' state depending
             // if they are already mostly hidden
             let hide = (hiddenCount >= (chart.data.datasets.length - 1) * 0.5) ? null : true;
 
@@ -250,11 +258,11 @@
             let anchor = document.querySelector("#api_info a");
             if (!!anchor) {
                 let url = anchor.href;
-                
+
                 const cache = getCache();
 
                 console.info("Found cache", cache);
-                
+
                 if (cache) {
                     const ttl = new Date(cache.timestamp + (5 * 60 * 1000));
                     console.info("Found cached value valid until", ttl);
@@ -265,10 +273,10 @@
                         return Promise.resolve(cache.data)
                             .then(json => transformRawAocJson(json));
                     }
-                } 
-                
+                }
+
                 console.info(`Loading data from url ${url}`);
-                
+
                 return fetch(url, { credentials: "same-origin" })
                     .then(data => data.json())
                     .then(json => updateCache(json))
