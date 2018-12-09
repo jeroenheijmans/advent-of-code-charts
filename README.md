@@ -1,6 +1,6 @@
 # Advent of Code Charts
 
-This is a small hacked-up set of charts for a private leaderboard for [Advent of Code](https://adventofcode.com/).
+This is an [unofficial](#license-and-affiliation-disclaimer) small hacked-up set of charts for a private leaderboard for [Advent of Code](https://adventofcode.com/).
 Get it as an extension:
 
 [![browser-store-chrome.png](browser-store-chrome.png)](https://chrome.google.com/webstore/detail/advent-of-code-charts/ipbomkmbokofodhhjpipflmdplipblbe) [![browser-store-firefox.png](browser-store-firefox.png)](https://addons.mozilla.org/en-US/firefox/addon/advent-of-code-charts/)
@@ -12,19 +12,28 @@ Instead it's something fun I wanted to make, stepping out of my *normal* way of 
 
 ## Developing
 
-Install global dependencies:
+Install dependencies:
 
 ```sh
-npm install --global serve livereload
+npm ci # or npm install
 ```
 
-Then run both `serve src/.` and `livereload src/.` and open up `http://localhost:5000`. You should see a test website with the dummy data.
+Serve a test website with the dummy data:
+
+```sh
+npm run start # runs 'serve' and 'watch' in parallel
+```
+
+And open up `http://localhost:5000`.
 
 ## Building
 
-If you insist on making a build testable as a Chrome extension, run the `build.ps1` (at your own risk!) or create a bash equivalent.
+Run `build.ps1` or `build.sh` to re-create a `/build` folder which is a ready-to-go browser extension.
+Test the extension by loading it in the browser.
+For full reference, see Chrome's or Firefox's full documentation, but the basics are:
 
-Then follow Chrome's instructions on adding a developer mode extension, straight from the `build/` folder.
+- Firefox: go to `about:debugging` and load a temporary addon (pick the `/build/manifest.json` file)
+- Chrome: go to `chrome://extensions` and load unpacked extension (pick the `/build` folder)
 
 Test by browsing to a private leaderboard and you should see charts popping up at the bottom.
 
