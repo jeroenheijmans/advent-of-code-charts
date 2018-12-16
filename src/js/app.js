@@ -446,7 +446,6 @@
                         span.style.borderRadius = "2px";
                         span.style.border = "1px solid #333";
                         span.style.backgroundColor = medalColor(secondPuzzlePodiumPlace);
-                        span.style.opacity = 1.0;
                         
                         let memberStar1 = member.stars.find(s => s.dayNr === d && s.starNr === 1);
                         let memberStar2 = member.stars.find(s => s.dayNr === d && s.starNr === 2);
@@ -457,9 +456,10 @@
 
                         if (secondPuzzlePodiumPlace >= 0 && secondPuzzlePodiumPlace < podiumLength) {
                             medalCount++;
+                            div.style.opacity = 0.5 + (0.5 * ((podiumLength - secondPuzzlePodiumPlace) / podiumLength));
                         } else {
                             span.innerText = secondPuzzlePodiumPlace >= 0 ? secondPuzzlePodiumPlace : '\u2003';
-                            span.style.opacity = 0.2;
+                            span.style.opacity = 0.25;
                         }
                     }
                 }
