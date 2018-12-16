@@ -151,11 +151,14 @@
 
             for (let i = 0; i < days[d].podium.length; i++) {
                 days[d].podium[i].awardedPodiumPlace = i;
+                days[d].podiumFirstPuzzle[i].awardedPodiumPlaceFirstPuzzle = i;
+                
             }
         }
 
         for (let m of members) {
             m.podiumPlacesPerDay = getPodiumFor(m);
+            m.podiumPlacesPerDayFirstPuzzle = getPodiumForFirstPuzzle(m);
         }
 
         return{
@@ -176,9 +179,26 @@
         return medals;
     }
 
+    function getPodiumForFirstPuzzle(member) {
+        let medals = [];
+        for (let p = 0; p < podiumLength; p++) {
+            medals.push(member.stars.filter(s => s.awardedPodiumPlaceFirstPuzzle === p).length);
+        }
+        return medals;
+    }
+
     function memberByPodiumSorter(a, b) {
         let aMedals = getPodiumFor(a);
         let bMedals = getPodiumFor(b);
+
+        for (let i = 0; i < aMedals.length; i++) {
+            if (aMedals[i] !== bMedals[i]) {
+                return bMedals[i] - aMedals[i];
+            }
+        }
+        
+        aMedals = getPodiumForFirstPuzzle(a);
+        bMedals = getPodiumForFirstPuzzle(b);
 
         for (let i = 0; i < aMedals.length; i++) {
             if (aMedals[i] !== bMedals[i]) {
@@ -357,8 +377,8 @@
         }
 
         loadMedalOverview(data) {
-            const medalHtml = n => n === 0 ? "🥇" : n === 1 ? "🥈" : n === 2 ? "🥉" : `(${n})`;
-            const medalColor = n => n === 0 ? "gold" : n === 1 ? "silver" : n === 2 ? "#945210" : "#0f0f23";
+            const medalHtml = n => n === 0 ? "🥇" : n === 1 ? "🥈" : n === 2 ? "🥉" : `${n}`;
+            const medalColor = n => n === 0 ? "gold" : n === 1 ? "silver" : n === 2 ? "#945210" : "rgba(15, 15, 35, 1.0)";
 
             this.medals.title = "For each day, the top 3 to get the second star are shown. Behind each medal you can get a glimpse of the podium for the *first* star.";
             let titleElement = this.medals.appendChild(document.createElement("h3"));
@@ -391,7 +411,7 @@
 
             for (let member of grid.sort(memberByPodiumSorter)) {
                 let tr = document.createElement("tr");
-                let medalCount = new Array(podiumLength).fill(0);
+                let medalCount = 0;
 
                 let td = tr.appendChild(document.createElement("td"));
                 td.innerText = member.name;
@@ -401,24 +421,45 @@
                 for (let d = 1; d <= 25; d++) {
                     let td = tr.appendChild(document.createElement("td"));
                     td.style.border = "1px solid #333";
-                    td.style.padding = "5px 5px 3px 3px";
-                    td.style.minWidth = "22px";
+                    td.style.padding = "3px 4px";
+                    td.style.textAlign = "center";
+                    
+                    let div = td.appendChild(document.createElement("div"));
+                    div.style.padding = "2px";
+                    div.style.minWidth = "24px";
+                    div.style.minHeight = "24px";
 
                     if (d <= data.maxDay) {
-                        for (let n = 0; n < podiumLength; n++) {
-                            if (n < data.days[d].podium.length && data.days[d].podium[n].memberId === member.id) {
-                                let span = td.appendChild(document.createElement("span"));
-                                span.innerText = medalHtml(n);
-                                span.style.display = "block";
-                                span.style.borderRadius = "2px";
-                                span.style.border = "1px solid #333";
-                                span.style.boxShadow = `2px -2px 0 0 ${medalColor(data.days[d].podiumFirstPuzzle.findIndex(n => n.memberId === member.id))}`;
-                                span.style.backgroundColor = medalColor(n);
-                                span.style.opacity = 1.0 - (0.5 / (podiumLength - n));
-                                span.title = data.days[d].podium[n].getStarTimestamp;
+                        let secondPuzzlePodiumPlace = data.days[d].podium.findIndex(n => n.memberId === member.id);
+                        let firstPuzzlePodiumPlace = data.days[d].podiumFirstPuzzle.findIndex(n => n.memberId === member.id);
 
-                                medalCount[n]++;
-                            }
+                        if (firstPuzzlePodiumPlace >= 0 && firstPuzzlePodiumPlace < podiumLength) {
+                            div.style.boxShadow = `inset 2px 2px 0 0 ${medalColor(firstPuzzlePodiumPlace)}, inset -2px -2px 0 0 ${medalColor(firstPuzzlePodiumPlace)}`;
+
+                            medalCount++;
+                        }
+                        
+                        let span = div.appendChild(document.createElement("span"));
+                        span.innerText = medalHtml(secondPuzzlePodiumPlace);
+                        span.style.display = "block";
+                        span.style.padding = "1px";
+                        span.style.borderRadius = "2px";
+                        span.style.border = "1px solid #333";
+                        span.style.backgroundColor = medalColor(secondPuzzlePodiumPlace);
+                        span.style.opacity = 1.0;
+                        
+                        let memberStar1 = member.stars.find(s => s.dayNr === d && s.starNr === 1);
+                        let memberStar2 = member.stars.find(s => s.dayNr === d && s.starNr === 2);
+
+                        td.title = (memberStar1 ? memberStar1.getStarMoment.format("HH:mm:ss (YYYY-MM-DD)") : "star 1 not done yet")
+                            + "\n"
+                            + (memberStar2 ? memberStar2.getStarMoment.format("HH:mm:ss (YYYY-MM-DD)") : "star 2 not done yet");
+
+                        if (secondPuzzlePodiumPlace >= 0 && secondPuzzlePodiumPlace < podiumLength) {
+                            medalCount++;
+                        } else {
+                            span.innerText = secondPuzzlePodiumPlace >= 0 ? secondPuzzlePodiumPlace : '\u2003';
+                            span.style.opacity = 0.2;
                         }
                     }
                 }
@@ -434,7 +475,7 @@
                     td.align = "center";
                 }
 
-                if (medalCount.reduce((a,b) => a+b, 0) > 0) {
+                if (medalCount > 0) {
                     gridElement.appendChild(tr);
                 }
             }
