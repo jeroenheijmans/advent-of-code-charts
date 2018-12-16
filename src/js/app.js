@@ -458,7 +458,7 @@
                             medalCount++;
                             div.style.opacity = 0.5 + (0.5 * ((podiumLength - secondPuzzlePodiumPlace) / podiumLength));
                         } else {
-                            span.innerText = secondPuzzlePodiumPlace >= 0 ? secondPuzzlePodiumPlace : '\u2003';
+                            span.innerText = secondPuzzlePodiumPlace >= 0 ? (secondPuzzlePodiumPlace + 1) : '\u2003';
                             span.style.opacity = 0.25;
                         }
                     }
