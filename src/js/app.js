@@ -608,7 +608,9 @@
                 // Over 240 minutes? Then just nullify the data, we assume folks didn't try.
                 for (var i = 0; i < star1DataSet.data.length; i++) {
                     if (star1DataSet.data[i] + star2DataSet.data[i] > 240) {
-                        star1DataSet.data[i] = null;
+			if (star1DataSet.data[i] > 240) {
+                            star1DataSet.data[i] = null;
+			}
                         star2DataSet.data[i] = null;
                     }
                 }
