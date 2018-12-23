@@ -165,7 +165,7 @@
             for (let i = 0; i < days[d].podium.length; i++) {
                 days[d].podium[i].awardedPodiumPlace = i;
                 days[d].podiumFirstPuzzle[i].awardedPodiumPlaceFirstPuzzle = i;
-                
+
             }
         }
 
@@ -220,7 +220,7 @@
                 return bMedals[i] - aMedals[i];
             }
         }
-        
+
         aMedals = getPodiumForFirstPuzzle(a);
         bMedals = getPodiumForFirstPuzzle(b);
 
@@ -471,7 +471,7 @@
                     td.style.border = "1px solid #333";
                     td.style.padding = "3px 4px";
                     td.style.textAlign = "center";
-                    
+
                     let div = td.appendChild(document.createElement("div"));
                     div.style.padding = "2px";
                     div.style.minWidth = "24px";
@@ -486,7 +486,7 @@
 
                             medalCount++;
                         }
-                        
+
                         let span = div.appendChild(document.createElement("span"));
                         span.innerText = medalHtml(secondPuzzlePodiumPlace);
                         span.style.display = "block";
@@ -494,7 +494,7 @@
                         span.style.borderRadius = "2px";
                         span.style.border = "1px solid #333";
                         span.style.backgroundColor = medalColor(secondPuzzlePodiumPlace);
-                        
+
                         let memberStar1 = member.stars.find(s => s.dayNr === d && s.starNr === 1);
                         let memberStar2 = member.stars.find(s => s.dayNr === d && s.starNr === 2);
 
@@ -656,9 +656,9 @@
                 // Over 240 minutes? Then just nullify the data, we assume folks didn't try.
                 for (var i = 0; i < star1DataSet.data.length; i++) {
                     if (star1DataSet.data[i] + star2DataSet.data[i] > 240) {
-			if (star1DataSet.data[i] > 240) {
+                        if (star1DataSet.data[i] > 240) {
                             star1DataSet.data[i] = null;
-			}
+                        }
                         star2DataSet.data[i] = null;
                     }
                 }
