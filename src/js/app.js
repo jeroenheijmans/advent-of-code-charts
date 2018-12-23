@@ -391,7 +391,7 @@
 
         loadCacheBustingButton(data) {
             const cacheBustLink = this.controls.appendChild(document.createElement("a"));
-            cacheBustLink.innerText = "🔄 Clear Charting Cache";
+            cacheBustLink.innerText = "🔄 Clear Charts Cache";
             cacheBustLink.style.cursor = "pointer";
             cacheBustLink.style.background = aocColors.tertiary;
             cacheBustLink.style.display = "inline-block";
@@ -400,7 +400,7 @@
             cacheBustLink.addEventListener("click", () => clearCache());
 
             const responsiveToggleLink = this.controls.appendChild(document.createElement("a"));
-            responsiveToggleLink.innerText = (isResponsivenessToggled() ? "✅" : "❌") + " Responsive Mode > 1800px";
+            responsiveToggleLink.innerText = (isResponsivenessToggled() ? "✅" : "❌") + " Responsive > 1800px";
             responsiveToggleLink.title = "Trigger side-by-side graphs if the viewport is wider than 1800px";
             responsiveToggleLink.style.cursor = "pointer";
             responsiveToggleLink.style.background = aocColors.tertiary;
@@ -411,7 +411,7 @@
             responsiveToggleLink.addEventListener("click", () => toggleResponsiveness());
 
             const colorToggleLink = this.controls.appendChild(document.createElement("a"));
-            colorToggleLink.innerText = `🎨 Color style: ${getCurrentGraphColorStyle()}`;
+            colorToggleLink.innerText = `🎨 Palette: ${getCurrentGraphColorStyle()}`;
             colorToggleLink.title = "Cycle through different graph color styles";
             colorToggleLink.style.cursor = "pointer";
             colorToggleLink.style.background = aocColors.tertiary;
