@@ -33,17 +33,13 @@
         return [...Array(to - from).keys()].map(k => k + from);
     }
 
-    function hexToRGB(hex, alpha) {
-        // By @AJFarkas, from https://stackoverflow.com/a/28056903/419956
-
-        var r = parseInt(hex.slice(1, 3), 16),
-            g = parseInt(hex.slice(3, 5), 16),
-            b = parseInt(hex.slice(5, 7), 16);
-
-        if (alpha) {
-            return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
+    function colorWithOpacity(color, alpha) {
+        if (color.includes("#")) {
+            return Chart.helpers.color(color).alpha(alpha).rgbString();
+        } else if (color.includes("hsl")){
+            return `${color.slice(0, -1)}, ${alpha})`;
         } else {
-            return "rgb(" + r + ", " + g + ", " + b + ")";
+            return color;
         }
     }
 
@@ -641,7 +637,7 @@
                 let star2DataSet = {
                     label: `${member.name} (★★)`,
                     stack: `Stack ${member.name}`,
-                    backgroundColor: hexToRGB(member.color, 0.5),
+                    backgroundColor: colorWithOpacity(member.color, 0.5),
                     data: [],
                 };
 
