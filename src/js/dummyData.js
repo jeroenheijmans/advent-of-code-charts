@@ -537,10 +537,10 @@
                 "completion_day_level": {
                     "1": {
                         "1": {
-                            "get_star_ts": "1543648276"
+                            "get_star_ts": "1543640423"
                         },
                         "2": {
-                            "get_star_ts": "1543666700"
+                            "get_star_ts": "1543640520"
                         }
                     },
                     "2": {
