@@ -494,9 +494,9 @@
                         let memberStar1 = member.stars.find(s => s.dayNr === d && s.starNr === 1);
                         let memberStar2 = member.stars.find(s => s.dayNr === d && s.starNr === 2);
 
-                        td.title = (memberStar1 ? memberStar1.getStarMoment.format("HH:mm:ss (YYYY-MM-DD)") : "star 1 not done yet")
+                        td.title = (memberStar1 ? memberStar1.getStarMoment.local().format("HH:mm:ss YYYY-MM-DD") + " (local time)" : "Star 1 not done yet")
                             + "\n"
-                            + (memberStar2 ? memberStar2.getStarMoment.format("HH:mm:ss (YYYY-MM-DD)") : "star 2 not done yet");
+                            + (memberStar2 ? memberStar2.getStarMoment.local().format("HH:mm:ss YYYY-MM-DD") + " (local time)" : "Star 2 not done yet");
 
                         if (secondPuzzlePodiumPlace >= 0 && secondPuzzlePodiumPlace < podiumLength) {
                             medalCount++;
