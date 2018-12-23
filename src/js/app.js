@@ -19,6 +19,13 @@
         "tertiary": "rgba(100, 100, 100, 0.5)",
     };
 
+    const graphColorStyles = [
+        "rainbow alphabetic",
+        "rainbow score",
+        "fire alphabetic",
+        "fire score"
+    ];
+
     const podiumLength = 3;
 
     function range(from, to) {
@@ -45,11 +52,13 @@
         return a.getStarMoment.utc().diff(b.getStarMoment.utc());
     }
 
-    function getPalette(n) {
-        // Including google/palette seems hard because there is no CDN so we just use this trick:
-        const basePalette = ["#781c81", "#6e1980", "#65187f", "#5e187e", "#58197e", "#531b7f", "#4f1d81", "#4c2182", "#492484", "#462987", "#442d8a", "#43328d", "#423791", "#413d94", "#404298", "#3f489c", "#3f4ea0", "#3f53a5", "#3f59a9", "#3f5fad", "#4064b1", "#4069b5", "#416fb8", "#4274bb", "#4379be", "#447dc0", "#4582c1", "#4686c2", "#488ac2", "#4a8ec1", "#4b92c0", "#4d95be", "#4f99bb", "#519cb8", "#549fb4", "#56a2b0", "#58a4ac", "#5ba7a7", "#5ea9a2", "#60ab9d", "#63ad98", "#66af93", "#69b18e", "#6cb289", "#70b484", "#73b580", "#77b67b", "#7ab877", "#7eb973", "#82ba6f", "#85ba6b", "#89bb68", "#8dbc65", "#91bd61", "#95bd5e", "#99bd5c", "#9dbe59", "#a1be56", "#a5be54", "#a9be52", "#adbe50", "#b1be4e", "#b5bd4c", "#b9bd4a", "#bcbc48", "#c0bb47", "#c3ba45", "#c7b944", "#cab843", "#cdb641", "#d0b540", "#d3b33f", "#d6b13e", "#d8ae3d", "#dbab3c", "#dda93b", "#dfa53a", "#e0a239", "#e29e38", "#e39a37", "#e49636", "#e59235", "#e68d34", "#e78833", "#e78332", "#e77d31", "#e77730", "#e7712f", "#e66b2d", "#e6642c", "#e55e2b", "#e4572a", "#e35029", "#e24928", "#e14226", "#df3b25", "#de3424", "#dc2e22", "#db2721", "#d92120"];
-        let step = basePalette.length / n;
-        return [...Array(n).keys()].map(i => basePalette[Math.floor(i * step, 0)]);
+    function getPalette(n, rainbow) {
+        if (rainbow)
+            // Dynamic rainbow palette using hsl()
+            return [...Array(n).keys()].map(i => "hsl(" + i*300/n + ", 100%, 50%)");
+
+        // Dynamic fire palette red->yellow->green using hsl()
+        return [...Array(n).keys()].map(i => "hsl(" + i*120/n + ", 100%, 50%)")
     }
 
     function adjustPoinstFor(year, dayKey, starKey, basePoints) {
@@ -108,9 +117,6 @@
             .filter(m => m.stars.length > 0)
             .sort((a, b) => a.name.localeCompare(b.name));
 
-        let colors = getPalette(members.length);
-        members.forEach((m, idx) => m.color = colors[idx]);
-
         let allMoments = stars.map(s => s.getStarMoment).concat([moment("" + year + "-12-25T00:00:00-0000")]);
         let maxMoment = moment.min([moment.max(allMoments), moment("" + year + "-12-31T00:00:00-0000")]);
 
@@ -160,6 +166,16 @@
             m.podiumPlacesPerDay = getPodiumFor(m);
             m.podiumPlacesPerDayFirstPuzzle = getPodiumForFirstPuzzle(m);
         }
+
+        let curGraphColorStyle = getCurrentGraphColorStyle();
+        let isRainbow = curGraphColorStyle.includes("rainbow");
+        let orderByScore = curGraphColorStyle.includes("score");
+        let colors = getPalette(members.length, isRainbow);
+
+        if (orderByScore)
+            members.sort((a, b) => b.score-a.score).forEach((m, idx) => m.color = colors[idx]);
+        else
+            members.forEach((m, idx) => m.color = colors[idx]);
 
         return{
             maxDay: maxDay,
@@ -236,6 +252,16 @@
 
     function isResponsivenessToggled() {
         return !!JSON.parse(localStorage.getItem("aoc-flag-v1-is-responsive"));
+    }
+
+    function getCurrentGraphColorStyle() {
+        return localStorage.getItem("aoc-flag-v1-color-style");
+    }
+
+    function toggleCurrentGraphColorStyle() {
+        let cur = graphColorStyles.indexOf(getCurrentGraphColorStyle());
+        localStorage.setItem("aoc-flag-v1-color-style", graphColorStyles[(cur + 1) % graphColorStyles.length]);
+        location.reload();
     }
 
     let prevClick;
@@ -343,6 +369,9 @@
             this.graphs.style.flexWrap = "wrap";
             this.graphs.style.flexDirection = "row";
 
+            if (!getCurrentGraphColorStyle())
+                toggleCurrentGraphColorStyle();
+
             getLeaderboardJson()
                 .then(data => this.loadCacheBustingButton(data))
                 .then(data => this.loadMedalOverview(data))
@@ -361,7 +390,7 @@
             cacheBustLink.style.padding = "2px 8px";
             cacheBustLink.style.border = `1px solid ${aocColors.secondary}`;
             cacheBustLink.addEventListener("click", () => clearCache());
-            
+
             const responsiveToggleLink = this.controls.appendChild(document.createElement("a"));
             responsiveToggleLink.innerText = (isResponsivenessToggled() ? "✅" : "❌") + " Responsive Mode > 1800px";
             responsiveToggleLink.title = "Trigger side-by-side graphs if the viewport is wider than 1800px";
@@ -372,7 +401,18 @@
             responsiveToggleLink.style.border = `1px solid ${aocColors.secondary}`;
             responsiveToggleLink.style.marginLeft = "8px";
             responsiveToggleLink.addEventListener("click", () => toggleResponsiveness());
-            
+
+            const colorToggleLink = this.controls.appendChild(document.createElement("a"));
+            colorToggleLink.innerText = `🎨 Color style: ${getCurrentGraphColorStyle()}`;
+            colorToggleLink.title = "Cycle through different graph color styles";
+            colorToggleLink.style.cursor = "pointer";
+            colorToggleLink.style.background = aocColors.tertiary;
+            colorToggleLink.style.display = "inline-block";
+            colorToggleLink.style.padding = "2px 8px";
+            colorToggleLink.style.border = `1px solid ${aocColors.secondary}`;
+            colorToggleLink.style.marginLeft = "8px";
+            colorToggleLink.addEventListener("click", () => toggleCurrentGraphColorStyle());
+
             return data;
         }
 
@@ -521,7 +561,7 @@
                 },
                 options: {
                     responsive: true,
-                    
+
                     chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
                     legend: {
                         position: "right",
@@ -628,7 +668,7 @@
                 },
                 options: {
                     responsive: true,
-                    
+
                     chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
                     legend: {
                         position: "right",
@@ -711,7 +751,7 @@
                 },
                 options: {
                     responsive: true,
-                    
+
                     chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
                     legend: {
                         position: "right",
@@ -801,7 +841,7 @@
                 },
                 options: {
                     responsive: true,
-                    
+
                     chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
                     legend: {
                         position: "right",
