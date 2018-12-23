@@ -20,11 +20,11 @@
     };
 
     const graphColorStyles = [
-        "original",
-        "rainbow alphabetic",
-        "rainbow score",
-        "fire alphabetic",
-        "fire score"
+        "Original (1)",
+        "Rainbow Alphabetic (2)",
+        "Rainbow Score (3)",
+        "Fire Alphabetic (4)",
+        "Fire Score (5)"
     ];
 
     const podiumLength = 3;
@@ -174,8 +174,8 @@
             m.podiumPlacesPerDayFirstPuzzle = getPodiumForFirstPuzzle(m);
         }
 
-        let curGraphColorStyle = getCurrentGraphColorStyle();
-        let isOriginal = curGraphColorStyle === "original";
+        let curGraphColorStyle = (getCurrentGraphColorStyle() || "").toLowerCase();
+        let isOriginal = curGraphColorStyle.includes("original");
         let isRainbow = curGraphColorStyle.includes("rainbow");
         let orderByScore = curGraphColorStyle.includes("score");
         let colors = getPalette(members.length, isRainbow, isOriginal);
