@@ -77,6 +77,7 @@
         let stars = [];
         let year = parseInt(json.event);
 
+        let n_members = Object.keys(json.members).length;
         let members = Object.keys(json.members)
             .map(k => json.members[k])
             .map(m => {
@@ -128,7 +129,7 @@
         for (let i = 1; i <= 25; i++) {
             availablePoints[i] = {};
             for (let j = 1; j <= 2; j++) {
-                availablePoints[i][j] = members.length;
+                availablePoints[i][j] = n_members;
             }
         }
 
