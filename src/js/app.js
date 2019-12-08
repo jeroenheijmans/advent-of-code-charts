@@ -789,13 +789,13 @@
                         xAxes: [{
                             type: "time",
                             time: {
-                                min: moment([data.year,10,30,5,0,0]),
-                                max: data.maxMoment,
                                 unit: "day",
                                 stepSize: 1,
                                 displayFormats: { day: "D" },
                             },
                             ticks: {
+                                min: moment([data.year,10,30,5,0,0]),
+                                max: data.maxMoment,
                                 fontColor: aocColors["main"],
                             },
                             scaleLabel: {
@@ -885,13 +885,13 @@
                         xAxes: [{
                             type: "time",
                             time: {
-                                min: moment([data.year,10,30,5,0,0]),
-                                max: data.maxMoment,
                                 unit: "day",
                                 stepSize: 1,
                                 displayFormats: { day: "D" },
                             },
                             ticks: {
+                                min: moment([data.year,10,30,5,0,0]),
+                                max: data.maxMoment,
                                 fontColor: aocColors["main"],
                             },
                             scaleLabel: {
