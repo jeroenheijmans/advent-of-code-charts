@@ -858,7 +858,13 @@
                 },
                 options: {
                     responsive: true,
-
+                    tooltips: {
+                        callbacks: {
+                            label: (item, _) => {
+                                return `${item.label}: received ${item.value}th star for this year`;
+                            },
+                        },
+                    },
                     chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
                     legend: {
                         position: "right",
@@ -869,7 +875,7 @@
                     },
                     title: {
                         display: true,
-                        text: "Leaderboard (stars)",
+                        text: "Leaderboard (stars) - possibly earned out-of-order",
                         fontSize: 24,
                         fontStyle: "normal",
                         fontColor: aocColors["main"],
