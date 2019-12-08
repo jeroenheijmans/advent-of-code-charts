@@ -550,7 +550,7 @@
                     data: m.stars.map(s => {
                         return {
                             x: s.dayNr + s.starNr / 2 - 1,
-                            y: Math.log10(s.timeTaken)
+                            y: s.timeTaken
                         };
                     })
                 };
@@ -566,7 +566,16 @@
                 },
                 options: {
                     responsive: true,
-
+                    tooltips: {
+                        callbacks: {
+                            label: (item, _) => {
+                                const day = Math.floor(Number(item.label) + 0.5);
+                                const star = Number(item.label) < day ? 1 : 2;
+                                const mins = item.value;
+                                return `Day ${day} star ${star} took ${mins} minutes to complete`;
+                            },
+                        },
+                    },
                     chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
                     legend: {
                         position: "right",
@@ -602,6 +611,7 @@
                             },
                         }],
                         yAxes: [{
+                            type: "logarithmic",
                             ticks: {
                                 fontColor: aocColors["main"],
                             },
