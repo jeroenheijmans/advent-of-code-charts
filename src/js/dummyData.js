@@ -67,62 +67,7 @@
             "100002": {
                 "local_score": 388,
                 "completion_day_level": {
-                    "1": {
-                        "1": {
-                            "get_star_ts": "1543640555"
-                        },
-                        "2": {
-                            "get_star_ts": "1543640887"
-                        }
-                    },
-                    "2": {
-                        "1": {
-                            "get_star_ts": "1543727077"
-                        },
-                        "2": {
-                            "get_star_ts": "1543727637"
-                        }
-                    },
-                    "3": {
-                        "1": {
-                            "get_star_ts": "1543813857"
-                        },
-                        "2": {
-                            "get_star_ts": "1543814093"
-                        }
-                    },
-                    "4": {
-                        "1": {
-                            "get_star_ts": "1543924754"
-                        },
-                        "2": {
-                            "get_star_ts": "1543925088"
-                        }
-                    },
-                    "5": {
-                        "1": {
-                            "get_star_ts": "1544008923"
-                        },
-                        "2": {
-                            "get_star_ts": "1544009404"
-                        }
-                    },
-                    "6": {
-                        "1": {
-                            "get_star_ts": "1544098417"
-                        },
-                        "2": {
-                            "get_star_ts": "1544098754"
-                        }
-                    },
-                    "7": {
-                        "1": {
-                            "get_star_ts": "1544178683"
-                        },
-                        "2": {
-                            "get_star_ts": "1544180362"
-                        }
-                    }
+                    // Explicitly "not competing" this year, but on the leaderboard
                 },
                 "global_score": 0,
                 "last_star_ts": "1544180362",
