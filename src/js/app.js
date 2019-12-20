@@ -769,8 +769,8 @@
                     responsive: true,
                     tooltips: {
                         callbacks: {
-                            afterLabel: (item, _) => {
-                                var star = _.datasets[item.datasetIndex].data[item.index].star;
+                            afterLabel: (item, data) => {
+                                const star = data.datasets[item.datasetIndex].data[item.index].star;
                                 return `(completed day ${star.dayNr} star ${star.starNr})`;
                             },
                         },
@@ -867,8 +867,8 @@
                     responsive: true,
                     tooltips: {
                         callbacks: {
-                            afterLabel: (item, _) => {
-                                var star = _.datasets[item.datasetIndex].data[item.index].star;
+                            afterLabel: (item, data) => {
+                                const star = data.datasets[item.datasetIndex].data[item.index].star;
                                 return `(day ${star.dayNr} star ${star.starNr})`;
                             },
                         },
