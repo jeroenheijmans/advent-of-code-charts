@@ -70,6 +70,10 @@
             return 0;
         }
 
+        if (year === 2020 && dayKey === "1") {
+            return 0;
+        }
+
         return basePoints;
     }
 
