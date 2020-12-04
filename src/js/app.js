@@ -370,6 +370,7 @@
 
             this.wrapper = document.body.appendChild(document.createElement("div"));
             this.controls = this.wrapper.appendChild(document.createElement("div"));
+            this.per_day = this.wrapper.appendChild(document.createElement("div"));
             this.medals = this.wrapper.appendChild(document.createElement("div"));
             this.graphs = this.wrapper.appendChild(document.createElement("div"));
             this.graphs.style.display = "flex";
@@ -381,6 +382,7 @@
 
             getLeaderboardJson()
                 .then(data => this.loadCacheBustingButton(data))
+                .then(data => this.loadPerDayLeaderBoard(data))
                 .then(data => this.loadMedalOverview(data))
                 .then(data => this.loadPointsOverTime(data))
                 .then(data => this.loadStarsOverTime(data))
@@ -419,6 +421,185 @@
             colorToggleLink.style.border = `1px solid ${aocColors.secondary}`;
             colorToggleLink.style.marginLeft = "8px";
             colorToggleLink.addEventListener("click", () => toggleCurrentGraphColorStyle());
+
+            return data;
+        }
+
+        loadPerDayLeaderBoard(data) {
+            this.per_day.title = "Per Day leaderboard";
+            let titleElement = this.per_day.appendChild(document.createElement("p"));
+            titleElement.innerText = "Points Per Day: ";
+            titleElement.style.fontFamily = "Source Code Pro, monospace";
+            titleElement.style.fontWeight = "normal";
+
+            for (let d = 1; d <= data.maxDay; ++d) {
+                let a = titleElement.appendChild(document.createElement("a"));
+                a.innerText = " " + d.toString();
+                if (d == data.maxDay) {
+                    a.style.color = "#ffffff";
+                    a.style.textShadow = "0 0 5px #ffffff";
+                }
+            }
+
+            let gridElement = document.createElement("table");
+            gridElement.style.borderCollapse = "collapse";
+            gridElement.style.fontSize = "16px";
+
+            let grid = data.members;
+            let count = 0;
+            let starCmp = function(aStar, bStar) {
+                if (!aStar && !bStar) {
+                    return 0;
+                }
+                if (!aStar) {
+                    return 1;
+                }
+                if (!bStar) {
+                    return -1;
+                }
+                return aStar.getStarMoment.utc().diff(bStar.getStarMoment.utc());
+            }
+
+            grid.sort(function(a, b) {
+                let aStar = a.stars.find(s => s.dayNr === data.maxDay && s.starNr === 2);
+                let bStar = b.stars.find(s => s.dayNr === data.maxDay && s.starNr === 2);
+
+                let aStar1 = a.stars.find(s => s.dayNr === data.maxDay && s.starNr === 1);
+                let bStar1 = b.stars.find(s => s.dayNr === data.maxDay && s.starNr === 1);
+                
+                let r2 = starCmp(aStar, bStar);
+                return r2 != 0 ?  r2 : starCmp(aStar1, bStar1);
+            });
+
+            {
+                let tr = gridElement.appendChild(document.createElement("tr"));
+                let td = tr.appendChild(document.createElement("td"))
+
+                td = tr.appendChild(document.createElement("th"));
+                td.innerText = "--- Part 1 ---";
+                td.style.padding = "2px 8px";   
+                td.align = "center"; 
+                td.style.color = "#9999cc";
+                td.colSpan = 2;
+
+                td = tr.appendChild(document.createElement("th"));
+                td.innerText = "--- Part 2 ---";
+                td.style.padding = "2px 8px";
+                td.style.color = "#ffff66";
+                td.align = "center"; 
+                td.colSpan = 2;
+
+                td = tr.appendChild(document.createElement("td"));
+                td = tr.appendChild(document.createElement("td"));
+            }
+            {
+                let tr = gridElement.appendChild(document.createElement("tr"));
+                let td = tr.appendChild(document.createElement("td"));
+
+                td = tr.appendChild(document.createElement("td"));
+                td.innerText = "Time";
+                td.style.padding = "2px 8px";   
+                td.align = "center"; 
+                td.style.color = "#9999cc";
+
+                td = tr.appendChild(document.createElement("td"));
+                td.innerText = "Points";
+                td.style.padding = "2px 8px";   
+                td.align = "center"; 
+                td.style.color = "#9999cc";
+
+                td = tr.appendChild(document.createElement("td"));
+                td.innerText = "Time";
+                td.style.padding = "2px 8px";   
+                td.align = "center"; 
+                td.style.color = "#ffff66";
+
+                td = tr.appendChild(document.createElement("td"));
+                td.innerText = "Points";
+                td.style.padding = "2px 8px";   
+                td.align = "center"; 
+                td.style.color = "#ffff66";
+
+                td = tr.appendChild(document.createElement("td"));
+                td.innerText = "Total";
+                td.style.padding = "2px 8px";   
+                td.align = "center"; 
+
+                td = tr.appendChild(document.createElement("td"));
+            }
+
+
+            for (let member of grid) {
+                let d = data.maxDay;
+                let memberStar1 = member.stars.find(s => s.dayNr === d && s.starNr === 1);
+                let memberStar2 = member.stars.find(s => s.dayNr === d && s.starNr === 2);
+
+                // if (!memberStar1) {
+                //     continue;
+                // }
+
+                count += 1;
+                let tr = gridElement.appendChild(document.createElement("tr"));
+
+                {
+                    let td = tr.appendChild(document.createElement("td"))
+                    td.innerText = count.toString() + ")";
+                    td.style.border = "1px solid #333";
+                    td.style.padding = "2px 8px";    
+
+
+                    // let td = tr.appendChild(document.createElement("td"))
+                    // td.innerText = (memberStar1 ? memberStar1.getStarMoment.format("YYYY-MM-DD") : "")
+                    // td.style.border = "1px solid #333";
+                    // td.style.padding = "2px 8px";    
+
+                    td = tr.appendChild(document.createElement("td"))
+                    td.innerText = (memberStar1 ? memberStar1.getStarMoment.utcOffset("-0500").format("HH:mm:ss") : "")
+                    td.style.border = "1px solid #333";
+                    td.style.padding = "2px 8px";   
+
+                    td = tr.appendChild(document.createElement("td"))
+                    td.innerText = (memberStar1 ? memberStar1.points : "")
+                    td.style.border = "1px solid #333";
+                    td.style.padding = "2px 8px";   
+
+                    // td = tr.appendChild(document.createElement("td"))
+                    // td.innerText = (memberStar2 ? memberStar2.getStarMoment.format("YYYY-MM-DD") : "");
+                    // td.style.border = "1px solid #333";
+                    // td.style.padding = "2px 8px";    
+
+                    td = tr.appendChild(document.createElement("td"))
+                    td.innerText = (memberStar2 ? memberStar2.getStarMoment.utcOffset("-0500").format("HH:mm:ss") : "");
+                    td.style.border = "1px solid #333";
+                    td.style.padding = "2px 8px";    
+
+                    td = tr.appendChild(document.createElement("td"))
+                    td.innerText = (memberStar2 ? memberStar2.points : "");
+                    td.style.border = "1px solid #333";
+                    td.style.padding = "2px 8px";   
+
+                    let totalScore = 0;
+                    if (memberStar1) {
+                        totalScore += memberStar1.points;
+                    }
+                    if (memberStar2) {
+                        totalScore += memberStar2.points;
+                    }
+                    td = tr.appendChild(document.createElement("td"))
+                    td.innerText = totalScore;
+                    td.style.border = "1px solid #333";
+                    td.style.padding = "2px 8px";                       
+                }
+                {
+                    let td = tr.appendChild(document.createElement("td"));
+                    td.innerText = member.name;
+                    // td.innerText = "(user #" + member.id.toString() + ")";
+                    td.style.border = "1px solid #333";
+                    td.style.padding = "2px 8px";    
+                }
+            }
+
+            this.per_day.appendChild(gridElement);
 
             return data;
         }
