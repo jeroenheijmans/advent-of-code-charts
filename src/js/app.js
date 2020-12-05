@@ -44,8 +44,6 @@
     }
 
     function starSorter(a, b) {
-        if (a.dayNr !== b.dayNr) { return a.dayNr - b.dayNr; }
-        if (a.starNr !== b.starNr) { return a.starNr - b.starNr; }
         return a.getStarMoment.utc().diff(b.getStarMoment.utc());
     }
 
@@ -757,12 +755,13 @@
                         return {
                             x: s.getStarMoment,
                             y: s.nrOfPointsAfterThisOne,
+                            star: s
                         }
                     })
                 };
             });
 
-            let element = this.createGraphCanvas(data, "Points over time per member. If folks do stars 'out of order' the line may be jumpy.");
+            let element = this.createGraphCanvas(data, "Points over time per member.");
             this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
@@ -772,7 +771,14 @@
                 },
                 options: {
                     responsive: true,
-
+                    tooltips: {
+                        callbacks: {
+                            afterLabel: (item, data) => {
+                                const star = data.datasets[item.datasetIndex].data[item.index].star;
+                                return `(completed day ${star.dayNr} star ${star.starNr})`;
+                            },
+                        },
+                    },
                     chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
                     legend: {
                         position: "right",
@@ -846,13 +852,14 @@
                     data: m.stars.map(s => {
                         return {
                             x: s.getStarMoment,
-                            y: s.nrOfStarsAfterThisOne
+                            y: s.nrOfStarsAfterThisOne,
+                            star: s
                         };
                     }),
                 }
             });
 
-            let element = this.createGraphCanvas(data, "Number of stars over time per member. If someone does stars 'out of order' the line might be jumpy.");
+            let element = this.createGraphCanvas(data, "Number of stars over time per member.");
             this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
@@ -864,8 +871,9 @@
                     responsive: true,
                     tooltips: {
                         callbacks: {
-                            label: (item, _) => {
-                                return `${item.label}: received ${item.value}th star for this year`;
+                            afterLabel: (item, data) => {
+                                const star = data.datasets[item.datasetIndex].data[item.index].star;
+                                return `(day ${star.dayNr} star ${star.starNr})`;
                             },
                         },
                     },
@@ -879,7 +887,7 @@
                     },
                     title: {
                         display: true,
-                        text: "Leaderboard (stars) - possibly earned out-of-order",
+                        text: "Leaderboard (stars)",
                         fontSize: 24,
                         fontStyle: "normal",
                         fontColor: aocColors["main"],
