@@ -284,6 +284,16 @@
         return value;
     }
 
+    function setTimeTableSort(sort) {
+        localStorage.setItem("aoc-flag-v1-delta-sort", sort);
+        location.reload();
+    }
+
+    function getTimeTableSort() {
+        let value = localStorage.getItem("aoc-flag-v1-delta-sort") || "delta";
+        return value;
+    }
+
     let prevClick;
     function isDoubleClick() {
         let now = new Date();
@@ -482,15 +492,37 @@
                 anchorPerDay[d] = a;
             }
 
+            let span = titleElement.appendChild(document.createElement("span"));
+            span.innerText = " (";
+            
+            let btn1 = titleElement.appendChild(document.createElement("a"));
+            btn1.style.cursor = "pointer";
+            btn1.innerText = "delta";
+            btn1.addEventListener("click", () => setTimeTableSort("delta"));
+            
+            span = titleElement.appendChild(document.createElement("span"));
+            span.innerText = " / ";
+
+            let btn2 = titleElement.appendChild(document.createElement("a"));
+            btn2.style.cursor = "pointer";
+            btn2.innerText = "completion";
+            btn2.addEventListener("click", () => setTimeTableSort("completion"));
+
+            let activeBtn = getTimeTableSort() === "completion" ? btn2 : btn1;
+            activeBtn.style.color = "#ffffff";
+            activeBtn.style.textShadow = "0 0 5px #ffffff";
+            activeBtn.innerText += " ⬇";
+
+            span = titleElement.appendChild(document.createElement("span"));
+            span.innerText = ")";
+            
             function generateTable(displayDay) {
                 let gridElement = document.createElement("table");
                 tablePerDay[displayDay] = gridElement;
                 gridElement.style.borderCollapse = "collapse";
                 gridElement.style.fontSize = "16px";
 
-                let grid = data.members;
-                grid.sort(function (a, b) {
-                    // TODO: Sort by delta time!
+                function sortByDeltaTime(a, b) {
                     let a1 = a.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
                     let a2 = a.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
                     let b1 = b.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
@@ -502,7 +534,16 @@
                     const bTime = b2.timeTakenSeconds - b1.timeTakenSeconds;
                     if (aTime === bTime) return 0;
                     return aTime > bTime ? 1 : -1;
-                });
+                }
+
+                function sortByCompletion(a, b) {
+                    let aPoints = a.stars.filter(s => s.dayNr == displayDay).reduce((acc, v) => acc + v.points, 0);
+                    let bPoints = b.stars.filter(s => s.dayNr == displayDay).reduce((acc, v) => acc + v.points, 0);
+                    return bPoints - aPoints;
+                }
+
+                let grid = data.members;
+                grid.sort(getTimeTableSort() === "completion" ? sortByCompletion : sortByDeltaTime);
 
                 function createHeaderCell(text, color = "inherit") {
                     const td = document.createElement("td");
@@ -533,11 +574,11 @@
                     td = tr.appendChild(createHeaderCell("Time", "#9999cc"));
                     td = tr.appendChild(createHeaderCell("Rank", "#9999cc"));
                     td = tr.appendChild(createHeaderCell("Points", "#9999cc"));
-                    td = tr.appendChild(createHeaderCell("Time", "#ffff66"));
+                    td = tr.appendChild(createHeaderCell("Time" + (getTimeTableSort() === "completion" ? " ⬇" : ""), "#ffff66"));
                     td = tr.appendChild(createHeaderCell("Rank", "#ffff66"));
                     td = tr.appendChild(createHeaderCell("Points", "#ffff66"));
                     td = tr.appendChild(createHeaderCell("Points"));
-                    td = tr.appendChild(createHeaderCell("Delta Time ⬇"));
+                    td = tr.appendChild(createHeaderCell("Delta Time" + (getTimeTableSort() === "delta" ? " ⬇" : "")));
                     td.title = "Time difference between Part 2 and Part 1";
                     td.style.color = "#ffffff";
                     td.style.textShadow = "0 0 5px #ffffff";
