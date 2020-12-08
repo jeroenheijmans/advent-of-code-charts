@@ -277,7 +277,6 @@
 
     function setDisplayDay(dayNumber) {
         localStorage.setItem("aoc-flag-v1-display-day", dayNumber);
-        location.reload();
     }
 
     function getDisplayDay() {
@@ -467,117 +466,143 @@
             // taking the min to avoid going out of bounds for current year
             displayDay = displayDay ? Math.min(parseInt(displayDay), data.maxDay) : data.maxDay;
 
+            let tablePerDay = {}, anchorPerDay = {};
+
             for (let d = 1; d <= data.maxDay; ++d) {
                 let a = titleElement.appendChild(document.createElement("a"));
                 a.innerText = " " + d.toString();
-                a.addEventListener("click", () => setDisplayDay(d));
+                a.addEventListener("click", () => {
+                    setDisplayDay(d);
+                    setVisible(d);
+                });
                 a.style.cursor = "pointer";
-                if (d == displayDay) {
-                    a.style.color = "#ffffff";
-                    a.style.textShadow = "0 0 5px #ffffff";
-                }
+                anchorPerDay[d] = a;
             }
 
-            let gridElement = document.createElement("table");
-            gridElement.style.borderCollapse = "collapse";
-            gridElement.style.fontSize = "16px";
+            function generateTable(displayDay) {
+                let gridElement = document.createElement("table");
+                tablePerDay[displayDay] = gridElement;
+                gridElement.style.borderCollapse = "collapse";
+                gridElement.style.fontSize = "16px";
 
-            let grid = data.members;
-            grid.sort(function (a, b) {
-                let aPoints = a.stars.filter(s => s.dayNr == displayDay).reduce((acc, v) => acc + v.points, 0);
-                let bPoints = b.stars.filter(s => s.dayNr == displayDay).reduce((acc, v) => acc + v.points, 0);
-                return bPoints - aPoints;
-            });
+                let grid = data.members;
+                grid.sort(function (a, b) {
+                    let aPoints = a.stars.filter(s => s.dayNr == displayDay).reduce((acc, v) => acc + v.points, 0);
+                    let bPoints = b.stars.filter(s => s.dayNr == displayDay).reduce((acc, v) => acc + v.points, 0);
+                    return bPoints - aPoints;
+                });
 
-            function createHeaderCell(text, color = "inherit") {
-                const td = document.createElement("td");
-                td.innerText = text;
-                td.style.padding = "4px 8px";
-                td.style.color = color;
-                td.style.textAlign = "center";
-                return td;
-            }
-
-            {
-                // first row header
-                let tr = gridElement.appendChild(document.createElement("tr"));
-                let th = tr.appendChild(document.createElement("th"))
-
-                th = tr.appendChild(createHeaderCell("----- Part 1 -----", "#9999cc"));
-                th.colSpan = 3;
-                th = tr.appendChild(createHeaderCell("----- Part 2 -----", "#ffff66"));
-                th.colSpan = 3;
-                th = tr.appendChild(createHeaderCell("----- Day -----"));
-                th.colSpan = 2;
-            }
-            {
-                // second row header
-                let tr = gridElement.appendChild(document.createElement("tr"));
-                let td = tr.appendChild(document.createElement("td"));
-
-                td = tr.appendChild(createHeaderCell("Time", "#9999cc"));
-                td = tr.appendChild(createHeaderCell("Rank", "#9999cc"));
-                td = tr.appendChild(createHeaderCell("Points", "#9999cc"));
-                td = tr.appendChild(createHeaderCell("Time", "#ffff66"));
-                td = tr.appendChild(createHeaderCell("Rank", "#ffff66"));
-                td = tr.appendChild(createHeaderCell("Points", "#ffff66"));
-                td = tr.appendChild(createHeaderCell("Points"));
-                td = tr.appendChild(createHeaderCell("Delta Time"));
-                td.title = "Time difference between Part 2 and Part 1";
-
-                // last column without name
-                td = tr.appendChild(document.createElement("td"));
-            }
-
-            function createCell(text) {
-                const td = document.createElement("td");
-                td.innerText = text;
-                td.style.border = "1px solid #333";
-                td.style.padding = "8px";
-                td.style.textAlign = "center";
-                return td;
-            }
-
-            let rank = 0;
-            for (let member of grid) {
-                let memberStar1 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
-                let memberStar2 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
-
-                // skip users that didn't solve any problem today
-                if (!memberStar1 && !memberStar2) {
-                    continue;
+                function createHeaderCell(text, color = "inherit") {
+                    const td = document.createElement("td");
+                    td.innerText = text;
+                    td.style.padding = "4px 8px";
+                    td.style.color = color;
+                    td.style.textAlign = "center";
+                    return td;
                 }
 
-                rank += 1;
+                {
+                    // first row header
+                    let tr = gridElement.appendChild(document.createElement("tr"));
+                    let th = tr.appendChild(document.createElement("th"))
 
-                let tr = gridElement.appendChild(document.createElement("tr"));
-                let td = tr.appendChild(createCell(rank.toString() + ")"))
-
-                td = tr.appendChild(createCell((memberStar1 ? formatTimeTaken(memberStar1.timeTakenSeconds) : "")))
-                td.title = memberStar1 ? formatStarMomentForTitle(memberStar1) : "Star 1 not done yet";
-
-                td = tr.appendChild(createCell((memberStar1 ? memberStar1.rank : "")))
-                td = tr.appendChild(createCell((memberStar1 ? memberStar1.points : "")))
-                td = tr.appendChild(createCell((memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds) : "")))
-                td.title = memberStar2 ? formatStarMomentForTitle(memberStar2) : "Star 2 not done yet";
-
-                td = tr.appendChild(createCell((memberStar2 ? memberStar2.rank : "")))
-                td = tr.appendChild(createCell((memberStar2 ? memberStar2.points : "")))
-
-                let totalScore = 0;
-                if (memberStar1) {
-                    totalScore += memberStar1.points;
+                    th = tr.appendChild(createHeaderCell("----- Part 1 -----", "#9999cc"));
+                    th.colSpan = 3;
+                    th = tr.appendChild(createHeaderCell("----- Part 2 -----", "#ffff66"));
+                    th.colSpan = 3;
+                    th = tr.appendChild(createHeaderCell("----- Day -----"));
+                    th.colSpan = 2;
                 }
-                if (memberStar2) {
-                    totalScore += memberStar2.points;
+                {
+                    // second row header
+                    let tr = gridElement.appendChild(document.createElement("tr"));
+                    let td = tr.appendChild(document.createElement("td"));
+
+                    td = tr.appendChild(createHeaderCell("Time", "#9999cc"));
+                    td = tr.appendChild(createHeaderCell("Rank", "#9999cc"));
+                    td = tr.appendChild(createHeaderCell("Points", "#9999cc"));
+                    td = tr.appendChild(createHeaderCell("Time", "#ffff66"));
+                    td = tr.appendChild(createHeaderCell("Rank", "#ffff66"));
+                    td = tr.appendChild(createHeaderCell("Points", "#ffff66"));
+                    td = tr.appendChild(createHeaderCell("Points"));
+                    td = tr.appendChild(createHeaderCell("Delta Time"));
+                    td.title = "Time difference between Part 2 and Part 1";
+
+                    // last column without name
+                    td = tr.appendChild(document.createElement("td"));
                 }
 
-                td = tr.appendChild(createCell(totalScore ? totalScore : ""))
-                td = tr.appendChild(createCell(memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds) : ""));
-                td = tr.appendChild(createCell(member.name))
+                function createCell(text) {
+                    const td = document.createElement("td");
+                    td.innerText = text;
+                    td.style.border = "1px solid #333";
+                    td.style.padding = "8px";
+                    td.style.textAlign = "center";
+                    return td;
+                }
+
+                let rank = 0;
+                for (let member of grid) {
+                    let memberStar1 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
+                    let memberStar2 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
+
+                    // skip users that didn't solve any problem today
+                    if (!memberStar1 && !memberStar2) {
+                        continue;
+                    }
+
+                    rank += 1;
+
+                    let tr = gridElement.appendChild(document.createElement("tr"));
+                    let td = tr.appendChild(createCell(rank.toString() + ")"))
+
+                    td = tr.appendChild(createCell((memberStar1 ? formatTimeTaken(memberStar1.timeTakenSeconds) : "")))
+                    td.title = memberStar1 ? formatStarMomentForTitle(memberStar1) : "Star 1 not done yet";
+
+                    td = tr.appendChild(createCell((memberStar1 ? memberStar1.rank : "")))
+                    td = tr.appendChild(createCell((memberStar1 ? memberStar1.points : "")))
+                    td = tr.appendChild(createCell((memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds) : "")))
+                    td.title = memberStar2 ? formatStarMomentForTitle(memberStar2) : "Star 2 not done yet";
+
+                    td = tr.appendChild(createCell((memberStar2 ? memberStar2.rank : "")))
+                    td = tr.appendChild(createCell((memberStar2 ? memberStar2.points : "")))
+
+                    let totalScore = 0;
+                    if (memberStar1) {
+                        totalScore += memberStar1.points;
+                    }
+                    if (memberStar2) {
+                        totalScore += memberStar2.points;
+                    }
+
+                    td = tr.appendChild(createCell(totalScore ? totalScore : ""))
+                    td = tr.appendChild(createCell(memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds) : ""));
+                    td = tr.appendChild(createCell(member.name))
+                }
+
+                return gridElement;
             }
 
-            this.perDayLeaderBoard.appendChild(gridElement);
+            function setVisible(day) {
+                for (const t in tablePerDay) {
+                    tablePerDay[t].style.display = "none";
+                }
+                tablePerDay[day].style.display = "table";
+                
+                for (const a in anchorPerDay) {
+                    anchorPerDay[a].style.color = "";
+                    anchorPerDay[a].style.textShadow = "";
+                }
+                anchorPerDay[day].style.color = "#ffffff";
+                anchorPerDay[day].style.textShadow = "0 0 5px #ffffff";
+            }
+
+            for (let i=1; i <= data.maxDay; i++) {
+                this.perDayLeaderBoard.appendChild(generateTable(i));
+            }
+
+            setVisible(displayDay);
+
             return data;
         }
 
