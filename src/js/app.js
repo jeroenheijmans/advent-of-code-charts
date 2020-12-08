@@ -550,12 +550,22 @@
                     const td = document.createElement("td");
                     td.innerText = text;
                     td.style.border = "1px solid #333";
-                    td.style.padding = "8px";
+                    td.style.padding = "6px";
                     td.style.textAlign = "center";
                     return td;
                 }
 
+                const maxSecondsForSparkline = 4 /* hours */ * 3600;
                 let rank = 0;
+                let maxDeltaTime = Math.max.apply(Math, grid
+                    .map(m => {
+                        let memberStar1 = m.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
+                        let memberStar2 = m.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
+                        const delta = memberStar2 ? memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds : null;
+                        return delta > maxSecondsForSparkline ? null : delta;
+                    }))
+                ;
+
                 for (let member of grid) {
                     let memberStar1 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
                     let memberStar2 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
@@ -593,6 +603,20 @@
                     td = tr.appendChild(createCell(memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds) : ""));
                     td.style.color = "#ffffff";
                     td.style.textShadow = "0 0 5px #ffffff";
+
+                    if (memberStar2 && maxDeltaTime) {
+                        const delta = memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds;
+                        const fraction = Math.min(100, delta / maxDeltaTime * 100);
+                        const sparkline = td.appendChild(document.createElement("div"));
+                        sparkline.style.height = "2px";
+                        sparkline.style.marginTop = "4px";
+                        sparkline.style.marginBottom = "1px";
+                        sparkline.style.width = `${fraction}%`;
+                        sparkline.style.backgroundColor = "#ffffff";
+                        sparkline.style.boxShadow = "1px 1px 5px rgba(255, 255, 255, 0.5), -1px -1px 5px rgba(255, 255, 255, 0.5)";
+                        sparkline.style.opacity = delta > maxDeltaTime ? "0.15" : "0.75";
+                        sparkline.title = "Spark line showing relative 'delta time' values (up to a maximum delta time)";
+                    }
 
                     td = tr.appendChild(createCell(member.name))
                 }
