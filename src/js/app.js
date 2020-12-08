@@ -102,7 +102,7 @@
                             getStarTimestamp: m.completion_day_level[dayKey][starKey].get_star_ts,
                             getStarMoment: starMoment,
                             timeTaken: null, // adding this later on, which is easier :D
-                            timeTakenSeconds: null,
+                            timeTakenSeconds: null, // adding this later on as well
                         };
 
                         stars.push(star);
@@ -332,6 +332,18 @@
         }
     }
 
+    function formatTimeTaken(seconds) {
+        if (seconds > 24 * 3600) {
+            return ">24h"
+        }
+        return moment().startOf('day').seconds(seconds).format('HH:mm:ss')
+    }
+
+    function formatStarMomentForTitle(memberStar) {
+        return memberStar.getStarMoment.local().format("HH:mm:ss YYYY-MM-DD") + " (local time)";
+    }
+
+
     function getLeaderboardJson() {
         // 1. Check if dummy data was loaded...
         if (!!aoc.dummyData) {
@@ -384,8 +396,8 @@
 
             this.wrapper = document.body.appendChild(document.createElement("div"));
             this.controls = this.wrapper.appendChild(document.createElement("div"));
-            this.per_day = this.wrapper.appendChild(document.createElement("div"));
             this.medals = this.wrapper.appendChild(document.createElement("div"));
+            this.perDayLeaderBoard = this.wrapper.appendChild(document.createElement("div"));
             this.graphs = this.wrapper.appendChild(document.createElement("div"));
             this.graphs.style.display = "flex";
             this.graphs.style.flexWrap = "wrap";
@@ -396,8 +408,8 @@
 
             getLeaderboardJson()
                 .then(data => this.loadCacheBustingButton(data))
-                .then(data => this.loadPerDayLeaderBoard(data))
                 .then(data => this.loadMedalOverview(data))
+                .then(data => this.loadPerDayLeaderBoard(data))
                 .then(data => this.loadPointsOverTime(data))
                 .then(data => this.loadStarsOverTime(data))
                 .then(data => this.loadDayVsTime(data))
@@ -440,14 +452,15 @@
         }
 
         loadPerDayLeaderBoard(data) {
-            this.per_day.title = "Per Day leaderboard";
-            let titleElement = this.per_day.appendChild(document.createElement("p"));
+            this.perDayLeaderBoard.title = "Per Day LeaderBoard";
+            let titleElement = this.perDayLeaderBoard.appendChild(document.createElement("p"));
             titleElement.innerText = "Per Day: ";
             titleElement.style.fontFamily = "Source Code Pro, monospace";
             titleElement.style.fontWeight = "normal";
 
             let displayDay = getDisplayDay();
-            displayDay = displayDay ? parseInt(displayDay) : data.maxDay;
+            // taking the min to avoid going out of bounds for current year
+            displayDay = displayDay ? Math.min(parseInt(displayDay), data.maxDay) : data.maxDay;
 
             for (let d = 1; d <= data.maxDay; ++d) {
                 let a = titleElement.appendChild(document.createElement("a"));
@@ -466,46 +479,30 @@
 
             let grid = data.members;
             let count = 0;
-            let starCmp = function(aStar, bStar) {
-                if (!aStar && !bStar) {
-                    return 0;
-                }
-                if (!aStar) {
-                    return 1;
-                }
-                if (!bStar) {
-                    return -1;
-                }
-                return aStar.getStarMoment.utc().diff(bStar.getStarMoment.utc());
-            }
-
             grid.sort(function(a, b) {
-                let aStar = a.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
-                let bStar = b.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
-
-                let aStar1 = a.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
-                let bStar1 = b.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
-                
-                let r2 = starCmp(aStar, bStar);
-                return r2 != 0 ?  r2 : starCmp(aStar1, bStar1);
+                let aPoints = a.stars.filter(s => s.dayNr == displayDay).reduce((acc, v) => acc + v.points, 0);
+                let bPoints = b.stars.filter(s => s.dayNr == displayDay).reduce((acc, v) => acc + v.points, 0);
+                return bPoints - aPoints;
             });
 
+            let setCellStyle = function (td) {
+                td.style.padding = "2px 8px";   
+                td.align = "center"; 
+            }
             {
                 let tr = gridElement.appendChild(document.createElement("tr"));
                 let td = tr.appendChild(document.createElement("td"))
 
                 td = tr.appendChild(document.createElement("th"));
+                setCellStyle(td);
                 td.innerText = "----- Part 1 -----";
-                td.style.padding = "2px 8px";   
-                td.align = "center"; 
                 td.style.color = "#9999cc";
                 td.colSpan = 3;
 
                 td = tr.appendChild(document.createElement("th"));
+                setCellStyle(td);
                 td.innerText = "----- Part 2 -----";
-                td.style.padding = "2px 8px";
                 td.style.color = "#ffff66";
-                td.align = "center"; 
                 td.colSpan = 3;
 
                 td = tr.appendChild(document.createElement("td"));
@@ -516,56 +513,51 @@
                 let td = tr.appendChild(document.createElement("td"));
 
                 td = tr.appendChild(document.createElement("td"));
+                setCellStyle(td);
                 td.innerText = "Time";
-                td.style.padding = "2px 8px";   
-                td.align = "center"; 
                 td.style.color = "#9999cc";
 
                 td = tr.appendChild(document.createElement("td"));
+                setCellStyle(td);
                 td.innerText = "Rank";
-                td.style.padding = "2px 8px";   
-                td.align = "center"; 
                 td.style.color = "#9999cc";
 
                 td = tr.appendChild(document.createElement("td"));
+                setCellStyle(td);
                 td.innerText = "Points";
-                td.style.padding = "2px 8px";   
-                td.align = "center"; 
                 td.style.color = "#9999cc";
 
                 td = tr.appendChild(document.createElement("td"));
+                setCellStyle(td);
                 td.innerText = "Time";
-                td.style.padding = "2px 8px";   
-                td.align = "center"; 
                 td.style.color = "#ffff66";
 
                 td = tr.appendChild(document.createElement("td"));
+                setCellStyle(td);
                 td.innerText = "Rank";
-                td.style.padding = "2px 8px";   
-                td.align = "center"; 
                 td.style.color = "#ffff66";
 
                 td = tr.appendChild(document.createElement("td"));
+                setCellStyle(td);
                 td.innerText = "Points";
-                td.style.padding = "2px 8px";   
-                td.align = "center"; 
                 td.style.color = "#ffff66";
 
                 td = tr.appendChild(document.createElement("td"));
+                setCellStyle(td);
                 td.innerText = "Total";
-                td.style.padding = "2px 8px";   
-                td.align = "center"; 
 
+                td = tr.appendChild(document.createElement("td"));
+                setCellStyle(td);
+                td.innerText = "Delta Time";
+                td.title = "Time difference between Part 2 and Part 1"
+
+                // last column without name
                 td = tr.appendChild(document.createElement("td"));
             }
-
 
             for (let member of grid) {
                 let memberStar1 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
                 let memberStar2 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
-                // if (!memberStar1) {
-                //     continue;
-                // }
 
                 count += 1;
                 let tr = gridElement.appendChild(document.createElement("tr"));
@@ -573,59 +565,43 @@
                     let td = tr.appendChild(document.createElement("td"))
                     td.innerText = count.toString() + ")";
                     td.style.border = "1px solid #333";
-                    td.style.padding = "2px 8px";    
-
-
-                    // let td = tr.appendChild(document.createElement("td"))
-                    // td.innerText = (memberStar1 ? memberStar1.getStarMoment.format("YYYY-MM-DD") : "")
-                    // td.style.border = "1px solid #333";
-                    // td.style.padding = "2px 8px";    
-                    
-                    let formatTimeTaken = function (seconds) {
-                        if (seconds > 24 * 3600) {
-                            return ">24h"
-                        }
-                        return moment().startOf('day').seconds(seconds).format('HH:mm:ss')
-                    }
-
-                    
+                    setCellStyle(td);
 
                     td = tr.appendChild(document.createElement("td"))
+                    setCellStyle(td);
                     td.innerText = (memberStar1 ? formatTimeTaken(memberStar1.timeTakenSeconds) : "")
-                    td.title = memberStar1 ? memberStar1.getStarMoment.local().format("HH:MM:SS YYYY-MM-DD") + " (local time)" : "";
+                    td.title = memberStar1 ? 
+                        formatStarMomentForTitle(memberStar1) :
+                        "Star 1 not done yet";
                     td.style.border = "1px solid #333";
-                    td.style.padding = "2px 8px";   
 
                     td = tr.appendChild(document.createElement("td"))
+                    setCellStyle(td);
                     td.innerText = (memberStar1 ? memberStar1.rank : "")
                     td.style.border = "1px solid #333";
-                    td.style.padding = "2px 8px"; 
 
                     td = tr.appendChild(document.createElement("td"))
+                    setCellStyle(td);
                     td.innerText = (memberStar1 ? memberStar1.points : "")
                     td.style.border = "1px solid #333";
-                    td.style.padding = "2px 8px";   
-
-                    // td = tr.appendChild(document.createElement("td"))
-                    // td.innerText = (memberStar2 ? memberStar2.getStarMoment.format("YYYY-MM-DD") : "");
-                    // td.style.border = "1px solid #333";
-                    // td.style.padding = "2px 8px";    
 
                     td = tr.appendChild(document.createElement("td"))
+                    setCellStyle(td);
                     td.innerText = (memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds) : "");
-                    td.title = memberStar2 ? memberStar2.getStarMoment.local().format("HH:MM:SS YYYY-MM-DD") + " (local time)" : "";
+                    td.title = memberStar2 ? 
+                        formatStarMomentForTitle(memberStar2) :
+                        "Star 2 not done yet";
                     td.style.border = "1px solid #333";
-                    td.style.padding = "2px 8px";    
 
                     td = tr.appendChild(document.createElement("td"))
+                    setCellStyle(td);
                     td.innerText = (memberStar2 ? memberStar2.rank : "")
                     td.style.border = "1px solid #333";
-                    td.style.padding = "2px 8px"; 
 
                     td = tr.appendChild(document.createElement("td"))
+                    setCellStyle(td);
                     td.innerText = (memberStar2 ? memberStar2.points : "");
                     td.style.border = "1px solid #333";
-                    td.style.padding = "2px 8px";   
 
                     let totalScore = 0;
                     if (memberStar1) {
@@ -634,21 +610,28 @@
                     if (memberStar2) {
                         totalScore += memberStar2.points;
                     }
+
                     td = tr.appendChild(document.createElement("td"))
-                    td.innerText = totalScore;
+                    setCellStyle(td);
+                    td.innerText = totalScore ? totalScore : "";
                     td.style.border = "1px solid #333";
-                    td.style.padding = "2px 8px";                       
+
 
                     td = tr.appendChild(document.createElement("td"));
-                    td.innerText = member.name;
-                    // td.innerText = "(user #" + member.id.toString() + ")";
+                    setCellStyle(td);
+                    td.innerText = memberStar2 ? 
+                        formatTimeTaken(memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds) : 
+                        "";
                     td.style.border = "1px solid #333";
-                    td.style.padding = "2px 8px";    
+
+                    td = tr.appendChild(document.createElement("td"))
+                    setCellStyle(td);
+                    td.innerText = member.name;
+                    td.style.border = "1px solid #333";
                 }
             }
 
-            this.per_day.appendChild(gridElement);
-
+            this.perDayLeaderBoard.appendChild(gridElement);
             return data;
         }
 
@@ -726,9 +709,9 @@
                         let memberStar1 = member.stars.find(s => s.dayNr === d && s.starNr === 1);
                         let memberStar2 = member.stars.find(s => s.dayNr === d && s.starNr === 2);
 
-                        td.title = (memberStar1 ? memberStar1.getStarMoment.local().format("HH:mm:ss YYYY-MM-DD") + " (local time)" : "Star 1 not done yet")
+                        td.title = (memberStar1 ? formatStarMomentForTitle(memberStar1) : "Star 1 not done yet")
                             + "\n"
-                            + (memberStar2 ? memberStar2.getStarMoment.local().format("HH:mm:ss YYYY-MM-DD") + " (local time)" : "Star 2 not done yet");
+                            + (memberStar2 ? formatStarMomentForTitle(memberStar2) : "Star 2 not done yet");
 
                         if (secondPuzzlePodiumPlace >= 0 && secondPuzzlePodiumPlace < podiumLength) {
                             medalCount++;
