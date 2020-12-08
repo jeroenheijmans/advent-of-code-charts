@@ -487,9 +487,18 @@
 
                 let grid = data.members;
                 grid.sort(function (a, b) {
-                    let aPoints = a.stars.filter(s => s.dayNr == displayDay).reduce((acc, v) => acc + v.points, 0);
-                    let bPoints = b.stars.filter(s => s.dayNr == displayDay).reduce((acc, v) => acc + v.points, 0);
-                    return bPoints - aPoints;
+                    // TODO: Sort by delta time!
+                    let a1 = a.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
+                    let a2 = a.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
+                    let b1 = b.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
+                    let b2 = b.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
+                    if (!a2 && !b2) return 0;
+                    if (!a2) return 1;
+                    if (!b2) return -1;
+                    const aTime = a2.timeTakenSeconds - a1.timeTakenSeconds;
+                    const bTime = b2.timeTakenSeconds - b1.timeTakenSeconds;
+                    if (aTime === bTime) return 0;
+                    return aTime > bTime ? 1 : -1;
                 });
 
                 function createHeaderCell(text, color = "inherit") {
@@ -525,8 +534,10 @@
                     td = tr.appendChild(createHeaderCell("Rank", "#ffff66"));
                     td = tr.appendChild(createHeaderCell("Points", "#ffff66"));
                     td = tr.appendChild(createHeaderCell("Points"));
-                    td = tr.appendChild(createHeaderCell("Delta Time"));
+                    td = tr.appendChild(createHeaderCell("Delta Time ⬇"));
                     td.title = "Time difference between Part 2 and Part 1";
+                    td.style.color = "#ffffff";
+                    td.style.textShadow = "0 0 5px #ffffff";
 
                     // last column without name
                     td = tr.appendChild(document.createElement("td"));
@@ -577,6 +588,9 @@
 
                     td = tr.appendChild(createCell(totalScore ? totalScore : ""))
                     td = tr.appendChild(createCell(memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds) : ""));
+                    td.style.color = "#ffffff";
+                    td.style.textShadow = "0 0 5px #ffffff";
+
                     td = tr.appendChild(createCell(member.name))
                 }
 
