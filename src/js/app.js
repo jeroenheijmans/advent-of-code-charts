@@ -1,4 +1,4 @@
-(function(aoc) {
+(function (aoc) {
     // Based on https://stackoverflow.com/a/38493678/419956 by @user6586783
     Chart.pluginService.register({
         beforeDraw: function (chart, easing) {
@@ -36,7 +36,7 @@
     function colorWithOpacity(color, alpha) {
         if (color.includes("#")) {
             return Chart.helpers.color(color).alpha(alpha).rgbString();
-        } else if (color.includes("hsl")){
+        } else if (color.includes("hsl")) {
             return `${color.slice(0, -1)}, ${alpha})`;
         } else {
             return color;
@@ -56,10 +56,10 @@
 
         if (rainbow)
             // Dynamic rainbow palette using hsl()
-            return [...Array(n).keys()].map(i => "hsl(" + i*300/n + ", 100%, 50%)");
+            return [...Array(n).keys()].map(i => "hsl(" + i * 300 / n + ", 100%, 50%)");
 
         // Dynamic fire palette red->yellow->green using hsl()
-        return [...Array(n).keys()].map(i => "hsl(" + i*120/n + ", 100%, 50%)")
+        return [...Array(n).keys()].map(i => "hsl(" + i * 120 / n + ", 100%, 50%)")
     }
 
     function adjustPoinstFor(year, dayKey, starKey, basePoints) {
@@ -102,6 +102,7 @@
                             getStarTimestamp: m.completion_day_level[dayKey][starKey].get_star_ts,
                             getStarMoment: starMoment,
                             timeTaken: null, // adding this later on, which is easier :D
+                            timeTakenSeconds: null, // adding this later on as well
                         };
 
                         stars.push(star);
@@ -116,6 +117,7 @@
 
                     let startOfDay = moment.utc([year, 11, s.dayNr, 5, 0, 0]); // AoC starts at 05:00 UTC
                     s.timeTaken = s.getStarMoment.diff(startOfDay, "minutes");
+                    s.timeTakenSeconds = s.getStarMoment.diff(startOfDay, "seconds");
                 });
 
                 return m;
@@ -140,6 +142,7 @@
         for (let star of orderedStars) {
             const basePoints = availablePoints[star.dayKey][star.starKey]--;
             star.points = adjustPoinstFor(year, star.dayKey, star.starKey, basePoints);
+            star.rank = n_members - basePoints + 1;
         }
 
         for (let m of members) {
@@ -180,17 +183,18 @@
         let colors = getPalette(members.length, isRainbow, isOriginal);
 
         if (orderByScore)
-            members.sort((a, b) => b.score-a.score).forEach((m, idx) => m.color = colors[idx]);
+            members.sort((a, b) => b.score - a.score).forEach((m, idx) => m.color = colors[idx]);
         else
             members.forEach((m, idx) => m.color = colors[idx]);
 
-        return{
+        return {
             maxDay: maxDay,
             maxMoment: maxMoment,
             days: days,
             stars: stars,
             members: members,
-            year: year
+            year: year,
+            n_members: n_members,
         };
     }
 
@@ -271,6 +275,25 @@
         location.reload();
     }
 
+    function setDisplayDay(dayNumber) {
+        localStorage.setItem("aoc-flag-v1-display-day", dayNumber);
+    }
+
+    function getDisplayDay() {
+        let value = localStorage.getItem("aoc-flag-v1-display-day");
+        return value;
+    }
+
+    function setTimeTableSort(sort) {
+        localStorage.setItem("aoc-flag-v1-delta-sort", sort);
+        location.reload();
+    }
+
+    function getTimeTableSort() {
+        let value = localStorage.getItem("aoc-flag-v1-delta-sort") || "delta";
+        return value;
+    }
+
     let prevClick;
     function isDoubleClick() {
         let now = new Date();
@@ -317,6 +340,18 @@
             chart.update();
         }
     }
+
+    function formatTimeTaken(seconds) {
+        if (seconds > 24 * 3600) {
+            return ">24h"
+        }
+        return moment().startOf('day').seconds(seconds).format('HH:mm:ss')
+    }
+
+    function formatStarMomentForTitle(memberStar) {
+        return memberStar.getStarMoment.local().format("HH:mm:ss YYYY-MM-DD") + " (local time)";
+    }
+
 
     function getLeaderboardJson() {
         // 1. Check if dummy data was loaded...
@@ -371,6 +406,7 @@
             this.wrapper = document.body.appendChild(document.createElement("div"));
             this.controls = this.wrapper.appendChild(document.createElement("div"));
             this.medals = this.wrapper.appendChild(document.createElement("div"));
+            this.perDayLeaderBoard = this.wrapper.appendChild(document.createElement("div"));
             this.graphs = this.wrapper.appendChild(document.createElement("div"));
             this.graphs.style.display = "flex";
             this.graphs.style.flexWrap = "wrap";
@@ -382,10 +418,16 @@
             getLeaderboardJson()
                 .then(data => this.loadCacheBustingButton(data))
                 .then(data => this.loadMedalOverview(data))
+                .then(data => this.loadPerDayLeaderBoard(data))
                 .then(data => this.loadPointsOverTime(data))
                 .then(data => this.loadStarsOverTime(data))
                 .then(data => this.loadDayVsTime(data))
                 .then(data => this.loadTimePerStar(data));
+        }
+
+        loadHr(data) {
+            this.controls.appendChild(document.createElement("hr"));
+            return data;
         }
 
         loadCacheBustingButton(data) {
@@ -423,6 +465,229 @@
             return data;
         }
 
+        loadPerDayLeaderBoard(data) {
+            this.perDayLeaderBoard.title = "Per Day LeaderBoard";
+            let titleElement = this.perDayLeaderBoard.appendChild(document.createElement("h3"));
+            titleElement.innerText = "Delta Time Rankings: ";
+            titleElement.style.fontFamily = "Source Code Pro, monospace";
+            titleElement.style.fontWeight = "normal";
+            titleElement.style.marginTop = "32px";
+            titleElement.style.marginBottom = "8px";
+            this.perDayLeaderBoard.style.marginBottom = "32px";
+
+            let displayDay = getDisplayDay();
+            // taking the min to avoid going out of bounds for current year
+            displayDay = displayDay ? Math.min(parseInt(displayDay), data.maxDay) : data.maxDay;
+
+            let tablePerDay = {}, anchorPerDay = {};
+
+            for (let d = 1; d <= data.maxDay; ++d) {
+                let a = titleElement.appendChild(document.createElement("a"));
+                a.innerText = " " + d.toString();
+                a.addEventListener("click", () => {
+                    setDisplayDay(d);
+                    setVisible(d);
+                });
+                a.style.cursor = "pointer";
+                anchorPerDay[d] = a;
+            }
+
+            let span = titleElement.appendChild(document.createElement("span"));
+            span.innerText = " (";
+            
+            let btn1 = titleElement.appendChild(document.createElement("a"));
+            btn1.style.cursor = "pointer";
+            btn1.innerText = "delta";
+            btn1.addEventListener("click", () => setTimeTableSort("delta"));
+            
+            span = titleElement.appendChild(document.createElement("span"));
+            span.innerText = " / ";
+
+            let btn2 = titleElement.appendChild(document.createElement("a"));
+            btn2.style.cursor = "pointer";
+            btn2.innerText = "completion";
+            btn2.addEventListener("click", () => setTimeTableSort("completion"));
+
+            let activeBtn = getTimeTableSort() === "completion" ? btn2 : btn1;
+            activeBtn.style.color = "#ffffff";
+            activeBtn.style.textShadow = "0 0 5px #ffffff";
+            activeBtn.innerText += " ⬇";
+
+            span = titleElement.appendChild(document.createElement("span"));
+            span.innerText = ")";
+            
+            function generateTable(displayDay) {
+                let gridElement = document.createElement("table");
+                tablePerDay[displayDay] = gridElement;
+                gridElement.style.borderCollapse = "collapse";
+                gridElement.style.fontSize = "16px";
+
+                function sortByDeltaTime(a, b) {
+                    let a1 = a.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
+                    let a2 = a.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
+                    let b1 = b.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
+                    let b2 = b.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
+                    if (!a2 && !b2) return 0;
+                    if (!a2) return 1;
+                    if (!b2) return -1;
+                    const aTime = a2.timeTakenSeconds - a1.timeTakenSeconds;
+                    const bTime = b2.timeTakenSeconds - b1.timeTakenSeconds;
+                    if (aTime === bTime) return 0;
+                    return aTime > bTime ? 1 : -1;
+                }
+
+                function sortByCompletion(a, b) {
+                    let aPoints = a.stars.filter(s => s.dayNr == displayDay).reduce((acc, v) => acc + v.points, 0);
+                    let bPoints = b.stars.filter(s => s.dayNr == displayDay).reduce((acc, v) => acc + v.points, 0);
+                    return bPoints - aPoints;
+                }
+
+                let grid = data.members;
+                grid.sort(getTimeTableSort() === "completion" ? sortByCompletion : sortByDeltaTime);
+
+                function createHeaderCell(text, color = "inherit") {
+                    const td = document.createElement("td");
+                    td.innerText = text;
+                    td.style.padding = "4px 8px";
+                    td.style.color = color;
+                    td.style.textAlign = "center";
+                    return td;
+                }
+
+                {
+                    // first row header
+                    let tr = gridElement.appendChild(document.createElement("tr"));
+                    let th = tr.appendChild(document.createElement("th"))
+
+                    th = tr.appendChild(createHeaderCell("----- Part 1 -----", "#9999cc"));
+                    th.colSpan = 3;
+                    th = tr.appendChild(createHeaderCell("----- Part 2 -----", "#ffff66"));
+                    th.colSpan = 3;
+                    th = tr.appendChild(createHeaderCell("----- Total -----"));
+                    th.colSpan = 2;
+                }
+                {
+                    // second row header
+                    let tr = gridElement.appendChild(document.createElement("tr"));
+                    let td = tr.appendChild(document.createElement("td"));
+
+                    td = tr.appendChild(createHeaderCell("Time", "#9999cc"));
+                    td = tr.appendChild(createHeaderCell("Rank", "#9999cc"));
+                    td = tr.appendChild(createHeaderCell("Points", "#9999cc"));
+                    td = tr.appendChild(createHeaderCell("Time" + (getTimeTableSort() === "completion" ? " ⬇" : ""), "#ffff66"));
+                    td = tr.appendChild(createHeaderCell("Rank", "#ffff66"));
+                    td = tr.appendChild(createHeaderCell("Points", "#ffff66"));
+                    td = tr.appendChild(createHeaderCell("Points"));
+                    td = tr.appendChild(createHeaderCell("Delta Time" + (getTimeTableSort() === "delta" ? " ⬇" : "")));
+                    td.title = "Time difference between Part 2 and Part 1";
+                    td.style.color = "#ffffff";
+                    td.style.textShadow = "0 0 5px #ffffff";
+
+                    // last column without name
+                    td = tr.appendChild(document.createElement("td"));
+                }
+
+                function createCell(text) {
+                    const td = document.createElement("td");
+                    td.innerText = text;
+                    td.style.border = "1px solid #333";
+                    td.style.padding = "6px";
+                    td.style.textAlign = "center";
+                    return td;
+                }
+
+                const maxSecondsForSparkline = 4 /* hours */ * 3600;
+                let rank = 0;
+                let maxDeltaTime = Math.max.apply(Math, grid
+                    .map(m => {
+                        let memberStar1 = m.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
+                        let memberStar2 = m.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
+                        const delta = memberStar2 ? memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds : null;
+                        return delta > maxSecondsForSparkline ? null : delta;
+                    }))
+                ;
+
+                for (let member of grid) {
+                    let memberStar1 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
+                    let memberStar2 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
+
+                    // skip users that didn't solve any problem today
+                    if (!memberStar1 && !memberStar2) {
+                        continue;
+                    }
+
+                    rank += 1;
+
+                    let tr = gridElement.appendChild(document.createElement("tr"));
+                    let td = tr.appendChild(createCell(rank.toString() + ")"))
+
+                    td = tr.appendChild(createCell((memberStar1 ? formatTimeTaken(memberStar1.timeTakenSeconds) : "")))
+                    td.title = memberStar1 ? formatStarMomentForTitle(memberStar1) : "Star 1 not done yet";
+
+                    td = tr.appendChild(createCell((memberStar1 ? memberStar1.rank : "")))
+                    td = tr.appendChild(createCell((memberStar1 ? memberStar1.points : "")))
+                    td = tr.appendChild(createCell((memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds) : "")))
+                    td.title = memberStar2 ? formatStarMomentForTitle(memberStar2) : "Star 2 not done yet";
+
+                    td = tr.appendChild(createCell((memberStar2 ? memberStar2.rank : "")))
+                    td = tr.appendChild(createCell((memberStar2 ? memberStar2.points : "")))
+
+                    let totalScore = 0;
+                    if (memberStar1) {
+                        totalScore += memberStar1.points;
+                    }
+                    if (memberStar2) {
+                        totalScore += memberStar2.points;
+                    }
+
+                    td = tr.appendChild(createCell(totalScore ? totalScore : ""))
+                    td = tr.appendChild(createCell(memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds) : ""));
+                    td.style.color = "#ffffff";
+                    td.style.textShadow = "0 0 5px #ffffff";
+
+                    if (memberStar2 && maxDeltaTime) {
+                        const delta = memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds;
+                        const fraction = Math.min(100, delta / maxDeltaTime * 100);
+                        const sparkline = td.appendChild(document.createElement("div"));
+                        sparkline.style.height = "2px";
+                        sparkline.style.marginTop = "4px";
+                        sparkline.style.marginBottom = "1px";
+                        sparkline.style.width = `${fraction}%`;
+                        sparkline.style.backgroundColor = "#ffffff";
+                        sparkline.style.boxShadow = "1px 1px 5px rgba(255, 255, 255, 0.5), -1px -1px 5px rgba(255, 255, 255, 0.5)";
+                        sparkline.style.opacity = delta > maxDeltaTime ? "0.15" : "0.75";
+                        sparkline.title = "Spark line showing relative 'delta time' values (up to a maximum delta time)";
+                    }
+
+                    td = tr.appendChild(createCell(member.name))
+                }
+
+                return gridElement;
+            }
+
+            function setVisible(day) {
+                for (const t in tablePerDay) {
+                    tablePerDay[t].style.display = "none";
+                }
+                tablePerDay[day].style.display = "table";
+                
+                for (const a in anchorPerDay) {
+                    anchorPerDay[a].style.color = "";
+                    anchorPerDay[a].style.textShadow = "";
+                }
+                anchorPerDay[day].style.color = "#ffffff";
+                anchorPerDay[day].style.textShadow = "0 0 5px #ffffff";
+            }
+
+            for (let i=1; i <= data.maxDay; i++) {
+                this.perDayLeaderBoard.appendChild(generateTable(i));
+            }
+
+            setVisible(displayDay);
+
+            return data;
+        }
+
         loadMedalOverview(data) {
             const medalHtml = n => n === 0 ? "🥇" : n === 1 ? "🥈" : n === 2 ? "🥉" : `${n}`;
             const medalColor = n => n === 0 ? "gold" : n === 1 ? "silver" : n === 2 ? "#945210" : "rgba(15, 15, 35, 1.0)";
@@ -432,6 +697,7 @@
             titleElement.innerText = "Podium per day";
             titleElement.style.fontFamily = "Helvetica, Arial, sans-serif";
             titleElement.style.fontWeight = "normal";
+            titleElement.style.marginBottom = "4px";
 
             let gridElement = document.createElement("table");
             gridElement.style.borderCollapse = "collapse";
@@ -497,9 +763,9 @@
                         let memberStar1 = member.stars.find(s => s.dayNr === d && s.starNr === 1);
                         let memberStar2 = member.stars.find(s => s.dayNr === d && s.starNr === 2);
 
-                        td.title = (memberStar1 ? memberStar1.getStarMoment.local().format("HH:mm:ss YYYY-MM-DD") + " (local time)" : "Star 1 not done yet")
+                        td.title = (memberStar1 ? formatStarMomentForTitle(memberStar1) : "Star 1 not done yet")
                             + "\n"
-                            + (memberStar2 ? memberStar2.getStarMoment.local().format("HH:mm:ss YYYY-MM-DD") + " (local time)" : "Star 2 not done yet");
+                            + (memberStar2 ? formatStarMomentForTitle(memberStar2) : "Star 2 not done yet");
 
                         if (secondPuzzlePodiumPlace >= 0 && secondPuzzlePodiumPlace < podiumLength) {
                             medalCount++;
@@ -637,7 +903,7 @@
         loadTimePerStar(data) {
             let datasets = [];
             let n = Math.min(3, data.members.length);
-            let relevantMembers = data.members.sort((a,b) => b.score - a.score).slice(0,n);
+            let relevantMembers = data.members.sort((a, b) => b.score - a.score).slice(0, n);
 
             for (let member of relevantMembers) {
                 let star1DataSet = {
@@ -743,7 +1009,7 @@
         }
 
         loadPointsOverTime(data) {
-            let datasets = data.members.sort((a,b) => a.name.localeCompare(b.name)).map(m => {
+            let datasets = data.members.sort((a, b) => a.name.localeCompare(b.name)).map(m => {
                 return {
                     label: m.name,
                     lineTension: 0.2,
@@ -804,7 +1070,7 @@
                                 displayFormats: { day: "D" },
                             },
                             ticks: {
-                                min: moment([data.year,10,30,5,0,0]),
+                                min: moment([data.year, 10, 30, 5, 0, 0]),
                                 max: data.maxMoment,
                                 fontColor: aocColors["main"],
                             },
@@ -902,7 +1168,7 @@
                                 displayFormats: { day: "D" },
                             },
                             ticks: {
-                                min: moment([data.year,10,30,5,0,0]),
+                                min: moment([data.year, 10, 30, 5, 0, 0]),
                                 max: data.maxMoment,
                                 fontColor: aocColors["main"],
                             },
