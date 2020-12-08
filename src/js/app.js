@@ -559,10 +559,14 @@
             // Fill the actual data
             let rank = 0;
             for (let member of grid) {
-                rank += 1;
-
                 let memberStar1 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
                 let memberStar2 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
+                // skip users that didn't solve any problem today
+                if (!memberStar1 && !memberStar2) {
+                    continue;
+                }
+
+                rank += 1;
 
                 let tr = gridElement.appendChild(document.createElement("tr"));
                 let td = tr.appendChild(document.createElement("td"))
