@@ -458,7 +458,7 @@
         loadPerDayLeaderBoard(data) {
             this.perDayLeaderBoard.title = "Per Day LeaderBoard";
             let titleElement = this.perDayLeaderBoard.appendChild(document.createElement("h3"));
-            titleElement.innerText = "Delta Time per Day: ";
+            titleElement.innerText = "Delta Time Rankings: ";
             titleElement.style.fontFamily = "Source Code Pro, monospace";
             titleElement.style.fontWeight = "normal";
             titleElement.style.marginTop = "32px";
@@ -522,7 +522,7 @@
                     th.colSpan = 3;
                     th = tr.appendChild(createHeaderCell("----- Part 2 -----", "#ffff66"));
                     th.colSpan = 3;
-                    th = tr.appendChild(createHeaderCell("----- Day -----"));
+                    th = tr.appendChild(createHeaderCell("----- Total -----"));
                     th.colSpan = 2;
                 }
                 {
