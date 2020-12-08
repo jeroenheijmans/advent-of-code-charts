@@ -416,6 +416,11 @@
                 .then(data => this.loadTimePerStar(data));
         }
 
+        loadHr(data) {
+            this.controls.appendChild(document.createElement("hr"));
+            return data;
+        }
+
         loadCacheBustingButton(data) {
             const cacheBustLink = this.controls.appendChild(document.createElement("a"));
             cacheBustLink.innerText = "🔄 Clear Charts Cache";
@@ -485,28 +490,26 @@
             });
 
             let setCellStyle = function (td) {
-                td.style.padding = "2px 8px";
+                td.style.padding = "8px 8px";
                 td.align = "center";
             }
             {
                 // first row header
                 let tr = gridElement.appendChild(document.createElement("tr"));
-                let td = tr.appendChild(document.createElement("td"))
+                let th = tr.appendChild(document.createElement("th"))
 
-                td = tr.appendChild(document.createElement("th"));
-                setCellStyle(td);
-                td.innerText = "----- Part 1 -----";
-                td.style.color = "#9999cc";
-                td.colSpan = 3;
+                th = tr.appendChild(document.createElement("th"));
+                th.innerText = "----- Part 1 -----";
+                th.style.color = "#9999cc";
+                th.colSpan = 3;
 
-                td = tr.appendChild(document.createElement("th"));
-                setCellStyle(td);
-                td.innerText = "----- Part 2 -----";
-                td.style.color = "#ffff66";
-                td.colSpan = 3;
+                th = tr.appendChild(document.createElement("th"));
+                th.innerText = "----- Part 2 -----";
+                th.style.color = "#ffff66";
+                th.colSpan = 3;
 
-                td = tr.appendChild(document.createElement("td"));
-                td = tr.appendChild(document.createElement("td"));
+                th = tr.appendChild(document.createElement("td"));
+                th = tr.appendChild(document.createElement("td"));
             }
             {
                 // second row header
