@@ -1,4 +1,4 @@
-(function(aoc) {
+(function (aoc) {
     // Based on https://stackoverflow.com/a/38493678/419956 by @user6586783
     Chart.pluginService.register({
         beforeDraw: function (chart, easing) {
@@ -36,7 +36,7 @@
     function colorWithOpacity(color, alpha) {
         if (color.includes("#")) {
             return Chart.helpers.color(color).alpha(alpha).rgbString();
-        } else if (color.includes("hsl")){
+        } else if (color.includes("hsl")) {
             return `${color.slice(0, -1)}, ${alpha})`;
         } else {
             return color;
@@ -56,10 +56,10 @@
 
         if (rainbow)
             // Dynamic rainbow palette using hsl()
-            return [...Array(n).keys()].map(i => "hsl(" + i*300/n + ", 100%, 50%)");
+            return [...Array(n).keys()].map(i => "hsl(" + i * 300 / n + ", 100%, 50%)");
 
         // Dynamic fire palette red->yellow->green using hsl()
-        return [...Array(n).keys()].map(i => "hsl(" + i*120/n + ", 100%, 50%)")
+        return [...Array(n).keys()].map(i => "hsl(" + i * 120 / n + ", 100%, 50%)")
     }
 
     function adjustPoinstFor(year, dayKey, starKey, basePoints) {
@@ -183,11 +183,11 @@
         let colors = getPalette(members.length, isRainbow, isOriginal);
 
         if (orderByScore)
-            members.sort((a, b) => b.score-a.score).forEach((m, idx) => m.color = colors[idx]);
+            members.sort((a, b) => b.score - a.score).forEach((m, idx) => m.color = colors[idx]);
         else
             members.forEach((m, idx) => m.color = colors[idx]);
 
-        return{
+        return {
             maxDay: maxDay,
             maxMoment: maxMoment,
             days: days,
@@ -479,15 +479,15 @@
 
             let grid = data.members;
             let count = 0;
-            grid.sort(function(a, b) {
+            grid.sort(function (a, b) {
                 let aPoints = a.stars.filter(s => s.dayNr == displayDay).reduce((acc, v) => acc + v.points, 0);
                 let bPoints = b.stars.filter(s => s.dayNr == displayDay).reduce((acc, v) => acc + v.points, 0);
                 return bPoints - aPoints;
             });
 
             let setCellStyle = function (td) {
-                td.style.padding = "2px 8px";   
-                td.align = "center"; 
+                td.style.padding = "2px 8px";
+                td.align = "center";
             }
             {
                 let tr = gridElement.appendChild(document.createElement("tr"));
@@ -570,7 +570,7 @@
                     td = tr.appendChild(document.createElement("td"))
                     setCellStyle(td);
                     td.innerText = (memberStar1 ? formatTimeTaken(memberStar1.timeTakenSeconds) : "")
-                    td.title = memberStar1 ? 
+                    td.title = memberStar1 ?
                         formatStarMomentForTitle(memberStar1) :
                         "Star 1 not done yet";
                     td.style.border = "1px solid #333";
@@ -588,7 +588,7 @@
                     td = tr.appendChild(document.createElement("td"))
                     setCellStyle(td);
                     td.innerText = (memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds) : "");
-                    td.title = memberStar2 ? 
+                    td.title = memberStar2 ?
                         formatStarMomentForTitle(memberStar2) :
                         "Star 2 not done yet";
                     td.style.border = "1px solid #333";
@@ -619,8 +619,8 @@
 
                     td = tr.appendChild(document.createElement("td"));
                     setCellStyle(td);
-                    td.innerText = memberStar2 ? 
-                        formatTimeTaken(memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds) : 
+                    td.innerText = memberStar2 ?
+                        formatTimeTaken(memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds) :
                         "";
                     td.style.border = "1px solid #333";
 
@@ -849,7 +849,7 @@
         loadTimePerStar(data) {
             let datasets = [];
             let n = Math.min(3, data.members.length);
-            let relevantMembers = data.members.sort((a,b) => b.score - a.score).slice(0,n);
+            let relevantMembers = data.members.sort((a, b) => b.score - a.score).slice(0, n);
 
             for (let member of relevantMembers) {
                 let star1DataSet = {
@@ -955,7 +955,7 @@
         }
 
         loadPointsOverTime(data) {
-            let datasets = data.members.sort((a,b) => a.name.localeCompare(b.name)).map(m => {
+            let datasets = data.members.sort((a, b) => a.name.localeCompare(b.name)).map(m => {
                 return {
                     label: m.name,
                     lineTension: 0.2,
@@ -1016,7 +1016,7 @@
                                 displayFormats: { day: "D" },
                             },
                             ticks: {
-                                min: moment([data.year,10,30,5,0,0]),
+                                min: moment([data.year, 10, 30, 5, 0, 0]),
                                 max: data.maxMoment,
                                 fontColor: aocColors["main"],
                             },
@@ -1114,7 +1114,7 @@
                                 displayFormats: { day: "D" },
                             },
                             ticks: {
-                                min: moment([data.year,10,30,5,0,0]),
+                                min: moment([data.year, 10, 30, 5, 0, 0]),
                                 max: data.maxMoment,
                                 fontColor: aocColors["main"],
                             },
