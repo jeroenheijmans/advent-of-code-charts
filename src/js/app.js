@@ -516,7 +516,7 @@
 
                 for (let n = 0; n < podiumLength; n++) {
                     let td = tr.appendChild(document.createElement("td"));
-                    td.innerText = member.podiumPlacesPerDay[n];
+                    td.innerText = member.podiumPlacesPerDay[n] + member.podiumPlacesPerDayFirstPuzzle[n];
                     td.style.border = "1px solid #333";
                     td.style.padding = "2px 8px";
                     td.align = "center";
