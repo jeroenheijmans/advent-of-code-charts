@@ -457,10 +457,13 @@
 
         loadPerDayLeaderBoard(data) {
             this.perDayLeaderBoard.title = "Per Day LeaderBoard";
-            let titleElement = this.perDayLeaderBoard.appendChild(document.createElement("p"));
-            titleElement.innerText = "Per Day: ";
+            let titleElement = this.perDayLeaderBoard.appendChild(document.createElement("h3"));
+            titleElement.innerText = "Delta Time per Day: ";
             titleElement.style.fontFamily = "Source Code Pro, monospace";
             titleElement.style.fontWeight = "normal";
+            titleElement.style.marginTop = "32px";
+            titleElement.style.marginBottom = "8px";
+            this.perDayLeaderBoard.style.marginBottom = "32px";
 
             let displayDay = getDisplayDay();
             // taking the min to avoid going out of bounds for current year
@@ -629,6 +632,7 @@
             titleElement.innerText = "Podium per day";
             titleElement.style.fontFamily = "Helvetica, Arial, sans-serif";
             titleElement.style.fontWeight = "normal";
+            titleElement.style.marginBottom = "4px";
 
             let gridElement = document.createElement("table");
             gridElement.style.borderCollapse = "collapse";
