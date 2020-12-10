@@ -602,8 +602,8 @@
                     td = tr.appendChild(createHeaderCell("Points", "#9999cc"));
                     td = tr.appendChild(createHeaderCell("Time" + (getTimeTableSort() === "part 2 time" ? " ⬇" : ""), "#ffff66"));
                     if (getTimeTableSort() === "part 2 time") {
-                        td.style.color = "#ffffff";
-                        td.style.textShadow = "0 0 5px #ffffff";
+                        td.style.color = "#ffff66";
+                        td.style.textShadow = "0 0 5px #ffff66";
                     }
 
                     td = tr.appendChild(createHeaderCell("Rank", "#ffff66"));
