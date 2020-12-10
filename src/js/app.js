@@ -468,7 +468,7 @@
         loadPerDayLeaderBoard(data) {
             this.perDayLeaderBoard.title = "Per Day LeaderBoard";
             let titleElement = this.perDayLeaderBoard.appendChild(document.createElement("h3"));
-            titleElement.innerText = "Delta Time Rankings: ";
+            titleElement.innerText = "Stats Per Day: ";
             titleElement.style.fontFamily = "Source Code Pro, monospace";
             titleElement.style.fontWeight = "normal";
             titleElement.style.marginTop = "32px";
@@ -505,10 +505,23 @@
 
             let btn2 = titleElement.appendChild(document.createElement("a"));
             btn2.style.cursor = "pointer";
-            btn2.innerText = "completion";
-            btn2.addEventListener("click", () => setTimeTableSort("completion"));
+            btn2.innerText = "total points";
+            btn2.addEventListener("click", () => setTimeTableSort("total points"));
 
-            let activeBtn = getTimeTableSort() === "completion" ? btn2 : btn1;
+            span = titleElement.appendChild(document.createElement("span"));
+            span.innerText = " / ";
+
+            let btn3 = titleElement.appendChild(document.createElement("a"));
+            btn3.style.cursor = "pointer";
+            btn3.innerText = "part 2 time";
+            btn3.addEventListener("click", () => setTimeTableSort("part 2 time"));
+
+            let activeBtn = {
+                "delta": btn1,
+                "total points": btn2,
+                "part 2 time": btn3,
+            }[getTimeTableSort()];
+
             activeBtn.style.color = "#ffffff";
             activeBtn.style.textShadow = "0 0 5px #ffffff";
             activeBtn.innerText += " ⬇";
@@ -536,14 +549,27 @@
                     return aTime > bTime ? 1 : -1;
                 }
 
-                function sortByCompletion(a, b) {
+                function sortByPart2Time(a, b) {
+                    let aStar = a.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
+                    let bStar = b.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
+                    if (!aStar) return 1;
+                    if (!bStar) return -1;
+                    return aStar.timeTakenSeconds > bStar.timeTakenSeconds ? 1 : -1;
+                }
+
+                function sortByTotalPoints(a, b) {
                     let aPoints = a.stars.filter(s => s.dayNr == displayDay).reduce((acc, v) => acc + v.points, 0);
                     let bPoints = b.stars.filter(s => s.dayNr == displayDay).reduce((acc, v) => acc + v.points, 0);
                     return bPoints - aPoints;
                 }
 
                 let grid = data.members;
-                grid.sort(getTimeTableSort() === "completion" ? sortByCompletion : sortByDeltaTime);
+                let sortFns = {
+                    "delta": sortByDeltaTime,
+                    "total points": sortByTotalPoints,
+                    "part 2 time": sortByPart2Time,
+                };
+                grid.sort(sortFns[getTimeTableSort()]);
 
                 function createHeaderCell(text, color = "inherit") {
                     const td = document.createElement("td");
@@ -574,14 +600,26 @@
                     td = tr.appendChild(createHeaderCell("Time", "#9999cc"));
                     td = tr.appendChild(createHeaderCell("Rank", "#9999cc"));
                     td = tr.appendChild(createHeaderCell("Points", "#9999cc"));
-                    td = tr.appendChild(createHeaderCell("Time" + (getTimeTableSort() === "completion" ? " ⬇" : ""), "#ffff66"));
+                    td = tr.appendChild(createHeaderCell("Time" + (getTimeTableSort() === "part 2 time" ? " ⬇" : ""), "#ffff66"));
+                    if (getTimeTableSort() === "part 2 time") {
+                        td.style.color = "#ffffff";
+                        td.style.textShadow = "0 0 5px #ffffff";
+                    }
+
                     td = tr.appendChild(createHeaderCell("Rank", "#ffff66"));
                     td = tr.appendChild(createHeaderCell("Points", "#ffff66"));
-                    td = tr.appendChild(createHeaderCell("Points"));
+                    td = tr.appendChild(createHeaderCell("Points" + (getTimeTableSort() === "total points" ? " ⬇" : "")));
+                    if (getTimeTableSort() === "total points") {
+                        td.style.color = "#ffffff";
+                        td.style.textShadow = "0 0 5px #ffffff";
+                    }
+
                     td = tr.appendChild(createHeaderCell("Delta Time" + (getTimeTableSort() === "delta" ? " ⬇" : "")));
                     td.title = "Time difference between Part 2 and Part 1";
-                    td.style.color = "#ffffff";
-                    td.style.textShadow = "0 0 5px #ffffff";
+                    if (getTimeTableSort() === "delta") {
+                        td.style.color = "#ffffff";
+                        td.style.textShadow = "0 0 5px #ffffff";
+                    }
 
                     // last column without name
                     td = tr.appendChild(document.createElement("td"));
@@ -628,6 +666,10 @@
                     td = tr.appendChild(createCell((memberStar1 ? memberStar1.points : "")))
                     td = tr.appendChild(createCell((memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds) : "")))
                     td.title = memberStar2 ? formatStarMomentForTitle(memberStar2) : "Star 2 not done yet";
+                    if (getTimeTableSort() === "part 2 time") {
+                        td.style.color = "#ffffff";
+                        td.style.textShadow = "0 0 5px #ffffff";
+                    }
 
                     td = tr.appendChild(createCell((memberStar2 ? memberStar2.rank : "")))
                     td = tr.appendChild(createCell((memberStar2 ? memberStar2.points : "")))
@@ -641,9 +683,17 @@
                     }
 
                     td = tr.appendChild(createCell(totalScore ? totalScore : ""))
+                    if (getTimeTableSort() === "total points") {
+                        td.style.color = "#ffffff";
+                        td.style.textShadow = "0 0 5px #ffffff";
+                    }
+
+
                     td = tr.appendChild(createCell(memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds) : ""));
-                    td.style.color = "#ffffff";
-                    td.style.textShadow = "0 0 5px #ffffff";
+                    if (getTimeTableSort() === "delta") {
+                        td.style.color = "#ffffff";
+                        td.style.textShadow = "0 0 5px #ffffff";
+                    }
 
                     if (memberStar2 && maxDeltaTime) {
                         const delta = memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds;
