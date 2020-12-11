@@ -704,7 +704,9 @@
                         sparkline.style.marginBottom = "1px";
                         sparkline.style.width = `${fraction}%`;
                         sparkline.style.backgroundColor = "#ffffff";
-                        sparkline.style.boxShadow = "1px 1px 5px rgba(255, 255, 255, 0.5), -1px -1px 5px rgba(255, 255, 255, 0.5)";
+                        if (getTimeTableSort() === "delta") {
+                            sparkline.style.boxShadow = "1px 1px 5px rgba(255, 255, 255, 0.5), -1px -1px 5px rgba(255, 255, 255, 0.5)";
+                        }
                         sparkline.style.opacity = delta > maxDeltaTime ? "0.15" : "0.75";
                         sparkline.title = "Spark line showing relative 'delta time' values (up to a maximum delta time)";
                     }
