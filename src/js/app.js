@@ -522,9 +522,11 @@
                 "part 2 time": btn3,
             }[getTimeTableSort()];
 
-            activeBtn.style.color = "#ffffff";
-            activeBtn.style.textShadow = "0 0 5px #ffffff";
-            activeBtn.innerText += " ⬇";
+            if (activeBtn) {
+                activeBtn.style.color = "#ffffff";
+                activeBtn.style.textShadow = "0 0 5px #ffffff";
+                activeBtn.innerText += " ⬇";
+            }
 
             span = titleElement.appendChild(document.createElement("span"));
             span.innerText = ")";
