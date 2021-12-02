@@ -492,45 +492,6 @@
                 anchorPerDay[d] = a;
             }
 
-            let span = titleElement.appendChild(document.createElement("span"));
-            span.innerText = " (";
-            
-            let btn1 = titleElement.appendChild(document.createElement("a"));
-            btn1.style.cursor = "pointer";
-            btn1.innerText = "delta";
-            btn1.addEventListener("click", () => setTimeTableSort("delta"));
-            
-            span = titleElement.appendChild(document.createElement("span"));
-            span.innerText = " / ";
-
-            let btn2 = titleElement.appendChild(document.createElement("a"));
-            btn2.style.cursor = "pointer";
-            btn2.innerText = "total points";
-            btn2.addEventListener("click", () => setTimeTableSort("total points"));
-
-            span = titleElement.appendChild(document.createElement("span"));
-            span.innerText = " / ";
-
-            let btn3 = titleElement.appendChild(document.createElement("a"));
-            btn3.style.cursor = "pointer";
-            btn3.innerText = "part 2 time";
-            btn3.addEventListener("click", () => setTimeTableSort("part 2 time"));
-
-            let activeBtn = {
-                "delta": btn1,
-                "total points": btn2,
-                "part 2 time": btn3,
-            }[getTimeTableSort()];
-
-            if (activeBtn) {
-                activeBtn.style.color = "#ffffff";
-                activeBtn.style.textShadow = "0 0 5px #ffffff";
-                activeBtn.innerText += " ⬇";
-            }
-
-            span = titleElement.appendChild(document.createElement("span"));
-            span.innerText = ")";
-            
             function generateTable(displayDay) {
                 let gridElement = document.createElement("table");
                 tablePerDay[displayDay] = gridElement;
@@ -551,12 +512,14 @@
                     return aTime > bTime ? 1 : -1;
                 }
 
-                function sortByPart2Time(a, b) {
-                    let aStar = a.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
-                    let bStar = b.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
-                    if (!aStar) return 1;
-                    if (!bStar) return -1;
-                    return aStar.timeTakenSeconds > bStar.timeTakenSeconds ? 1 : -1;
+                function sortByPart(starNr) {
+                    return function sortByPart2Time(a, b) {
+                        let aStar = a.stars.find(s => s.dayNr === displayDay && s.starNr === starNr);
+                        let bStar = b.stars.find(s => s.dayNr === displayDay && s.starNr === starNr);
+                        if (!aStar) return 1;
+                        if (!bStar) return -1;
+                        return aStar.timeTakenSeconds > bStar.timeTakenSeconds ? 1 : -1;
+                    }
                 }
 
                 function sortByTotalPoints(a, b) {
@@ -568,17 +531,20 @@
                 let grid = data.members;
                 let sortFns = {
                     "delta": sortByDeltaTime,
-                    "total points": sortByTotalPoints,
-                    "part 2 time": sortByPart2Time,
+                    "completion": sortByTotalPoints,
+                    "part1": sortByPart(1),
+                    "part2": sortByPart(2),
                 };
-                grid.sort(sortFns[getTimeTableSort()]);
+                grid.sort(sortFns[Object.keys(sortFns).find(k => k === getTimeTableSort()) || "delta"]);
 
-                function createHeaderCell(text, color = "inherit") {
+                function createHeaderCell(sorting, text, color = "inherit") {
                     const td = document.createElement("td");
                     td.innerText = text;
                     td.style.padding = "4px 8px";
                     td.style.color = color;
                     td.style.textAlign = "center";
+                    td.style.cursor = "pointer";
+                    td.addEventListener("click", () => setTimeTableSort(sorting));
                     return td;
                 }
 
@@ -587,44 +553,53 @@
                     let tr = gridElement.appendChild(document.createElement("tr"));
                     let th = tr.appendChild(document.createElement("th"))
 
-                    th = tr.appendChild(createHeaderCell("----- Part 1 -----", "#9999cc"));
+                    th = tr.appendChild(createHeaderCell("part1", "----- Part 1 -----", "#9999cc"));
                     th.colSpan = 3;
-                    th = tr.appendChild(createHeaderCell("----- Part 2 -----", "#ffff66"));
+                    th = tr.appendChild(createHeaderCell("delta", "----- Delta -----"));
+                    th.title = "Everyone starting puzzles at different times? See who's the fastest to go from 1 to 2 stars on a day!";
+                    th.colSpan = 1;
+                    th = tr.appendChild(createHeaderCell("part2", "----- Part 2 -----", "#ffff66"));
                     th.colSpan = 3;
-                    th = tr.appendChild(createHeaderCell("----- Total -----"));
-                    th.colSpan = 2;
+                    th = tr.appendChild(createHeaderCell("total", "----- Total -----"));
+                    th.colSpan = 1;
                 }
                 {
                     // second row header
                     let tr = gridElement.appendChild(document.createElement("tr"));
                     let td = tr.appendChild(document.createElement("td"));
 
-                    td = tr.appendChild(createHeaderCell("Time", "#9999cc"));
-                    td = tr.appendChild(createHeaderCell("Rank", "#9999cc"));
-                    td = tr.appendChild(createHeaderCell("Points", "#9999cc"));
-                    td = tr.appendChild(createHeaderCell("Time" + (getTimeTableSort() === "part 2 time" ? " ⬇" : ""), "#ffff66"));
-                    if (getTimeTableSort() === "part 2 time") {
-                        td.style.color = "#ffff66";
-                        td.style.textShadow = "0 0 5px #ffff66";
+                    // Part 1
+                    td = tr.appendChild(createHeaderCell("part1", "Time" + (getTimeTableSort() === "part1" ? " ⬇" : ""), "#9999cc"));
+                    if (getTimeTableSort() === "part1") {
+                        td.style.color = "#9999ee";
+                        td.style.textShadow = "0 0 5px #9999cc";
                     }
+                    td = tr.appendChild(createHeaderCell("part1", "Rank", "#9999cc"));
+                    td = tr.appendChild(createHeaderCell("part1", "Points", "#9999cc"));
 
-                    td = tr.appendChild(createHeaderCell("Rank", "#ffff66"));
-                    td = tr.appendChild(createHeaderCell("Points", "#ffff66"));
-                    td = tr.appendChild(createHeaderCell("Points" + (getTimeTableSort() === "total points" ? " ⬇" : "")));
-                    if (getTimeTableSort() === "total points") {
-                        td.style.color = "#ffffff";
-                        td.style.textShadow = "0 0 5px #ffffff";
-                    }
-
-                    td = tr.appendChild(createHeaderCell("Delta Time" + (getTimeTableSort() === "delta" ? " ⬇" : "")));
+                    // Delta
+                    td = tr.appendChild(createHeaderCell("delta", "Delta Time" + (getTimeTableSort() === "delta" ? " ⬇" : "")));
                     td.title = "Time difference between Part 2 and Part 1";
                     if (getTimeTableSort() === "delta") {
                         td.style.color = "#ffffff";
                         td.style.textShadow = "0 0 5px #ffffff";
                     }
 
-                    // last column without name
-                    td = tr.appendChild(document.createElement("td"));
+                    // Part 2
+                    td = tr.appendChild(createHeaderCell("part2", "Time" + (getTimeTableSort() === "part2" ? " ⬇" : ""), "#ffff66"));
+                    if (getTimeTableSort() === "part2") {
+                        td.style.color = "#ffff66";
+                        td.style.textShadow = "0 0 5px #ffff66";
+                    }
+                    td = tr.appendChild(createHeaderCell("part2", "Rank", "#ffff66"));
+                    td = tr.appendChild(createHeaderCell("part2", "Points", "#ffff66"));
+
+                    // Total
+                    td = tr.appendChild(createHeaderCell("completion", "Points" + (getTimeTableSort() === "completion" ? " ⬇" : "")));
+                    if (getTimeTableSort() === "completion") {
+                        td.style.color = "#ffffff";
+                        td.style.textShadow = "0 0 5px #ffffff";
+                    }
                 }
 
                 function createCell(text) {
@@ -659,37 +634,18 @@
                     rank += 1;
 
                     let tr = gridElement.appendChild(document.createElement("tr"));
-                    let td = tr.appendChild(createCell(rank.toString() + ")"))
+                    let td = tr.appendChild(createCell(rank.toString() + ". " + member.name))
+                    td.style.textAlign = "left";
 
                     td = tr.appendChild(createCell((memberStar1 ? formatTimeTaken(memberStar1.timeTakenSeconds) : "")))
                     td.title = memberStar1 ? formatStarMomentForTitle(memberStar1) : "Star 1 not done yet";
+                    if (getTimeTableSort() === "part1") {
+                        td.style.color = "#ffffff";
+                        td.style.textShadow = "0 0 5px #ffffff";
+                    }
 
                     td = tr.appendChild(createCell((memberStar1 ? memberStar1.rank : "")))
                     td = tr.appendChild(createCell((memberStar1 ? memberStar1.points : "")))
-                    td = tr.appendChild(createCell((memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds) : "")))
-                    td.title = memberStar2 ? formatStarMomentForTitle(memberStar2) : "Star 2 not done yet";
-                    if (getTimeTableSort() === "part 2 time") {
-                        td.style.color = "#ffffff";
-                        td.style.textShadow = "0 0 5px #ffffff";
-                    }
-
-                    td = tr.appendChild(createCell((memberStar2 ? memberStar2.rank : "")))
-                    td = tr.appendChild(createCell((memberStar2 ? memberStar2.points : "")))
-
-                    let totalScore = 0;
-                    if (memberStar1) {
-                        totalScore += memberStar1.points;
-                    }
-                    if (memberStar2) {
-                        totalScore += memberStar2.points;
-                    }
-
-                    td = tr.appendChild(createCell(totalScore ? totalScore : ""))
-                    if (getTimeTableSort() === "total points") {
-                        td.style.color = "#ffffff";
-                        td.style.textShadow = "0 0 5px #ffffff";
-                    }
-
 
                     td = tr.appendChild(createCell(memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds) : ""));
                     if (getTimeTableSort() === "delta") {
@@ -713,7 +669,29 @@
                         sparkline.title = "Spark line showing relative 'delta time' values (up to a maximum delta time)";
                     }
 
-                    td = tr.appendChild(createCell(member.name))
+                    td = tr.appendChild(createCell((memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds) : "")))
+                    td.title = memberStar2 ? formatStarMomentForTitle(memberStar2) : "Star 2 not done yet";
+                    if (getTimeTableSort() === "part2") {
+                        td.style.color = "#ffffff";
+                        td.style.textShadow = "0 0 5px #ffffff";
+                    }
+
+                    td = tr.appendChild(createCell((memberStar2 ? memberStar2.rank : "")))
+                    td = tr.appendChild(createCell((memberStar2 ? memberStar2.points : "")))
+
+                    let totalScore = 0;
+                    if (memberStar1) {
+                        totalScore += memberStar1.points;
+                    }
+                    if (memberStar2) {
+                        totalScore += memberStar2.points;
+                    }
+
+                    td = tr.appendChild(createCell(totalScore ? totalScore : "0"))
+                    if (getTimeTableSort() === "completion") {
+                        td.style.color = "#ffffff";
+                        td.style.textShadow = "0 0 5px #ffffff";
+                    }
                 }
 
                 return gridElement;
