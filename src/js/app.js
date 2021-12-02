@@ -449,17 +449,6 @@
             cacheBustLink.style.border = `1px solid ${aocColors.secondary}`;
             cacheBustLink.addEventListener("click", () => clearCache());
 
-            const showAllToggleLink = this.controls.appendChild(document.createElement("a"));
-            showAllToggleLink.innerText = (isShowAllToggled() ? "✅" : "❌") + " Show All";
-            showAllToggleLink.title = "Show all players";
-            showAllToggleLink.style.cursor = "pointer";
-            showAllToggleLink.style.background = aocColors.tertiary;
-            showAllToggleLink.style.display = "inline-block";
-            showAllToggleLink.style.padding = "2px 8px";
-            showAllToggleLink.style.border = `1px solid ${aocColors.secondary}`;
-            showAllToggleLink.style.marginLeft = "8px";
-            showAllToggleLink.addEventListener("click", () => toggleShowAll());
-
             const responsiveToggleLink = this.controls.appendChild(document.createElement("a"));
             responsiveToggleLink.innerText = (isResponsivenessToggled() ? "✅" : "❌") + " Responsive > 1800px";
             responsiveToggleLink.title = "Trigger side-by-side graphs if the viewport is wider than 1800px";
@@ -750,10 +739,16 @@
                 : 'For each day, the top 3 to get the second star are shown. ') +
               'Behind each medal you can get a glimpse of the podium for the *first* star.';
             let titleElement = this.medals.appendChild(document.createElement("h3"));
-            titleElement.innerText = "Podium per day";
+            titleElement.innerText = "Podium per day: ";
             titleElement.style.fontFamily = "Helvetica, Arial, sans-serif";
             titleElement.style.fontWeight = "normal";
             titleElement.style.marginBottom = "4px";
+            
+            const showAllToggleLink = titleElement.appendChild(document.createElement("a"));
+            showAllToggleLink.innerText = isShowAllToggled() ? "🎄 Showing all participants" : "🥇 Showing only medalists";
+            showAllToggleLink.title = "Toggle between showing only medalists or all participants";
+            showAllToggleLink.style.cursor = "pointer";
+            showAllToggleLink.addEventListener("click", () => toggleShowAll());
 
             let gridElement = document.createElement("table");
             gridElement.style.borderCollapse = "collapse";
