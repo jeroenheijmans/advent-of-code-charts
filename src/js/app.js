@@ -233,7 +233,7 @@
             }
         }
 
-        return 0;
+        return b.local_score - a.local_score;
     }
 
     function getCacheKey() {
@@ -254,6 +254,15 @@
     function clearCache() {
         console.log("Clearing cache", getCacheKey());
         localStorage.setItem(getCacheKey(), null);
+    }
+
+    function toggleShowAll() {
+        localStorage.setItem("aoc-flag-v1-show-all", !isShowAllToggled());
+        location.reload();
+    }
+
+    function isShowAllToggled() {
+        return !!JSON.parse(localStorage.getItem("aoc-flag-v1-show-all"));
     }
 
     function toggleResponsiveness() {
@@ -724,12 +733,22 @@
             const medalHtml = n => n === 0 ? "🥇" : n === 1 ? "🥈" : n === 2 ? "🥉" : `${n}`;
             const medalColor = n => n === 0 ? "gold" : n === 1 ? "silver" : n === 2 ? "#945210" : "rgba(15, 15, 35, 1.0)";
 
-            this.medals.title = "For each day, the top 3 to get the second star are shown. Behind each medal you can get a glimpse of the podium for the *first* star.";
+            this.medals.title =
+              (isShowAllToggled()
+                ? ''
+                : 'For each day, the top 3 to get the second star are shown. ') +
+              'Behind each medal you can get a glimpse of the podium for the *first* star.';
             let titleElement = this.medals.appendChild(document.createElement("h3"));
-            titleElement.innerText = "Podium per day";
+            titleElement.innerText = "Podium per day: ";
             titleElement.style.fontFamily = "Helvetica, Arial, sans-serif";
             titleElement.style.fontWeight = "normal";
             titleElement.style.marginBottom = "4px";
+            
+            const showAllToggleLink = titleElement.appendChild(document.createElement("a"));
+            showAllToggleLink.innerText = isShowAllToggled() ? "🎄 Showing all participants" : "🥇 Showing only medalists";
+            showAllToggleLink.title = "Toggle between showing only medalists or all participants";
+            showAllToggleLink.style.cursor = "pointer";
+            showAllToggleLink.addEventListener("click", () => toggleShowAll());
 
             let gridElement = document.createElement("table");
             gridElement.style.borderCollapse = "collapse";
@@ -820,7 +839,7 @@
                     td.align = "center";
                 }
 
-                if (medalCount > 0) {
+                if (isShowAllToggled() || medalCount > 0) {
                     gridElement.appendChild(tr);
                 }
             }
