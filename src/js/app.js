@@ -687,7 +687,7 @@
                         totalScore += memberStar2.points;
                     }
 
-                    td = tr.appendChild(createCell(totalScore ? totalScore : ""))
+                    td = tr.appendChild(createCell(totalScore ? totalScore : "0"))
                     if (getTimeTableSort() === "completion") {
                         td.style.color = "#ffffff";
                         td.style.textShadow = "0 0 5px #ffffff";
