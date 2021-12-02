@@ -236,10 +236,6 @@
         return b.local_score - a.local_score;
     }
 
-    function memberByLocalScoreSorter(a, b) {
-        return b.local_score - a.local_score;
-    }
-
     function getCacheKey() {
         return `aoc-data-v1-${document.location.pathname}`;
     }
@@ -782,9 +778,7 @@
                 td.align = "center";
             }
 
-            for (let member of grid.sort(
-              isShowAllToggled() ? memberByLocalScoreSorter : memberByPodiumSorter
-            )) {
+            for (let member of grid.sort(memberByPodiumSorter)) {
                 let tr = document.createElement("tr");
                 let medalCount = 0;
 
