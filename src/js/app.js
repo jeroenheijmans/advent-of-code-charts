@@ -631,6 +631,8 @@
                     }))
                 ;
 
+                let username = document.querySelector('div.user').textContent;
+                username = username.substr(0, username.lastIndexOf(' '));
                 for (let member of grid) {
                     let memberStar1 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
                     let memberStar2 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
@@ -643,6 +645,9 @@
                     rank += 1;
 
                     let tr = gridElement.appendChild(document.createElement("tr"));
+                    if (member.name === username) {
+                        tr.style.backgroundColor = "rgba(255, 255, 255, 0.25)";
+                    }
                     let td = tr.appendChild(createCell(rank.toString() + ". " + member.name))
                     td.style.textAlign = "left";
 
