@@ -75,18 +75,67 @@
         return basePoints;
     }
 
+    /**
+     * @typedef {{
+     *   last_star_ts: string | number;
+     *   global_score: number;
+     *   completion_day_level: Record<string, Record<string, { get_star_ts: string; }>>;
+     *   local_score: number;
+     *   name: string | null;
+     *   stars: number;
+     *   id: string;
+     * }} IMemberJson
+     * 
+     * @typedef {{
+     *   event: string, 
+     *   owner_id: string, 
+     *   members: Record<string, IMemberJson>
+     * }} IJson
+     * 
+     * @typedef {{
+     *   memberId: string;
+     *   dayNr: number;
+     *   dayKey: string;
+     *   starNr: number;
+     *   starKey: string;
+     *   getStarDay: number;
+     *   getStarTimestamp: string;
+     *   getStarMoment: moment.Moment;
+     *   timeTaken: number;
+     *   timeTakenSeconds: number;
+     *   nrOfStarsAfterThisOne: number;
+     *   points: number;
+     *   rank: number;
+     *   nrOfPointsAfterThisOne: number;
+     *   awardedPodiumPlace: number;
+     *   awardedPodiumPlaceFirstPuzzle: number;
+     * }} IStar
+     * 
+     * @typedef {Omit<IMemberJson, "stars"> & {
+     *   stars: IStar[];
+     *   score: number;
+     *   podiumPlacesPerDay: number[];
+     *   podiumPlacesPerDayFirstPuzzle: number[];
+     *   color: string;
+     * }} IMember
+     * 
+     * @typedef {ReturnType<transformRawAocJson>} IData;
+     */
+    
+    /**
+    @param {IJson} json
+    */
     function transformRawAocJson(json) {
+        /** @type {IStar[]} */
         let stars = [];
         let year = parseInt(json.event);
 
         let n_members = Object.keys(json.members).length;
         let members = Object.keys(json.members)
             .map(k => json.members[k])
-            .map(m => {
-                let i = 0;
+            .map((/** @type {IMember} */ m) => {
                 m.stars = [];
                 m.name = m.name || `(anonymous user ${m.id})`;
-                m.podiumStars = [];
 
                 for (let dayKey of Object.keys(m.completion_day_level)) {
                     for (let starKey of Object.keys(m.completion_day_level[dayKey])) {
@@ -154,7 +203,13 @@
             }
         }
 
+        /** @type {number} */
         let maxDay = Math.max.apply(Math, stars.filter(s => s.starNr === 2).map(s => s.dayNr))
+        /** @type {Record<number, {
+         *   dayNr: number;
+         *   podium: IStar[];
+         *   podiumFirstPuzzle: IStar[];
+         * }>} */
         let days = {};
 
         for (let d = 1; d <= maxDay; d++) {
@@ -167,7 +222,6 @@
             for (let i = 0; i < days[d].podium.length; i++) {
                 days[d].podium[i].awardedPodiumPlace = i;
                 days[d].podiumFirstPuzzle[i].awardedPodiumPlaceFirstPuzzle = i;
-
             }
         }
 
@@ -1059,6 +1113,9 @@
             return data;
         }
 
+        /**
+        * @param {IData} data
+        */
         loadPointsOverTime(data) {
             let datasets = data.members.sort((a, b) => a.name.localeCompare(b.name)).map(m => {
                 return {
