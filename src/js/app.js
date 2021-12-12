@@ -1068,10 +1068,7 @@
                     borderWidth: 1.5,
                     borderColor: m.color,
                     backgroundColor: m.color,
-                    data: m.stars.filter((s, i) => {
-                        let truncate_to_day = d => { return Math.trunc(d / 1000 / 3600 / 24 )*3600*24*1000; };
-                        return i+1 >= m.stars.length || (truncate_to_day(s.getStarMoment) != truncate_to_day(m.stars[i+1].getStarMoment));
-                    }).map(s => {
+                    data: m.stars.filter(s => s.starNr === 2).map(s => {
                         return {
                             x: s.getStarMoment,
                             y: s.nrOfPointsAfterThisOne,
@@ -1169,10 +1166,7 @@
                     borderWidth: 1.5,
                     borderColor: m.color,
                     backgroundColor: m.color,
-                    data: m.stars.filter((s, i) => {
-                        let truncate_to_day = d => { return Math.trunc(d / 1000 / 3600 / 24 )*3600*24*1000; };
-                        return i+1 >= m.stars.length || (truncate_to_day(s.getStarMoment) != truncate_to_day(m.stars[i+1].getStarMoment));
-                    }).map(s => {
+                    data: m.stars.filter(s => s.starNr === 2).map(s => {
                         return {
                             x: s.getStarMoment,
                             y: s.nrOfStarsAfterThisOne,
