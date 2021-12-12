@@ -1117,6 +1117,8 @@
         * @param {IData} data
         */
         loadPointsOverTime(data) {
+            let usePercentage = true;
+            let maxPointsPerDay = data.n_members * 2;
             let datasets = data.members.sort((a, b) => a.name.localeCompare(b.name)).map(m => {
                 return {
                     label: m.name,
@@ -1125,7 +1127,24 @@
                     borderWidth: 1.5,
                     borderColor: m.color,
                     backgroundColor: m.color,
-                    data: m.stars.map(s => {
+                    data: usePercentage 
+                    ? Array.from(m.stars.reduce(
+                            (/** @type {Map<number, IStar[]>} */ map, s) => map.set(s.dayNr, [...(map.get(s.dayNr) ?? []), s]),
+                            new Map()
+                        ).entries())
+                        .sort((a,b) => a[0] - b[0])
+                        .map(([key, stars]) => ({
+                            dayNr: key, 
+                            stars, 
+                            points: stars.map(s => s.points).reduce((a,b) => a+b)
+                        }))
+                        .map((day, i, days) => ({
+                                x: moment([data.year, 10, 30, 0, 0, 0]).add(day.dayNr, "d"),
+                                // y: day.points / (maxPointsPerDay) * 100,
+                                y: days.slice(0, i+1).map(d => d.points).reduce((a,b) => a+b) / (day.dayNr * maxPointsPerDay) * 100,
+                                day
+                            }))
+                    : m.stars.map(s => {
                         return {
                             x: s.getStarMoment,
                             y: s.nrOfPointsAfterThisOne,
@@ -1134,7 +1153,6 @@
                     })
                 };
             });
-
             let element = this.createGraphCanvas(data, "Points over time per member.");
             this.graphs.appendChild(element);
 
@@ -1148,6 +1166,10 @@
                     tooltips: {
                         callbacks: {
                             afterLabel: (item, data) => {
+                                if (usePercentage) {
+                                    const day = data.datasets[item.datasetIndex].data[item.index].day;
+                                    return `(day ${day.dayNr}, ${day.points} points, ranked ${day.stars.map(s => `${s.rank}.`).join(' and ')})`;
+                                }
                                 const star = data.datasets[item.datasetIndex].data[item.index].star;
                                 return `(completed day ${star.dayNr} star ${star.starNr})`;
                             },
@@ -1199,7 +1221,7 @@
                             },
                             scaleLabel: {
                                 display: true,
-                                labelString: "cumulative points",
+                                labelString: usePercentage ? "percent" : "cumulative points",
                                 fontColor: aocColors["main"],
                             },
                             gridLines: {
