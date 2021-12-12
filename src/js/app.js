@@ -17,6 +17,7 @@
         "main": "rgba(200, 200, 200, 0.9)",
         "secondary": "rgba(150, 150, 150, 0.9)",
         "tertiary": "rgba(100, 100, 100, 0.5)",
+        "link": "#009900"
     };
 
     const graphColorStyles = [
@@ -355,6 +356,15 @@
     function getTimeTableSort() {
         let value = localStorage.getItem("aoc-flag-v1-delta-sort") || "delta";
         return value;
+    }
+
+    function toggleShowPercentage() {
+        localStorage.setItem("aoc-flag-v1-show-percentage", !isShowPercentageToggled());
+        location.reload();
+    }
+
+    function isShowPercentageToggled() {
+        return !!JSON.parse(localStorage.getItem("aoc-flag-v1-show-percentage"));
     }
 
     let prevClick;
@@ -1117,7 +1127,7 @@
         * @param {IData} data
         */
         loadPointsOverTime(data) {
-            let usePercentage = true;
+            let usePercentage = isShowPercentageToggled();
             let maxPointsPerDay = [];
             data.stars.forEach(s => maxPointsPerDay[s.dayNr-1] = s.points > 0 ? data.n_members * 2 : 0);
             let datasets = data.members.sort((a, b) => a.name.localeCompare(b.name)).map(m => {
@@ -1200,11 +1210,23 @@
                     },
                     title: {
                         display: true,
-                        text: "Leaderboard (points)",
+                        text: `Leaderboard (${usePercentage ? "percentage" : "cumulative"} points) - click to change to ${usePercentage ? "cumulative" : "percentage"} points`,
                         fontSize: 24,
                         fontStyle: "normal",
-                        fontColor: aocColors["main"],
+                        fontColor: aocColors.link,
                         lineHeight: 2.0,
+                    },
+                    onClick: function(ev) {
+                        console.log('onClick', ev, this)
+                        var title = this.titleBlock;
+                        if (!title) {
+                          return;
+                        }
+                     
+                        if (ev.offsetX > title.left && ev.offsetX < title.right &&
+                            ev.offsetY > title.top && ev.offsetY < title.bottom) {
+                            toggleShowPercentage();
+                        }
                     },
                     scales: {
                         xAxes: [{
