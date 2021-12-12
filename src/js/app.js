@@ -1121,6 +1121,15 @@
             let maxPointsPerDay = [];
             data.stars.forEach(s => maxPointsPerDay[s.dayNr-1] = s.points > 0 ? data.n_members * 2 : 0);
             let datasets = data.members.sort((a, b) => a.name.localeCompare(b.name)).map(m => {
+                const days = m.stars.reduce(
+                    (/** @type {Map<number, {stars: IStar[], points: number}>} */ map, s) => {
+                        const current = map.get(s.dayNr) ?? { stars: [], points:0 };
+                        return map.set(s.dayNr, { 
+                            stars: [...current.stars, s], 
+                            points: current.points + s.points
+                        })},
+                    new Map()
+                )
                 return {
                     label: m.name,
                     lineTension: 0.2,
@@ -1128,16 +1137,16 @@
                     borderWidth: 1.5,
                     borderColor: m.color,
                     backgroundColor: m.color,
+                    pointStyle: usePercentage ? function(context) {
+                        const index = context.dataIndex;
+                        const day = context.dataset.data[index].day;
+                        return day.points === 0 ? 'cross' : 'circle';
+                    } : undefined,
                     data: usePercentage 
-                    ? Array.from(m.stars.reduce(
-                            (/** @type {Map<number, IStar[]>} */ map, s) => map.set(s.dayNr, [...(map.get(s.dayNr) ?? []), s]),
-                            new Map()
-                        ).entries())
-                        .sort((a,b) => a[0] - b[0])
-                        .map(([key, stars]) => ({
-                            dayNr: key, 
-                            stars, 
-                            points: stars.map(s => s.points).reduce((a,b) => a+b)
+                    ? maxPointsPerDay
+                        .map((max, i) => ({ 
+                            dayNr: i+1, 
+                            ...(days.get(i+1) ?? { stars: [], points:0 })
                         }))
                         .map((day, i, days) => ({
                             ...day,
@@ -1146,7 +1155,7 @@
                         }))
                         .map((day) => ({
                                 x: moment([data.year, 10, 30, 0, 0, 0]).add(day.dayNr, "d"),
-                                // y: day.points / (maxPointsPerDay) * 100,
+                                // y: day.points / (data.n_members * 2) * 100,
                                 y: day.pointsToDay / day.maxPointsToDay * 100,
                                 day
                             }))
@@ -1174,7 +1183,7 @@
                             afterLabel: (item, data) => {
                                 if (usePercentage) {
                                     const day = data.datasets[item.datasetIndex].data[item.index].day;
-                                    return `(day ${day.dayNr}. Total: ${day.pointsToDay} of ${day.maxPointsToDay} points. Today: ${day.points} points, ranked ${day.stars.map(s => `${s.rank}.`).join(' and ')})`;
+                                    return `(day ${day.dayNr}. Total: ${day.pointsToDay} of ${day.maxPointsToDay} points. Today: ${day.points} points, ranked ${day.stars.map(s => `${s.rank}.`).join(' and ') || '-'})`;
                                 }
                                 const star = data.datasets[item.datasetIndex].data[item.index].star;
                                 return `(completed day ${star.dayNr} star ${star.starNr})`;
