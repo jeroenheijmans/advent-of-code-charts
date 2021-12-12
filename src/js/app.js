@@ -1068,7 +1068,7 @@
                     borderWidth: 1.5,
                     borderColor: m.color,
                     backgroundColor: m.color,
-                    data: m.stars.map(s => {
+                    data: m.stars.filter(s => s.starNr === 2).map(s => {
                         return {
                             x: s.getStarMoment,
                             y: s.nrOfPointsAfterThisOne,
@@ -1166,7 +1166,7 @@
                     borderWidth: 1.5,
                     borderColor: m.color,
                     backgroundColor: m.color,
-                    data: m.stars.map(s => {
+                    data: m.stars.filter(s => s.starNr === 2).map(s => {
                         return {
                             x: s.getStarMoment,
                             y: s.nrOfStarsAfterThisOne,
