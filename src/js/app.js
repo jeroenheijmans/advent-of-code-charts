@@ -1118,7 +1118,8 @@
         */
         loadPointsOverTime(data) {
             let usePercentage = true;
-            let maxPointsPerDay = data.n_members * 2;
+            let maxPointsPerDay = [];
+            data.stars.forEach(s => maxPointsPerDay[s.dayNr-1] = s.points > 0 ? data.n_members * 2 : 0);
             let datasets = data.members.sort((a, b) => a.name.localeCompare(b.name)).map(m => {
                 return {
                     label: m.name,
@@ -1139,9 +1140,14 @@
                             points: stars.map(s => s.points).reduce((a,b) => a+b)
                         }))
                         .map((day, i, days) => ({
+                            ...day,
+                            pointsToDay: days.filter(d => d.dayNr <= day.dayNr).map(d => d.points).reduce((a,b) => a+b),
+                            maxPointsToDay: maxPointsPerDay.slice(0, day.dayNr).reduce((p,max) => p+(max ?? 0), 0)
+                        }))
+                        .map((day) => ({
                                 x: moment([data.year, 10, 30, 0, 0, 0]).add(day.dayNr, "d"),
                                 // y: day.points / (maxPointsPerDay) * 100,
-                                y: days.slice(0, i+1).map(d => d.points).reduce((a,b) => a+b) / (day.dayNr * maxPointsPerDay) * 100,
+                                y: day.pointsToDay / day.maxPointsToDay * 100,
                                 day
                             }))
                     : m.stars.map(s => {
@@ -1168,7 +1174,7 @@
                             afterLabel: (item, data) => {
                                 if (usePercentage) {
                                     const day = data.datasets[item.datasetIndex].data[item.index].day;
-                                    return `(day ${day.dayNr}, ${day.points} points, ranked ${day.stars.map(s => `${s.rank}.`).join(' and ')})`;
+                                    return `(day ${day.dayNr}. Total: ${day.pointsToDay} of ${day.maxPointsToDay} points. Today: ${day.points} points, ranked ${day.stars.map(s => `${s.rank}.`).join(' and ')})`;
                                 }
                                 const star = data.datasets[item.datasetIndex].data[item.index].star;
                                 return `(completed day ${star.dayNr} star ${star.starNr})`;
