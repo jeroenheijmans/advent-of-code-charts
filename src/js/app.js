@@ -361,12 +361,19 @@
         return memberStar.getStarMoment.local().format("HH:mm:ss YYYY-MM-DD") + " (local time)";
     }
 
+    let imgURLGoldMedal = "Emojione_1F947-gold.svg";
+    let imgURLSilverMedal = "Emojione_1F948-silver.svg"
+    let imgURLBronzeMedal = "Emojione_1F949-bronze.svg";
 
     function getLeaderboardJson() {
         // 1. Check if dummy data was loaded...
         if (!!aoc.dummyData) {
             console.info("Loading dummyData");
 
+            imgURLGoldMedal = `img/${imgURLGoldMedal}`;
+            imgURLSilverMedal = `img/${imgURLSilverMedal}`;
+            imgURLBronzeMedal = `img/${imgURLBronzeMedal}`;
+  
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
                     resolve(transformRawAocJson(aoc.dummyData));
@@ -375,6 +382,9 @@
         }
         // 2. Apparently we can use real calls...
         else {
+            imgURLGoldMedal = chrome.runtime.getURL(imgURLGoldMedal);
+            imgURLSilverMedal = chrome.runtime.getURL(imgURLSilverMedal);
+            imgURLBronzeMedal = chrome.runtime.getURL(imgURLBronzeMedal);
             let anchor = document.querySelector("#api_info a");
             if (!!anchor) {
                 let url = anchor.href;
@@ -711,7 +721,7 @@
                     tablePerDay[t].style.display = "none";
                 }
                 tablePerDay[day].style.display = "table";
-                
+
                 for (const a in anchorPerDay) {
                     anchorPerDay[a].style.color = "";
                     anchorPerDay[a].style.textShadow = "";
@@ -730,7 +740,14 @@
         }
 
         loadMedalOverview(data) {
-            const medalHtml = n => n === 0 ? "🥇" : n === 1 ? "🥈" : n === 2 ? "🥉" : `${n}`;
+            const addMedal = (n, span) => {
+                if (n > 2) {
+                    span.innerText = `${n}`;
+                    return;
+                }
+                let img = span.appendChild(document.createElement("img"));
+                img.src = n === 0 ? imgURLGoldMedal : n === 1 ? imgURLSilverMedal : n === 2 ? imgURLBronzeMedal : undefined;
+            }
             const medalColor = n => n === 0 ? "gold" : n === 1 ? "silver" : n === 2 ? "#945210" : "rgba(15, 15, 35, 1.0)";
 
             this.medals.title =
@@ -743,7 +760,7 @@
             titleElement.style.fontFamily = "Helvetica, Arial, sans-serif";
             titleElement.style.fontWeight = "normal";
             titleElement.style.marginBottom = "4px";
-            
+
             const showAllToggleLink = titleElement.appendChild(document.createElement("a"));
             showAllToggleLink.innerText = isShowAllToggled() ? "🎄 Showing all participants" : "🥇 Showing only medalists";
             showAllToggleLink.title = "Toggle between showing only medalists or all participants";
@@ -766,7 +783,7 @@
             for (let n = 0; n < podiumLength; n++) {
                 let td = tr.appendChild(document.createElement("td"));
                 let span = td.appendChild(document.createElement("span"));
-                span.innerText = medalHtml(n);
+                addMedal(n, span);
                 span.style.backgroundColor = medalColor(n);
                 span.style.padding = "1px";
                 td.style.padding = "4px";
@@ -804,7 +821,7 @@
                         }
 
                         let span = div.appendChild(document.createElement("span"));
-                        span.innerText = medalHtml(secondPuzzlePodiumPlace);
+                        addMedal(secondPuzzlePodiumPlace, span);
                         span.style.display = "block";
                         span.style.padding = "1px";
                         span.style.borderRadius = "2px";
