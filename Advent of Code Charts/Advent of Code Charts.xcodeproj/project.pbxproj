@@ -1,0 +1,957 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0A845F9829437E1B000D9921 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A845F9729437E1B000D9921 /* AppDelegate.swift */; };
+		0A845F9A29437E1B000D9921 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A845F9929437E1B000D9921 /* SceneDelegate.swift */; };
+		0A845F9D29437E1B000D9921 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0A845F9B29437E1B000D9921 /* LaunchScreen.storyboard */; };
+		0A845FA029437E1B000D9921 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0A845F9E29437E1B000D9921 /* Main.storyboard */; };
+		0A845FA929437E1C000D9921 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A845FA829437E1C000D9921 /* AppDelegate.swift */; };
+		0A845FAC29437E1C000D9921 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0A845FAA29437E1C000D9921 /* Main.storyboard */; };
+		0A845FB429437E1C000D9921 /* Advent of Code Charts Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0A845FB329437E1C000D9921 /* Advent of Code Charts Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		0A845FBE29437E1C000D9921 /* Advent of Code Charts Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0A845FBD29437E1C000D9921 /* Advent of Code Charts Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		0A845FC429437E1C000D9921 /* Main.html in Resources */ = {isa = PBXBuildFile; fileRef = 0A845F8729437E19000D9921 /* Main.html */; };
+		0A845FC529437E1C000D9921 /* Main.html in Resources */ = {isa = PBXBuildFile; fileRef = 0A845F8729437E19000D9921 /* Main.html */; };
+		0A845FC629437E1C000D9921 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 0A845F8929437E19000D9921 /* Icon.png */; };
+		0A845FC729437E1C000D9921 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 0A845F8929437E19000D9921 /* Icon.png */; };
+		0A845FC829437E1C000D9921 /* Style.css in Resources */ = {isa = PBXBuildFile; fileRef = 0A845F8A29437E19000D9921 /* Style.css */; };
+		0A845FC929437E1C000D9921 /* Style.css in Resources */ = {isa = PBXBuildFile; fileRef = 0A845F8A29437E19000D9921 /* Style.css */; };
+		0A845FCA29437E1C000D9921 /* Script.js in Resources */ = {isa = PBXBuildFile; fileRef = 0A845F8B29437E19000D9921 /* Script.js */; };
+		0A845FCB29437E1C000D9921 /* Script.js in Resources */ = {isa = PBXBuildFile; fileRef = 0A845F8B29437E19000D9921 /* Script.js */; };
+		0A845FCC29437E1C000D9921 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A845F8C29437E19000D9921 /* ViewController.swift */; };
+		0A845FCD29437E1C000D9921 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A845F8C29437E19000D9921 /* ViewController.swift */; };
+		0A845FCE29437E1C000D9921 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0A845F8D29437E1B000D9921 /* Assets.xcassets */; };
+		0A845FCF29437E1C000D9921 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0A845F8D29437E1B000D9921 /* Assets.xcassets */; };
+		0A845FD029437E1C000D9921 /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A845F8F29437E1B000D9921 /* SafariWebExtensionHandler.swift */; };
+		0A845FD129437E1C000D9921 /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A845F8F29437E1B000D9921 /* SafariWebExtensionHandler.swift */; };
+		0A845FEA29437E21000D9921 /* icon16.png in Resources */ = {isa = PBXBuildFile; fileRef = 0A845FE329437E21000D9921 /* icon16.png */; };
+		0A845FEB29437E21000D9921 /* Chart.min.js in Resources */ = {isa = PBXBuildFile; fileRef = 0A845FE429437E21000D9921 /* Chart.min.js */; };
+		0A845FEC29437E21000D9921 /* icon48.png in Resources */ = {isa = PBXBuildFile; fileRef = 0A845FE529437E21000D9921 /* icon48.png */; };
+		0A845FED29437E21000D9921 /* icon128.png in Resources */ = {isa = PBXBuildFile; fileRef = 0A845FE629437E21000D9921 /* icon128.png */; };
+		0A845FEE29437E21000D9921 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = 0A845FE729437E21000D9921 /* manifest.json */; };
+		0A845FEF29437E21000D9921 /* moment.min.js in Resources */ = {isa = PBXBuildFile; fileRef = 0A845FE829437E21000D9921 /* moment.min.js */; };
+		0A845FF029437E21000D9921 /* app.js in Resources */ = {isa = PBXBuildFile; fileRef = 0A845FE929437E21000D9921 /* app.js */; };
+		0A845FF129437E21000D9921 /* icon16.png in Resources */ = {isa = PBXBuildFile; fileRef = 0A845FE329437E21000D9921 /* icon16.png */; };
+		0A845FF229437E21000D9921 /* Chart.min.js in Resources */ = {isa = PBXBuildFile; fileRef = 0A845FE429437E21000D9921 /* Chart.min.js */; };
+		0A845FF329437E21000D9921 /* icon48.png in Resources */ = {isa = PBXBuildFile; fileRef = 0A845FE529437E21000D9921 /* icon48.png */; };
+		0A845FF429437E21000D9921 /* icon128.png in Resources */ = {isa = PBXBuildFile; fileRef = 0A845FE629437E21000D9921 /* icon128.png */; };
+		0A845FF529437E21000D9921 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = 0A845FE729437E21000D9921 /* manifest.json */; };
+		0A845FF629437E21000D9921 /* moment.min.js in Resources */ = {isa = PBXBuildFile; fileRef = 0A845FE829437E21000D9921 /* moment.min.js */; };
+		0A845FF729437E21000D9921 /* app.js in Resources */ = {isa = PBXBuildFile; fileRef = 0A845FE929437E21000D9921 /* app.js */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0A845FB529437E1C000D9921 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0A845F8129437E18000D9921 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0A845FB229437E1C000D9921;
+			remoteInfo = "Advent of Code Charts Extension (iOS)";
+		};
+		0A845FBF29437E1C000D9921 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0A845F8129437E18000D9921 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0A845FBC29437E1C000D9921;
+			remoteInfo = "Advent of Code Charts Extension (macOS)";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		0A845FD729437E1C000D9921 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				0A845FB429437E1C000D9921 /* Advent of Code Charts Extension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0A845FDE29437E1C000D9921 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				0A845FBE29437E1C000D9921 /* Advent of Code Charts Extension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0A845F8829437E19000D9921 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = Base; path = ../Base.lproj/Main.html; sourceTree = "<group>"; };
+		0A845F8929437E19000D9921 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
+		0A845F8A29437E19000D9921 /* Style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = Style.css; sourceTree = "<group>"; };
+		0A845F8B29437E19000D9921 /* Script.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = Script.js; sourceTree = "<group>"; };
+		0A845F8C29437E19000D9921 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		0A845F8D29437E1B000D9921 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		0A845F8F29437E1B000D9921 /* SafariWebExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
+		0A845F9429437E1B000D9921 /* Advent of Code Charts.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Advent of Code Charts.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0A845F9729437E1B000D9921 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		0A845F9929437E1B000D9921 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		0A845F9C29437E1B000D9921 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		0A845F9F29437E1B000D9921 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		0A845FA129437E1B000D9921 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0A845FA629437E1C000D9921 /* Advent of Code Charts.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Advent of Code Charts.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0A845FA829437E1C000D9921 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		0A845FAB29437E1C000D9921 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		0A845FAD29437E1C000D9921 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0A845FAE29437E1C000D9921 /* Advent of Code Charts.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Advent of Code Charts.entitlements"; sourceTree = "<group>"; };
+		0A845FB329437E1C000D9921 /* Advent of Code Charts Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Advent of Code Charts Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0A845FB829437E1C000D9921 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0A845FBD29437E1C000D9921 /* Advent of Code Charts Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Advent of Code Charts Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0A845FC229437E1C000D9921 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0A845FC329437E1C000D9921 /* Advent of Code Charts.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Advent of Code Charts.entitlements"; sourceTree = "<group>"; };
+		0A845FE329437E21000D9921 /* icon16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon16.png; path = ../../build/icon16.png; sourceTree = "<group>"; };
+		0A845FE429437E21000D9921 /* Chart.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = Chart.min.js; path = ../../build/Chart.min.js; sourceTree = "<group>"; };
+		0A845FE529437E21000D9921 /* icon48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon48.png; path = ../../build/icon48.png; sourceTree = "<group>"; };
+		0A845FE629437E21000D9921 /* icon128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon128.png; path = ../../build/icon128.png; sourceTree = "<group>"; };
+		0A845FE729437E21000D9921 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = manifest.json; path = ../../build/manifest.json; sourceTree = "<group>"; };
+		0A845FE829437E21000D9921 /* moment.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = moment.min.js; path = ../../build/moment.min.js; sourceTree = "<group>"; };
+		0A845FE929437E21000D9921 /* app.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = app.js; path = ../../build/app.js; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0A845F9129437E1B000D9921 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0A845FA329437E1C000D9921 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0A845FB029437E1C000D9921 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0A845FBA29437E1C000D9921 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0A845F8029437E18000D9921 = {
+			isa = PBXGroup;
+			children = (
+				0A845F8529437E19000D9921 /* Shared (App) */,
+				0A845F8E29437E1B000D9921 /* Shared (Extension) */,
+				0A845F9629437E1B000D9921 /* iOS (App) */,
+				0A845FA729437E1C000D9921 /* macOS (App) */,
+				0A845FB729437E1C000D9921 /* iOS (Extension) */,
+				0A845FC129437E1C000D9921 /* macOS (Extension) */,
+				0A845F9529437E1B000D9921 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		0A845F8529437E19000D9921 /* Shared (App) */ = {
+			isa = PBXGroup;
+			children = (
+				0A845F8C29437E19000D9921 /* ViewController.swift */,
+				0A845F8D29437E1B000D9921 /* Assets.xcassets */,
+				0A845F8629437E19000D9921 /* Resources */,
+			);
+			path = "Shared (App)";
+			sourceTree = "<group>";
+		};
+		0A845F8629437E19000D9921 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				0A845F8729437E19000D9921 /* Main.html */,
+				0A845F8929437E19000D9921 /* Icon.png */,
+				0A845F8A29437E19000D9921 /* Style.css */,
+				0A845F8B29437E19000D9921 /* Script.js */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		0A845F8E29437E1B000D9921 /* Shared (Extension) */ = {
+			isa = PBXGroup;
+			children = (
+				0A845FE229437E21000D9921 /* Resources */,
+				0A845F8F29437E1B000D9921 /* SafariWebExtensionHandler.swift */,
+			);
+			path = "Shared (Extension)";
+			sourceTree = "<group>";
+		};
+		0A845F9529437E1B000D9921 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0A845F9429437E1B000D9921 /* Advent of Code Charts.app */,
+				0A845FA629437E1C000D9921 /* Advent of Code Charts.app */,
+				0A845FB329437E1C000D9921 /* Advent of Code Charts Extension.appex */,
+				0A845FBD29437E1C000D9921 /* Advent of Code Charts Extension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0A845F9629437E1B000D9921 /* iOS (App) */ = {
+			isa = PBXGroup;
+			children = (
+				0A845F9729437E1B000D9921 /* AppDelegate.swift */,
+				0A845F9929437E1B000D9921 /* SceneDelegate.swift */,
+				0A845F9B29437E1B000D9921 /* LaunchScreen.storyboard */,
+				0A845F9E29437E1B000D9921 /* Main.storyboard */,
+				0A845FA129437E1B000D9921 /* Info.plist */,
+			);
+			path = "iOS (App)";
+			sourceTree = "<group>";
+		};
+		0A845FA729437E1C000D9921 /* macOS (App) */ = {
+			isa = PBXGroup;
+			children = (
+				0A845FA829437E1C000D9921 /* AppDelegate.swift */,
+				0A845FAA29437E1C000D9921 /* Main.storyboard */,
+				0A845FAD29437E1C000D9921 /* Info.plist */,
+				0A845FAE29437E1C000D9921 /* Advent of Code Charts.entitlements */,
+			);
+			path = "macOS (App)";
+			sourceTree = "<group>";
+		};
+		0A845FB729437E1C000D9921 /* iOS (Extension) */ = {
+			isa = PBXGroup;
+			children = (
+				0A845FB829437E1C000D9921 /* Info.plist */,
+			);
+			path = "iOS (Extension)";
+			sourceTree = "<group>";
+		};
+		0A845FC129437E1C000D9921 /* macOS (Extension) */ = {
+			isa = PBXGroup;
+			children = (
+				0A845FC229437E1C000D9921 /* Info.plist */,
+				0A845FC329437E1C000D9921 /* Advent of Code Charts.entitlements */,
+			);
+			path = "macOS (Extension)";
+			sourceTree = "<group>";
+		};
+		0A845FE229437E21000D9921 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				0A845FE329437E21000D9921 /* icon16.png */,
+				0A845FE429437E21000D9921 /* Chart.min.js */,
+				0A845FE529437E21000D9921 /* icon48.png */,
+				0A845FE629437E21000D9921 /* icon128.png */,
+				0A845FE729437E21000D9921 /* manifest.json */,
+				0A845FE829437E21000D9921 /* moment.min.js */,
+				0A845FE929437E21000D9921 /* app.js */,
+			);
+			name = Resources;
+			path = "Shared (Extension)";
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0A845F9329437E1B000D9921 /* Advent of Code Charts (iOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0A845FD829437E1C000D9921 /* Build configuration list for PBXNativeTarget "Advent of Code Charts (iOS)" */;
+			buildPhases = (
+				0A845F9029437E1B000D9921 /* Sources */,
+				0A845F9129437E1B000D9921 /* Frameworks */,
+				0A845F9229437E1B000D9921 /* Resources */,
+				0A845FD729437E1C000D9921 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0A845FB629437E1C000D9921 /* PBXTargetDependency */,
+			);
+			name = "Advent of Code Charts (iOS)";
+			productName = "Advent of Code Charts (iOS)";
+			productReference = 0A845F9429437E1B000D9921 /* Advent of Code Charts.app */;
+			productType = "com.apple.product-type.application";
+		};
+		0A845FA529437E1C000D9921 /* Advent of Code Charts (macOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0A845FDF29437E1C000D9921 /* Build configuration list for PBXNativeTarget "Advent of Code Charts (macOS)" */;
+			buildPhases = (
+				0A845FA229437E1C000D9921 /* Sources */,
+				0A845FA329437E1C000D9921 /* Frameworks */,
+				0A845FA429437E1C000D9921 /* Resources */,
+				0A845FDE29437E1C000D9921 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0A845FC029437E1C000D9921 /* PBXTargetDependency */,
+			);
+			name = "Advent of Code Charts (macOS)";
+			productName = "Advent of Code Charts (macOS)";
+			productReference = 0A845FA629437E1C000D9921 /* Advent of Code Charts.app */;
+			productType = "com.apple.product-type.application";
+		};
+		0A845FB229437E1C000D9921 /* Advent of Code Charts Extension (iOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0A845FD429437E1C000D9921 /* Build configuration list for PBXNativeTarget "Advent of Code Charts Extension (iOS)" */;
+			buildPhases = (
+				0A845FAF29437E1C000D9921 /* Sources */,
+				0A845FB029437E1C000D9921 /* Frameworks */,
+				0A845FB129437E1C000D9921 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Advent of Code Charts Extension (iOS)";
+			productName = "Advent of Code Charts Extension (iOS)";
+			productReference = 0A845FB329437E1C000D9921 /* Advent of Code Charts Extension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		0A845FBC29437E1C000D9921 /* Advent of Code Charts Extension (macOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0A845FDB29437E1C000D9921 /* Build configuration list for PBXNativeTarget "Advent of Code Charts Extension (macOS)" */;
+			buildPhases = (
+				0A845FB929437E1C000D9921 /* Sources */,
+				0A845FBA29437E1C000D9921 /* Frameworks */,
+				0A845FBB29437E1C000D9921 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Advent of Code Charts Extension (macOS)";
+			productName = "Advent of Code Charts Extension (macOS)";
+			productReference = 0A845FBD29437E1C000D9921 /* Advent of Code Charts Extension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0A845F8129437E18000D9921 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1410;
+				LastUpgradeCheck = 1410;
+				TargetAttributes = {
+					0A845F9329437E1B000D9921 = {
+						CreatedOnToolsVersion = 14.1;
+					};
+					0A845FA529437E1C000D9921 = {
+						CreatedOnToolsVersion = 14.1;
+					};
+					0A845FB229437E1C000D9921 = {
+						CreatedOnToolsVersion = 14.1;
+					};
+					0A845FBC29437E1C000D9921 = {
+						CreatedOnToolsVersion = 14.1;
+					};
+				};
+			};
+			buildConfigurationList = 0A845F8429437E18000D9921 /* Build configuration list for PBXProject "Advent of Code Charts" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 0A845F8029437E18000D9921;
+			productRefGroup = 0A845F9529437E1B000D9921 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0A845F9329437E1B000D9921 /* Advent of Code Charts (iOS) */,
+				0A845FA529437E1C000D9921 /* Advent of Code Charts (macOS) */,
+				0A845FB229437E1C000D9921 /* Advent of Code Charts Extension (iOS) */,
+				0A845FBC29437E1C000D9921 /* Advent of Code Charts Extension (macOS) */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0A845F9229437E1B000D9921 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0A845FC629437E1C000D9921 /* Icon.png in Resources */,
+				0A845F9D29437E1B000D9921 /* LaunchScreen.storyboard in Resources */,
+				0A845FC429437E1C000D9921 /* Main.html in Resources */,
+				0A845FCA29437E1C000D9921 /* Script.js in Resources */,
+				0A845FCE29437E1C000D9921 /* Assets.xcassets in Resources */,
+				0A845FA029437E1B000D9921 /* Main.storyboard in Resources */,
+				0A845FC829437E1C000D9921 /* Style.css in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0A845FA429437E1C000D9921 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0A845FC729437E1C000D9921 /* Icon.png in Resources */,
+				0A845FC929437E1C000D9921 /* Style.css in Resources */,
+				0A845FAC29437E1C000D9921 /* Main.storyboard in Resources */,
+				0A845FCB29437E1C000D9921 /* Script.js in Resources */,
+				0A845FCF29437E1C000D9921 /* Assets.xcassets in Resources */,
+				0A845FC529437E1C000D9921 /* Main.html in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0A845FB129437E1C000D9921 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0A845FF129437E21000D9921 /* icon16.png in Resources */,
+				0A845FF229437E21000D9921 /* Chart.min.js in Resources */,
+				0A845FF729437E21000D9921 /* app.js in Resources */,
+				0A845FF529437E21000D9921 /* manifest.json in Resources */,
+				0A845FF429437E21000D9921 /* icon128.png in Resources */,
+				0A845FF629437E21000D9921 /* moment.min.js in Resources */,
+				0A845FF329437E21000D9921 /* icon48.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0A845FBB29437E1C000D9921 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0A845FEA29437E21000D9921 /* icon16.png in Resources */,
+				0A845FEB29437E21000D9921 /* Chart.min.js in Resources */,
+				0A845FF029437E21000D9921 /* app.js in Resources */,
+				0A845FEE29437E21000D9921 /* manifest.json in Resources */,
+				0A845FED29437E21000D9921 /* icon128.png in Resources */,
+				0A845FEF29437E21000D9921 /* moment.min.js in Resources */,
+				0A845FEC29437E21000D9921 /* icon48.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0A845F9029437E1B000D9921 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0A845FCC29437E1C000D9921 /* ViewController.swift in Sources */,
+				0A845F9829437E1B000D9921 /* AppDelegate.swift in Sources */,
+				0A845F9A29437E1B000D9921 /* SceneDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0A845FA229437E1C000D9921 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0A845FCD29437E1C000D9921 /* ViewController.swift in Sources */,
+				0A845FA929437E1C000D9921 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0A845FAF29437E1C000D9921 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0A845FD029437E1C000D9921 /* SafariWebExtensionHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0A845FB929437E1C000D9921 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0A845FD129437E1C000D9921 /* SafariWebExtensionHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0A845FB629437E1C000D9921 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0A845FB229437E1C000D9921 /* Advent of Code Charts Extension (iOS) */;
+			targetProxy = 0A845FB529437E1C000D9921 /* PBXContainerItemProxy */;
+		};
+		0A845FC029437E1C000D9921 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0A845FBC29437E1C000D9921 /* Advent of Code Charts Extension (macOS) */;
+			targetProxy = 0A845FBF29437E1C000D9921 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		0A845F8729437E19000D9921 /* Main.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0A845F8829437E19000D9921 /* Base */,
+			);
+			name = Main.html;
+			sourceTree = "<group>";
+		};
+		0A845F9B29437E1B000D9921 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0A845F9C29437E1B000D9921 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		0A845F9E29437E1B000D9921 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0A845F9F29437E1B000D9921 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		0A845FAA29437E1C000D9921 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0A845FAB29437E1C000D9921 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		0A845FD229437E1C000D9921 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		0A845FD329437E1C000D9921 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		0A845FD529437E1C000D9921 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "iOS (Extension)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Advent of Code Charts Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "nl.jeroenheijmans.Advent-of-Code-Charts.Extension";
+				PRODUCT_NAME = "Advent of Code Charts Extension";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		0A845FD629437E1C000D9921 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "iOS (Extension)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Advent of Code Charts Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "nl.jeroenheijmans.Advent-of-Code-Charts.Extension";
+				PRODUCT_NAME = "Advent of Code Charts Extension";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		0A845FD929437E1C000D9921 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "iOS (App)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Advent of Code Charts";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "nl.jeroenheijmans.Advent-of-Code-Charts";
+				PRODUCT_NAME = "Advent of Code Charts";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		0A845FDA29437E1C000D9921 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "iOS (App)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Advent of Code Charts";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "nl.jeroenheijmans.Advent-of-Code-Charts";
+				PRODUCT_NAME = "Advent of Code Charts";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		0A845FDC29437E1C000D9921 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "macOS (Extension)/Advent of Code Charts.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "macOS (Extension)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Advent of Code Charts Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "nl.jeroenheijmans.Advent-of-Code-Charts.Extension";
+				PRODUCT_NAME = "Advent of Code Charts Extension";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		0A845FDD29437E1C000D9921 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "macOS (Extension)/Advent of Code Charts.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "macOS (Extension)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Advent of Code Charts Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "nl.jeroenheijmans.Advent-of-Code-Charts.Extension";
+				PRODUCT_NAME = "Advent of Code Charts Extension";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		0A845FE029437E1C000D9921 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "macOS (App)/Advent of Code Charts.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "macOS (App)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Advent of Code Charts";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "nl.jeroenheijmans.Advent-of-Code-Charts";
+				PRODUCT_NAME = "Advent of Code Charts";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		0A845FE129437E1C000D9921 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "macOS (App)/Advent of Code Charts.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "macOS (App)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Advent of Code Charts";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "nl.jeroenheijmans.Advent-of-Code-Charts";
+				PRODUCT_NAME = "Advent of Code Charts";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0A845F8429437E18000D9921 /* Build configuration list for PBXProject "Advent of Code Charts" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0A845FD229437E1C000D9921 /* Debug */,
+				0A845FD329437E1C000D9921 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0A845FD429437E1C000D9921 /* Build configuration list for PBXNativeTarget "Advent of Code Charts Extension (iOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0A845FD529437E1C000D9921 /* Debug */,
+				0A845FD629437E1C000D9921 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0A845FD829437E1C000D9921 /* Build configuration list for PBXNativeTarget "Advent of Code Charts (iOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0A845FD929437E1C000D9921 /* Debug */,
+				0A845FDA29437E1C000D9921 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0A845FDB29437E1C000D9921 /* Build configuration list for PBXNativeTarget "Advent of Code Charts Extension (macOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0A845FDC29437E1C000D9921 /* Debug */,
+				0A845FDD29437E1C000D9921 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0A845FDF29437E1C000D9921 /* Build configuration list for PBXNativeTarget "Advent of Code Charts (macOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0A845FE029437E1C000D9921 /* Debug */,
+				0A845FE129437E1C000D9921 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0A845F8129437E18000D9921 /* Project object */;
+}
