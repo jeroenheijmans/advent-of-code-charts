@@ -5,6 +5,8 @@ Get it as an extension:
 
 [![browser-store-chrome.png](browser-store-chrome.png)](https://chrome.google.com/webstore/detail/advent-of-code-charts/ipbomkmbokofodhhjpipflmdplipblbe) [![browser-store-firefox.png](browser-store-firefox.png)](https://addons.mozilla.org/en-US/firefox/addon/advent-of-code-charts/)
 
+For Safari on macOS, you can open the `Advent of Code.app` in the `Safari` folder and enable the safari extension, or open `AdventOfCodeCharts.xcodeproj` in XCode and build it for yourself.
+
 ## Disclaimers
 
 It is *not* a well-architectured, well-written, neat, nice, fluffy, industry-strength piece of code.
@@ -32,6 +34,7 @@ Run `build.ps1` or `build.sh` to re-create a `/build` folder which is a ready-to
 Test the extension by loading it in the browser.
 For full reference, see Chrome's or Firefox's full documentation, but the basics are:
 
+- Safari: Open the XCode project in XCode, choose your target (Mac : macOS, iPhone & iPad : iOS), build the project, and open the Safari Extension companion app on your device. You can then load the extension from the Safari Settings.
 - Firefox: go to `about:debugging` and load a temporary addon (pick the `/build/manifest.json` file)
 - Chrome: go to `chrome://extensions` and load unpacked extension (pick the `/build` folder)
 
@@ -46,7 +49,7 @@ Note that "Advent of Code" and "AoC" are Eric Wastl's.
 This project is not "official", and in no way (directly or indirectly) endorsed by- or affiliated to Advent of Code and its creator/owner.
 Read more [about Advent of Code](https://adventofcode.com/2018/about) to learn about the project itself.
 
-**Oh, and of course, please [consider donating to _Advent of Code_ itself](https://adventofcode.com/2018/support)!**
+**Oh, and of course, please [consider donating to *Advent of Code* itself](https://adventofcode.com/2018/support)!**
 
 ## Example
 
