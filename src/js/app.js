@@ -1134,9 +1134,10 @@
         */
         loadPointsOverTime(data) {
             let graphType = getPointsOverTimeType();
-            let maxPointsPerDay = [];
+            const maxDayNr = Math.max(...data.stars.map(s => s.dayNr));
+            let maxPointsPerDay = Array.from({ length: maxDayNr }, () => data.n_members * 2);
             data.stars.forEach(s => maxPointsPerDay[s.dayNr-1] = s.points > 0 ? data.n_members * 2 : 0);
-            let availablePoints = [[...maxPointsPerDay], [...maxPointsPerDay]];
+            let availablePoints = [maxPointsPerDay.map(p => p/2), maxPointsPerDay.map(p => p/2)];
             data.stars.forEach(s => availablePoints[s.starNr-1][s.dayNr-1] = Math.min(availablePoints[s.starNr-1][s.dayNr-1], Math.max(s.points-1, 0)));
             let datasets = data.members.sort((a, b) => a.name.localeCompare(b.name)).reduce((p,m) => {
                 const days = m.stars.reduce(
