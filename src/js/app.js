@@ -17,6 +17,7 @@
         "main": "rgba(200, 200, 200, 0.9)",
         "secondary": "rgba(150, 150, 150, 0.9)",
         "tertiary": "rgba(100, 100, 100, 0.5)",
+        "highlight": "rgba(119,119,165,.2)",
     };
 
     const graphColorStyles = [
@@ -84,6 +85,9 @@
             .map(k => json.members[k])
             .map(m => {
                 let i = 0;
+                m.radius =  m.id === json.owner_id ? 5: 3;
+                m.borderWidth = m.id === json.owner_id ? 4 : 1;
+                m.pointStyle = m.id === json.owner_id ? "rectRot" : "circle"
                 m.stars = [];
                 m.name = m.name || `(anonymous user ${m.id})`;
                 m.podiumStars = [];
@@ -188,6 +192,7 @@
             members.forEach((m, idx) => m.color = colors[idx]);
 
         return {
+            owner_id: json.owner_id,
             maxDay: maxDay,
             maxMoment: maxMoment,
             days: days,
@@ -643,6 +648,9 @@
                     rank += 1;
 
                     let tr = gridElement.appendChild(document.createElement("tr"));
+                    if (member.id === data.owner_id) {
+                        tr.style.backgroundColor = aocColors["highlight"];
+                    }
                     let td = tr.appendChild(createCell(rank.toString() + ". " + member.name))
                     td.style.textAlign = "left";
 
@@ -774,16 +782,19 @@
             }
 
             for (let member of grid.sort(memberByPodiumSorter)) {
+                const cellColor = member.id === data.owner_id ? aocColors["highlight"] : "transparent";
                 let tr = document.createElement("tr");
                 let medalCount = 0;
 
                 let td = tr.appendChild(document.createElement("td"));
                 td.innerText = member.name;
+                td.style.backgroundColor = cellColor;
                 td.style.border = "1px solid #333";
                 td.style.padding = "2px 8px";
 
                 for (let d = 1; d <= 25; d++) {
                     let td = tr.appendChild(document.createElement("td"));
+                    td.style.backgroundColor = cellColor;
                     td.style.border = "1px solid #333";
                     td.style.padding = "3px 4px";
                     td.style.textAlign = "center";
@@ -834,6 +845,7 @@
                 for (let n = 0; n < podiumLength; n++) {
                     let td = tr.appendChild(document.createElement("td"));
                     td.innerText = member.podiumPlacesPerDay[n];
+                    td.style.backgroundColor = cellColor;
                     td.style.border = "1px solid #333";
                     td.style.padding = "2px 8px";
                     td.align = "center";
@@ -865,7 +877,8 @@
                     backgroundColor: m.color,
                     borderWidth: 1,
                     borderColor: "#000",
-                    pointRadius: 6,
+                    pointRadius: m.radius * 2,
+                    pointStyle: m.pointStyle,
                     data: m.stars.map(s => {
                         return {
                             x: s.dayNr + s.starNr / 2 - 1,
@@ -900,6 +913,7 @@
                         position: "right",
                         labels: {
                             fontColor: aocColors["main"],
+                            usePointStyle: true,
                         },
                         onClick: legendOnClick
                     },
@@ -1010,6 +1024,7 @@
                         position: "right",
                         labels: {
                             fontColor: aocColors["main"],
+                            usePointStyle: true,
                         },
                         onClick: legendOnClick
                     },
@@ -1065,8 +1080,10 @@
                     label: m.name,
                     lineTension: 0.2,
                     fill: false,
-                    borderWidth: 1.5,
+                    borderWidth: m.borderWidth,
                     borderColor: m.color,
+                    radius: m.radius,
+                    pointStyle: m.pointStyle,
                     backgroundColor: m.color,
                     data: m.stars.filter(s => s.starNr === 2).map(s => {
                         return {
@@ -1101,6 +1118,7 @@
                         position: "right",
                         labels: {
                             fontColor: aocColors["main"],
+                            usePointStyle: true,
                         },
                         onClick: legendOnClick
                     },
@@ -1163,8 +1181,10 @@
                     label: m.name,
                     lineTension: 0.2,
                     fill: false,
-                    borderWidth: 1.5,
+                    borderWidth: m.borderWidth,
                     borderColor: m.color,
+                    radius: m.radius,
+                    pointStyle: m.pointStyle,
                     backgroundColor: m.color,
                     data: m.stars.filter(s => s.starNr === 2).map(s => {
                         return {
@@ -1199,6 +1219,7 @@
                         position: "right",
                         labels: {
                             fontColor: aocColors["main"],
+                            usePointStyle: true,
                         },
                         onClick: legendOnClick
                     },
