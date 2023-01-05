@@ -633,6 +633,9 @@
 
                 let username = document.querySelector('div.user').textContent;
                 username = username.substr(0, username.lastIndexOf(' '));
+                username = username.replace(" (AoC++)", ""); // Temporary, see: https://github.com/jeroenheijmans/advent-of-code-charts/pull/55#issuecomment-1372686473
+                username = username.replace(" (Sponsor)", ""); // Temporary, see: https://github.com/jeroenheijmans/advent-of-code-charts/pull/55#issuecomment-1372686473
+
                 for (let member of grid) {
                     let memberStar1 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
                     let memberStar2 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
