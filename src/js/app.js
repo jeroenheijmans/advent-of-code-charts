@@ -30,6 +30,22 @@
 
     const podiumLength = 3;
 
+    let presumedLoggedInUserName = null;
+    try {
+        presumedLoggedInUserName = document.querySelector(".user").childNodes[0].textContent.trim();
+        if (!presumedLoggedInUserName) {
+            presumedLoggedInUserName = document
+                .querySelector(".user")
+                .textContent
+                .replace("(AoC++) ", "") // Individual sponsor marking
+                .replace("(Sponsor) ", "") // Company sponsor marking
+                .replace(/\d\d?\*/, "") // E.g. "1*" or "50*"
+                .trim();
+        }
+    } catch (e) {
+        console.info("Could not reliably determine logged in user from AoC website html. Something may have changed in the HTML structure, or perhaps there's an edge case we've missed. Either way, we'll ignore this error and carry on.");
+    }
+
     function range(from, to) {
         return [...Array(to - from).keys()].map(k => k + from);
     }
@@ -85,9 +101,10 @@
             .map(k => json.members[k])
             .map(m => {
                 let i = 0;
-                m.radius =  m.id === json.owner_id ? 5: 3;
-                m.borderWidth = m.id === json.owner_id ? 4 : 1;
-                m.pointStyle = m.id === json.owner_id ? "rectRot" : "circle"
+                m.isLoggedInUser = m.name === presumedLoggedInUserName;
+                m.radius =  m.isLoggedInUser ? 5: 3;
+                m.borderWidth = m.isLoggedInUser ? 4 : 1;
+                m.pointStyle = m.isLoggedInUser ? "rectRot" : "circle"
                 m.stars = [];
                 m.name = m.name || `(anonymous user ${m.id})`;
                 m.podiumStars = [];
@@ -649,7 +666,7 @@
                     rank += 1;
 
                     let tr = gridElement.appendChild(document.createElement("tr"));
-                    if (member.id === data.owner_id) {
+                    if (member.isLoggedInUser) {
                         tr.style.backgroundColor = aocColors["highlight"];
                     }
                     let td = tr.appendChild(createCell(rank.toString() + ". " + member.name))
@@ -783,7 +800,7 @@
             }
 
             for (let member of grid.sort(memberByPodiumSorter)) {
-                const cellColor = member.id === data.owner_id ? aocColors["highlight"] : "transparent";
+                const cellColor = member.isLoggedInUser ? aocColors["highlight"] : "transparent";
                 let tr = document.createElement("tr");
                 let medalCount = 0;
 
