@@ -9,3 +9,4 @@ List of fixes for #79, the 2023 updates:
 - PR #55 to add highlighting of yourself (the leaderboard owner) in various places
 - PR #78 to fix edge cases when the star timestamp is exactly the same for two users
 - Issue #56 and PR #61 to improve seeing Medals on older systems with less modern fonts
+- PR #62 to improve the final chart with time taken per stars
