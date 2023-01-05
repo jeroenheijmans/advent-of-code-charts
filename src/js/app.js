@@ -85,6 +85,9 @@
             .map(k => json.members[k])
             .map(m => {
                 let i = 0;
+                m.radius =  m.id === json.owner_id ? 5: 3;
+                m.borderWidth = m.id === json.owner_id ? 4 : 1;
+                m.pointStyle = m.id === json.owner_id ? "rectRot" : "circle"
                 m.stars = [];
                 m.name = m.name || `(anonymous user ${m.id})`;
                 m.podiumStars = [];
@@ -874,7 +877,8 @@
                     backgroundColor: m.color,
                     borderWidth: 1,
                     borderColor: "#000",
-                    pointRadius: 6,
+                    pointRadius: m.radius * 2,
+                    pointStyle: m.pointStyle,
                     data: m.stars.map(s => {
                         return {
                             x: s.dayNr + s.starNr / 2 - 1,
@@ -909,6 +913,7 @@
                         position: "right",
                         labels: {
                             fontColor: aocColors["main"],
+                            usePointStyle: true,
                         },
                         onClick: legendOnClick
                     },
@@ -1019,6 +1024,7 @@
                         position: "right",
                         labels: {
                             fontColor: aocColors["main"],
+                            usePointStyle: true,
                         },
                         onClick: legendOnClick
                     },
@@ -1074,8 +1080,10 @@
                     label: m.name,
                     lineTension: 0.2,
                     fill: false,
-                    borderWidth: 1.5,
+                    borderWidth: m.borderWidth,
                     borderColor: m.color,
+                    radius: m.radius,
+                    pointStyle: m.pointStyle,
                     backgroundColor: m.color,
                     data: m.stars.filter(s => s.starNr === 2).map(s => {
                         return {
@@ -1110,6 +1118,7 @@
                         position: "right",
                         labels: {
                             fontColor: aocColors["main"],
+                            usePointStyle: true,
                         },
                         onClick: legendOnClick
                     },
@@ -1172,8 +1181,10 @@
                     label: m.name,
                     lineTension: 0.2,
                     fill: false,
-                    borderWidth: 1.5,
+                    borderWidth: m.borderWidth,
                     borderColor: m.color,
+                    radius: m.radius,
+                    pointStyle: m.pointStyle,
                     backgroundColor: m.color,
                     data: m.stars.filter(s => s.starNr === 2).map(s => {
                         return {
@@ -1208,6 +1219,7 @@
                         position: "right",
                         labels: {
                             fontColor: aocColors["main"],
+                            usePointStyle: true,
                         },
                         onClick: legendOnClick
                     },
