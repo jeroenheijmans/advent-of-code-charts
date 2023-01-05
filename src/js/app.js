@@ -45,7 +45,7 @@
     }
 
     function starSorter(a, b) {
-        return a.getStarMoment.utc().diff(b.getStarMoment.utc());
+        return a.starIndex - b.starIndex;
     }
 
     function getPalette(n, rainbow, original) {
@@ -105,6 +105,7 @@
                             getStarDay: parseInt(`${dayKey}.${starKey}`, 10),
                             getStarTimestamp: m.completion_day_level[dayKey][starKey].get_star_ts,
                             getStarMoment: starMoment,
+                            starIndex: m.completion_day_level[dayKey][starKey].star_index,
                             timeTaken: null, // adding this later on, which is easier :D
                             timeTakenSeconds: null, // adding this later on as well
                         };
