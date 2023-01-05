@@ -993,15 +993,16 @@
 
         loadTimePerStar(data) {
             let datasets = [];
-            let n = Math.min(3, data.members.length);
+            let n = Math.min((isResponsivenessToggled() ? 5 : data.members.length), data.members.length);
             let relevantMembers = data.members.sort((a, b) => b.score - a.score).slice(0, n);
 
-            for (let member of relevantMembers) {
+            relevantMembers.forEach( (member, idx) => {
                 let star1DataSet = {
                     label: `${member.name} (★)`,
                     stack: `Stack ${member.name}`,
                     backgroundColor: member.color,
                     data: [],
+                    hidden: idx >= 3
                 };
 
                 let star2DataSet = {
@@ -1009,6 +1010,7 @@
                     stack: `Stack ${member.name}`,
                     backgroundColor: colorWithOpacity(member.color, 0.5),
                     data: [],
+                    hidden: idx >= 3
                 };
 
                 for (let i = 1; i <= 25; i++) {
@@ -1031,9 +1033,9 @@
 
                 datasets.push(star1DataSet);
                 datasets.push(star2DataSet);
-            }
+            });
 
-            let element = this.createGraphCanvas(data, "From the top players, show the number of minutes taken each day. (Exclude results over 4 hours.)");
+            let element = this.createGraphCanvas(data, "From the top players, show the number of minutes taken each day. (Exclude results over 4 hours.) (Toggle Responsive for all users)");
             this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
@@ -1056,7 +1058,7 @@
                     },
                     title: {
                         display: true,
-                        text: `Minutes taken per star - top ${n} players`,
+                        text: `Minutes taken per star`,
                         fontSize: 24,
                         fontStyle: "normal",
                         fontColor: aocColors["main"],
