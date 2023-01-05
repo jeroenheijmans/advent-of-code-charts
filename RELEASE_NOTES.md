@@ -10,3 +10,4 @@ List of fixes for #79, the 2023 updates:
 - PR #78 to fix edge cases when the star timestamp is exactly the same for two users
 - Issue #56 and PR #61 to improve seeing Medals on older systems with less modern fonts
 - PR #62 to improve the final chart with time taken per stars
+- Issue #76 to show star times even if they are beyond 240 minutes (just show 'em clipped)

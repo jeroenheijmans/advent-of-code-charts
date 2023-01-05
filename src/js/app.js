@@ -1021,16 +1021,6 @@
                     star2DataSet.data.push(!!star2 ? star2.timeTaken - star1.timeTaken : 0);
                 }
 
-                // Over 240 minutes? Then just nullify the data, we assume folks didn't try.
-                for (var i = 0; i < star1DataSet.data.length; i++) {
-                    if (star1DataSet.data[i] + star2DataSet.data[i] > 240) {
-                        if (star1DataSet.data[i] > 240) {
-                            star1DataSet.data[i] = null;
-                        }
-                        star2DataSet.data[i] = null;
-                    }
-                }
-
                 datasets.push(star1DataSet);
                 datasets.push(star2DataSet);
             });
@@ -1083,6 +1073,7 @@
                         yAxes: [{
                             stacked: true,
                             ticks: {
+                                max: 240,
                                 fontColor: aocColors["main"],
                             },
                             scaleLabel: {
