@@ -759,6 +759,12 @@
             const medalHtml = n => n === 0 ? "🥇" : n === 1 ? "🥈" : n === 2 ? "🥉" : `${n}`;
             const medalColor = n => n === 0 ? "gold" : n === 1 ? "silver" : n === 2 ? "#945210" : "rgba(15, 15, 35, 1.0)";
 
+            // The default font stack of AoC is only the first two, so we add a few to the end here
+            // to make sure that systems without the medals in the font will still see them if they
+            // are present in the fallback fonts.
+            // See also: https://github.com/jeroenheijmans/advent-of-code-charts/issues/56
+            const medalFontFamily = '"Source Code Pro", monospace, serif, sans-serif, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"';
+            
             this.medals.title =
               (isShowAllToggled()
                 ? ''
@@ -795,6 +801,7 @@
                 span.innerText = medalHtml(n);
                 span.style.backgroundColor = medalColor(n);
                 span.style.padding = "1px";
+                span.style.fontFamily = medalFontFamily;
                 td.style.padding = "4px";
                 td.align = "center";
             }
@@ -839,6 +846,7 @@
                         span.style.borderRadius = "2px";
                         span.style.border = "1px solid #333";
                         span.style.backgroundColor = medalColor(secondPuzzlePodiumPlace);
+                        span.style.fontFamily = medalFontFamily;
 
                         let memberStar1 = member.stars.find(s => s.dayNr === d && s.starNr === 1);
                         let memberStar2 = member.stars.find(s => s.dayNr === d && s.starNr === 2);
