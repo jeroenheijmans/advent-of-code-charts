@@ -17,7 +17,7 @@
         "main": "rgba(200, 200, 200, 0.9)",
         "secondary": "rgba(150, 150, 150, 0.9)",
         "tertiary": "rgba(100, 100, 100, 0.5)",
-        "subtle": "rgba(200, 200, 200, 0.1)",
+        "highlight": "rgba(119,119,165,.2)",
     };
 
     const graphColorStyles = [
@@ -646,7 +646,7 @@
 
                     let tr = gridElement.appendChild(document.createElement("tr"));
                     if (member.id === data.owner_id) {
-                        tr.style.backgroundColor = aocColors["subtle"];
+                        tr.style.backgroundColor = aocColors["highlight"];
                     }
                     let td = tr.appendChild(createCell(rank.toString() + ". " + member.name))
                     td.style.textAlign = "left";
@@ -779,16 +779,19 @@
             }
 
             for (let member of grid.sort(memberByPodiumSorter)) {
+                const cellColor = member.id === data.owner_id ? aocColors["highlight"] : "transparent";
                 let tr = document.createElement("tr");
                 let medalCount = 0;
 
                 let td = tr.appendChild(document.createElement("td"));
                 td.innerText = member.name;
+                td.style.backgroundColor = cellColor;
                 td.style.border = "1px solid #333";
                 td.style.padding = "2px 8px";
 
                 for (let d = 1; d <= 25; d++) {
                     let td = tr.appendChild(document.createElement("td"));
+                    td.style.backgroundColor = cellColor;
                     td.style.border = "1px solid #333";
                     td.style.padding = "3px 4px";
                     td.style.textAlign = "center";
@@ -839,6 +842,7 @@
                 for (let n = 0; n < podiumLength; n++) {
                     let td = tr.appendChild(document.createElement("td"));
                     td.innerText = member.podiumPlacesPerDay[n];
+                    td.style.backgroundColor = cellColor;
                     td.style.border = "1px solid #333";
                     td.style.padding = "2px 8px";
                     td.align = "center";
