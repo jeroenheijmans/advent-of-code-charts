@@ -17,6 +17,7 @@
         "main": "rgba(200, 200, 200, 0.9)",
         "secondary": "rgba(150, 150, 150, 0.9)",
         "tertiary": "rgba(100, 100, 100, 0.5)",
+        "subtle": "rgba(200, 200, 200, 0.1)",
     };
 
     const graphColorStyles = [
@@ -188,6 +189,7 @@
             members.forEach((m, idx) => m.color = colors[idx]);
 
         return {
+            owner_id: json.owner_id,
             maxDay: maxDay,
             maxMoment: maxMoment,
             days: days,
@@ -631,11 +633,6 @@
                     }))
                 ;
 
-                let username = document.querySelector('div.user').textContent;
-                username = username.substr(0, username.lastIndexOf(' '));
-                username = username.replace(" (AoC++)", ""); // Temporary, see: https://github.com/jeroenheijmans/advent-of-code-charts/pull/55#issuecomment-1372686473
-                username = username.replace(" (Sponsor)", ""); // Temporary, see: https://github.com/jeroenheijmans/advent-of-code-charts/pull/55#issuecomment-1372686473
-
                 for (let member of grid) {
                     let memberStar1 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
                     let memberStar2 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
@@ -648,8 +645,8 @@
                     rank += 1;
 
                     let tr = gridElement.appendChild(document.createElement("tr"));
-                    if (member.name === username) {
-                        tr.style.backgroundColor = "rgba(255, 255, 255, 0.25)";
+                    if (member.id === data.owner_id) {
+                        tr.style.backgroundColor = aocColors["subtle"];
                     }
                     let td = tr.appendChild(createCell(rank.toString() + ". " + member.name))
                     td.style.textAlign = "left";
