@@ -993,7 +993,7 @@
 
         loadTimePerStar(data) {
             let datasets = [];
-            let n = Math.min((isResponsivenessToggled() ? 5 : data.members.length), data.members.length);
+            let n = Math.min((isResponsivenessToggled() ? 8 : data.members.length), data.members.length);
             let relevantMembers = data.members.sort((a, b) => b.score - a.score).slice(0, n);
 
             relevantMembers.forEach( (member, idx) => {
