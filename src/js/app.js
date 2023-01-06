@@ -1,16 +1,19 @@
 (function (aoc) {
-    // Based on https://stackoverflow.com/a/38493678/419956 by @user6586783
-    Chart.pluginService.register({
-        beforeDraw: function (chart, easing) {
-            if (chart.config.options.chartArea && chart.config.options.chartArea.backgroundColor) {
-                var ctx = chart.chart.ctx;
-                var chartArea = chart.chartArea;
-                ctx.save();
-                ctx.fillStyle = chart.config.options.chartArea.backgroundColor;
-                ctx.fillRect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
-                ctx.restore();
-            }
-        }
+
+    // See https://stackoverflow.com/a/71395413/419956 by user @EJAntonPotot
+    Chart.register({
+        id: 'custom_canvas_background_color',
+        beforeDraw: (chart, _args, _options) => {
+            const {
+              ctx,
+              chartArea: { top, left, width, height },
+            } = chart;
+            ctx.save();
+            ctx.globalCompositeOperation = 'destination-over';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+            ctx.fillRect(left, top, width, height);
+            ctx.restore();
+        },
     });
 
     const aocColors = {
@@ -356,7 +359,7 @@
 
     function legendOnClick(e, li) {
         // always do default click behavior
-        Chart.defaults.global.legend.onClick.apply(this, [e, li]);
+        Chart.default.plugins.legend.onClick.apply(this, [e, li]);
 
         if (isDoubleClick()) {
             let chart = this.chart;
@@ -447,38 +450,37 @@
     class ChartOptions {
         constructor(titleText) {
             this.responsive = true;
-            this.chartArea = {
-                backgroundColor: "rgba(0, 0, 0, 0.25)",
-            };
-            this.legend = {
-                position: "right",
-                labels: {
-                    fontColor: aocColors["main"],
-                    usePointStyle: true,
+            this.plugins = {
+                legend: {
+                    position: "right",
+                    labels: {
+                        color: aocColors["main"],
+                        usePointStyle: true,
+                    },
+                    onClick: legendOnClick,
                 },
-                onClick: legendOnClick,
-            };
-            this.title = {
-                display: true,
-                text: titleText,
-                fontSize: 24,
-                fontStyle: "normal",
-                fontColor: aocColors["main"],
-                lineHeight: 2.0,
+                title: {
+                    display: true,
+                    text: titleText,
+                    color: aocColors["main"],
+                    font: {
+                        weight: "normal",
+                        size: 24,
+                    },
+                },
             };
             this.scales = {
-                xAxes: [{
-                    scaleLabel: {
+                x: {
+                    title: {
                         display: true,
-                        labelString: "Day of Advent",
-                        fontColor: aocColors["main"],
+                        text: "Day of Advent",
+                        color: aocColors["main"],
                     },
-                    gridLines: {
+                    grid: {
                         color: aocColors["tertiary"],
-                        zeroLineColor: aocColors["secondary"],
                     },
-                }],
-                yAxes: [ ],
+                },
+                y: { },
             };
         }
 
@@ -488,12 +490,13 @@
         }
 
         withTooltips(definition) {
-            this.withTooltips = definition;
+            this.plugins = this.plugins || {};
+            this.plugins.tooltip = definition;
             return this;
         }
 
         withXStackedScale() {
-            let x = this.scales.xAxes[0];
+            let x = this.scales.x;
             x.stacked = true;
             x.ticks = {
                 fontColor: aocColors["main"],
@@ -502,34 +505,38 @@
         }
 
         withXTickingScale() {
-            let x = this.scales.xAxes[0];
+            let x = this.scales.x;
+            x.min = 0;
+            x.max = 25;
             x.ticks = {
-                min: 0,
-                max: 25,
+                color: aocColors["main"],
                 stepSize: 1,
-                fontColor: aocColors["main"],
             };
             return this;
         }
 
         withXTimeScale(data) {
-            let x = this.scales.xAxes[0];
+            let x = this.scales.x;
             x.type = "time";
             x.time = {
-                unit: "day",
-                stepSize: 1,
-                displayFormats: { day: "D" },
+                displayFormats: {
+                    day: 'D',
+                },
             };
             x.ticks = {
-                min: moment([data.year, 10, 30, 5, 0, 0]),
-                max: data.maxMoment,
-                fontColor: aocColors["main"],
+                color: aocColors["main"],
+                stepSize: 1,
             };
+            x.min = moment([data.year, 10, 30, 17, 0, 0]);
+            x.max = moment([data.year, 11, 31, 4, 0, 0]);
             return this;
         }
 
         withYScale(definition) {
-            this.scales.yAxes.push(definition);
+            this.scales.y = definition;
+            this.scales.y.ticks = {
+                color: aocColors["main"],
+            };
             return this;
         }
     }
@@ -1028,7 +1035,7 @@
                 options: new ChartOptions("Stars vs Log10(minutes taken per star)")
                     .withTooltips({
                         callbacks: {
-                            label: (item, _) => {
+                            label: (item) => {
                                 const day = Math.floor(Number(item.label) + 0.5);
                                 const star = Number(item.label) < day ? 1 : 2;
                                 const mins = item.value;
@@ -1042,14 +1049,13 @@
                         ticks: {
                             fontColor: aocColors["main"],
                         },
-                        scaleLabel: {
+                        title: {
                             display: true,
-                            labelString: "minutes taken per star (log scale)",
-                            fontColor: aocColors["main"],
+                            text: "minutes taken per star (log scale)",
+                            color: aocColors["main"],
                         },
-                        gridLines: {
+                        grid: {
                             color: aocColors["tertiary"],
-                            zeroLineColor: aocColors["secondary"],
                         },
                     })
             });
@@ -1104,8 +1110,8 @@
                     .withXStackedScale()
                     .withYScale({
                         stacked: true,
+                        max: 240,
                         ticks: {
-                            max: 240,
                             fontColor: aocColors["main"],
                         },
                         scaleLabel: {
@@ -1113,7 +1119,7 @@
                             labelString: "minutes taken per star",
                             fontColor: aocColors["main"],
                         },
-                        gridLines: {
+                        grid: {
                             color: aocColors["tertiary"],
                             zeroLineColor: aocColors["secondary"],
                         },
@@ -1231,12 +1237,12 @@
                 options: new ChartOptions(`Points per Day - 🖱️ ${pointsOverTimeType[graphType]}`)
                     .withTooltips({
                         callbacks: {
-                            afterLabel: (item, data) => {
+                            afterLabel: (item) => {
                                 if (graphType !== 0) {
-                                    const day = data.datasets[item.datasetIndex].data[item.index].day;
+                                    const day = item.dataset.data[item.dataIndex].day;
                                     return `(day ${day.dayNr}. Total: ${day.pointsToDay} of ${day.maxPointsToDay} points. Today: ${day.points} points, ranked ${day.stars.map(s => `${s.rank}.`).join(' and ') || '-'})`;
                                 }
-                                const star = data.datasets[item.datasetIndex].data[item.index].star;
+                                const star = item.dataset.data[item.dataIndex].star;
                                 return `(completed day ${star.dayNr} star ${star.starNr})`;
                             },
                         },
@@ -1261,7 +1267,7 @@
                             labelString: "cumulative points",
                             fontColor: aocColors["main"],
                         },
-                        gridLines: {
+                        grid: {
                             color: aocColors["tertiary"],
                             zeroLineColor: aocColors["secondary"],
                         },
@@ -1303,8 +1309,8 @@
                 options: new ChartOptions("Leaderboard (stars)")
                     .withTooltips({
                         callbacks: {
-                            afterLabel: (item, data) => {
-                                const star = data.datasets[item.datasetIndex].data[item.index].star;
+                            afterLabel: (item) => {
+                                const star = item.dataset.data[item.dataIndex].star;
                                 return `(day ${star.dayNr} star ${star.starNr})`;
                             },
                         },
@@ -1321,7 +1327,7 @@
                             labelString: "nr of stars",
                             fontColor: aocColors["main"],
                         },
-                        gridLines: {
+                        grid: {
                             color: aocColors["tertiary"],
                             zeroLineColor: aocColors["secondary"],
                         },

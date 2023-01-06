@@ -13,7 +13,7 @@
     "content_scripts": [
         {
             "matches": ["http://adventofcode.com/*", "https://adventofcode.com/*"],
-            "js": ["moment.min.js", "Chart.min.js", "app.js"],
+            "js": ["moment.min.js", "chart.umd.js", "chartjs-adapter-moment.min.js", "app.js"],
             "run_at": "document_end"
         }
     ]
