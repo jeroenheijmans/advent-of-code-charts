@@ -35,9 +35,9 @@
     const podiumLength = 3;
 
     const pointsOverTimeType = [
-        "[POINTS | percentages | percentages with potential]",
-        "[points | PERCENTAGES | percentages with potential]",
-        "[points | percentages | PERCENTAGES WITH POTENTIAL]"
+        "(◉ POINTS | ◎ percentages | ◎ percentages with potential)",
+        "(◎ points | ◉ PERCENTAGES | ◎ percentages with potential)",
+        "(◎ points | ◎ percentages | ◉ PERCENTAGES WITH POTENTIAL)",
     ];
 
     let presumedLoggedInUserName = null;
@@ -343,6 +343,7 @@
         return +localStorage.getItem("aoc-flag-v1-points-over-time-type-index") || 0;
     }
 
+    const defaultLegendClickHandler = Chart.defaults.plugins.legend.onClick;
     let prevClick;
     function isDoubleClick() {
         let now = new Date();
@@ -355,39 +356,6 @@
         prevClick = now;
 
         return diff < 300;
-    }
-
-    function legendOnClick(e, li) {
-        // always do default click behavior
-        Chart.default.plugins.legend.onClick.apply(this, [e, li]);
-
-        if (isDoubleClick()) {
-            let chart = this.chart;
-
-            // always show doubleclicked item
-            chart.getDatasetMeta(li.datasetIndex).hidden = null;
-
-            // count how many hidden datasets are there
-            let hiddenCount = chart.data.datasets
-                .map((_, dataSetIndex) => chart.getDatasetMeta(dataSetIndex))
-                .filter(meta => meta.hidden)
-                .length;
-
-            // deciding to invert items 'hidden' state depending
-            // if they are already mostly hidden
-            let hide = (hiddenCount >= (chart.data.datasets.length - 1) * 0.5) ? null : true;
-
-            chart.data.datasets.forEach((_, dataSetIndex) => {
-                if (dataSetIndex === li.datasetIndex) {
-                    return;
-                }
-
-                let dsMeta = chart.getDatasetMeta(dataSetIndex);
-                dsMeta.hidden = hide;
-            });
-
-            chart.update();
-        }
     }
 
     function formatTimeTaken(seconds) {
@@ -457,7 +425,37 @@
                         color: aocColors["main"],
                         usePointStyle: true,
                     },
-                    onClick: legendOnClick,
+                    onClick: function (event, legendItem, legend) {
+                        defaultLegendClickHandler(event, legendItem, legend);
+
+                        if (isDoubleClick()) {
+                            let chart = this.chart;
+
+                            // always show doubleclicked item
+                            chart.getDatasetMeta(legendItem.datasetIndex).hidden = null;
+
+                            // count how many hidden datasets are there
+                            let hiddenCount = chart.data.datasets
+                                .map((_, dataSetIndex) => chart.getDatasetMeta(dataSetIndex))
+                                .filter(meta => meta.hidden)
+                                .length;
+
+                            // deciding to invert items 'hidden' state depending
+                            // if they are already mostly hidden
+                            let hide = (hiddenCount >= (chart.data.datasets.length - 1) * 0.5) ? null : true;
+
+                            chart.data.datasets.forEach((_, dataSetIndex) => {
+                                if (dataSetIndex === legendItem.datasetIndex) {
+                                    return;
+                                }
+
+                                let dsMeta = chart.getDatasetMeta(dataSetIndex);
+                                dsMeta.hidden = hide;
+                            });
+
+                            chart.update();
+                        }
+                    },
                 },
                 title: {
                     display: true,
@@ -1248,14 +1246,12 @@
                         },
                     })
                     .withOnClick(function(ev) {
-                        const title = this.titleBlock;
-                        if (!!title) {
-                            if (ev.offsetX > title.left && ev.offsetX < title.right &&
-                                ev.offsetY > title.top && ev.offsetY < title.bottom) {
-                                togglePointsOverTimeType();
-                            }
-                        }
-                      })
+                        // Workaround because titles don't seem to be clickable in
+                        // v3+ anymore. For the moment let's stick with this heavy
+                        // handed option.
+                        // See also: https://stackoverflow.com/q/75034470/419956
+                        togglePointsOverTimeType();
+                    })
                     .withXTimeScale(data)
                     .withYScale({
                         ticks: {
