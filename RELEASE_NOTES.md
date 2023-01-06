@@ -12,3 +12,4 @@ List of fixes for #79, the 2023 updates:
 - PR #62 to improve the final chart with time taken per stars
 - Issue #76 to show star times even if they are beyond 240 minutes (just show 'em clipped)
 - PR #73 to refactor the chart options and DRY them up a bit
+- PR #60 with new variants of the Points-Per-Day graph
