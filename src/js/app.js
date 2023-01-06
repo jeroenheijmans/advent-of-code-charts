@@ -384,7 +384,6 @@
         return memberStar.getStarMoment.local().format("HH:mm:ss YYYY-MM-DD") + " (local time)";
     }
 
-
     function getLeaderboardJson() {
         // 1. Check if dummy data was loaded...
         if (!!aoc.dummyData) {
@@ -434,7 +433,9 @@
     class ChartOptions {
         constructor(titleText) {
             this.responsive = true;
-            this.chartArea = { backgroundColor: "rgba(0, 0, 0, 0.25)" };
+            this.chartArea = {
+                backgroundColor: "rgba(0, 0, 0, 0.25)",
+            };
             this.legend = {
                 position: "right",
                 labels: {
@@ -467,12 +468,12 @@
             };
         }
 
-        tooltips(definition) {
-            this.tooltips = definition;
+        withTooltips(definition) {
+            this.withTooltips = definition;
             return this;
         }
 
-        xStackedScale() {
+        withXStackedScale() {
             let x = this.scales.xAxes[0];
             x.stacked = true;
             x.ticks = {
@@ -480,7 +481,8 @@
             };
             return this;
         }
-        xTickingScale() {
+
+        withXTickingScale() {
             let x = this.scales.xAxes[0];
             x.ticks = {
                 min: 0,
@@ -490,7 +492,8 @@
             };
             return this;
         }
-        xTimeScale(data) {
+
+        withXTimeScale(data) {
             let x = this.scales.xAxes[0];
             x.type = "time";
             x.time = {
@@ -506,7 +509,7 @@
             return this;
         }
 
-        yScale(definition) {
+        withYScale(definition) {
             this.scales.yAxes.push(definition);
             return this;
         }
@@ -1004,7 +1007,7 @@
                     datasets: datasets,
                 },
                 options: new ChartOptions("Stars vs Log10(minutes taken per star)")
-                    .tooltips({
+                    .withTooltips({
                         callbacks: {
                             label: (item, _) => {
                                 const day = Math.floor(Number(item.label) + 0.5);
@@ -1014,21 +1017,21 @@
                             },
                         },
                     })
-                    .xTickingScale()
-                    .yScale({
-                            type: "logarithmic",
-                            ticks: {
-                                fontColor: aocColors["main"],
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "minutes taken per star (log scale)",
-                                fontColor: aocColors["main"],
-                            },
-                            gridLines: {
-                                color: aocColors["tertiary"],
-                                zeroLineColor: aocColors["secondary"],
-                            },
+                    .withXTickingScale()
+                    .withYScale({
+                        type: "logarithmic",
+                        ticks: {
+                            fontColor: aocColors["main"],
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: "minutes taken per star (log scale)",
+                            fontColor: aocColors["main"],
+                        },
+                        gridLines: {
+                            color: aocColors["tertiary"],
+                            zeroLineColor: aocColors["secondary"],
+                        },
                     })
             });
 
@@ -1079,22 +1082,22 @@
                     datasets: datasets,
                 },
                 options: new ChartOptions(`Minutes taken per star`)
-                    .xStackedScale()
-                    .yScale({
-                            stacked: true,
-                            ticks: {
-                                max: 240,
-                                fontColor: aocColors["main"],
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "minutes taken per star",
-                                fontColor: aocColors["main"],
-                            },
-                            gridLines: {
-                                color: aocColors["tertiary"],
-                                zeroLineColor: aocColors["secondary"],
-                            },
+                    .withXStackedScale()
+                    .withYScale({
+                        stacked: true,
+                        ticks: {
+                            max: 240,
+                            fontColor: aocColors["main"],
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: "minutes taken per star",
+                            fontColor: aocColors["main"],
+                        },
+                        gridLines: {
+                            color: aocColors["tertiary"],
+                            zeroLineColor: aocColors["secondary"],
+                        },
                     })
             });
 
@@ -1131,7 +1134,7 @@
                     datasets: datasets,
                 },
                 options: new ChartOptions("Leaderboard (points)")
-                    .tooltips({
+                    .withTooltips({
                         callbacks: {
                             afterLabel: (item, data) => {
                                 const star = data.datasets[item.datasetIndex].data[item.index].star;
@@ -1139,21 +1142,21 @@
                             },
                         },
                     })
-                    .xTimeScale(data)
-                    .yScale({
-                            ticks: {
-                                min: 0,
-                                fontColor: aocColors["main"],
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "cumulative points",
-                                fontColor: aocColors["main"],
-                            },
-                            gridLines: {
-                                color: aocColors["tertiary"],
-                                zeroLineColor: aocColors["secondary"],
-                            },
+                    .withXTimeScale(data)
+                    .withYScale({
+                        ticks: {
+                            min: 0,
+                            fontColor: aocColors["main"],
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: "cumulative points",
+                            fontColor: aocColors["main"],
+                        },
+                        gridLines: {
+                            color: aocColors["tertiary"],
+                            zeroLineColor: aocColors["secondary"],
+                        },
                     })
             });
 
@@ -1190,7 +1193,7 @@
                     datasets: datasets,
                 },
                 options: new ChartOptions("Leaderboard (stars)")
-                    .tooltips({
+                    .withTooltips({
                         callbacks: {
                             afterLabel: (item, data) => {
                                 const star = data.datasets[item.datasetIndex].data[item.index].star;
@@ -1198,22 +1201,22 @@
                             },
                         },
                     })
-                    .xTimeScale(data)
-                    .yScale({
-                            ticks: {
-                                stepSize: 1,
-                                min: 0,
-                                fontColor: aocColors["main"],
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "nr of stars",
-                                fontColor: aocColors["main"],
-                            },
-                            gridLines: {
-                                color: aocColors["tertiary"],
-                                zeroLineColor: aocColors["secondary"],
-                            },
+                    .withXTimeScale(data)
+                    .withYScale({
+                        ticks: {
+                            stepSize: 1,
+                            min: 0,
+                            fontColor: aocColors["main"],
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: "nr of stars",
+                            fontColor: aocColors["main"],
+                        },
+                        gridLines: {
+                            color: aocColors["tertiary"],
+                            zeroLineColor: aocColors["secondary"],
+                        },
                     })
             });
 
