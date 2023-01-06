@@ -431,6 +431,87 @@
         }
     }
 
+    class ChartOptions {
+        constructor(titleText) {
+            this.responsive = true;
+            this.chartArea = { backgroundColor: "rgba(0, 0, 0, 0.25)" };
+            this.legend = {
+                position: "right",
+                labels: {
+                    fontColor: aocColors["main"],
+                    usePointStyle: true,
+                },
+                onClick: legendOnClick,
+            };
+            this.title = {
+                display: true,
+                text: titleText,
+                fontSize: 24,
+                fontStyle: "normal",
+                fontColor: aocColors["main"],
+                lineHeight: 2.0,
+            };
+            this.scales = {
+                xAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: "Day of Advent",
+                        fontColor: aocColors["main"],
+                    },
+                    gridLines: {
+                        color: aocColors["tertiary"],
+                        zeroLineColor: aocColors["secondary"],
+                    },
+                }],
+                yAxes: [ ],
+            };
+        }
+
+        tooltips(definition) {
+            this.tooltips = definition;
+            return this;
+        }
+
+        xStackedScale() {
+            let x = this.scales.xAxes[0];
+            x.stacked = true;
+            x.ticks = {
+                fontColor: aocColors["main"],
+            };
+            return this;
+        }
+        xTickingScale() {
+            let x = this.scales.xAxes[0];
+            x.ticks = {
+                min: 0,
+                max: 25,
+                stepSize: 1,
+                fontColor: aocColors["main"],
+            };
+            return this;
+        }
+        xTimeScale(data) {
+            let x = this.scales.xAxes[0];
+            x.type = "time";
+            x.time = {
+                unit: "day",
+                stepSize: 1,
+                displayFormats: { day: "D" },
+            };
+            x.ticks = {
+                min: moment([data.year, 10, 30, 5, 0, 0]),
+                max: data.maxMoment,
+                fontColor: aocColors["main"],
+            };
+            return this;
+        }
+
+        yScale(definition) {
+            this.scales.yAxes.push(definition);
+            return this;
+        }
+    }
+
     class App {
         constructor() {
             console.info("Constructing App");
@@ -922,9 +1003,8 @@
                 data: {
                     datasets: datasets,
                 },
-                options: {
-                    responsive: true,
-                    tooltips: {
+                options: new ChartOptions("Stars vs Log10(minutes taken per star)")
+                    .tooltips({
                         callbacks: {
                             label: (item, _) => {
                                 const day = Math.floor(Number(item.label) + 0.5);
@@ -933,43 +1013,9 @@
                                 return `Day ${day} star ${star} took ${mins} minutes to complete`;
                             },
                         },
-                    },
-                    chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
-                    legend: {
-                        position: "right",
-                        labels: {
-                            fontColor: aocColors["main"],
-                            usePointStyle: true,
-                        },
-                        onClick: legendOnClick
-                    },
-                    title: {
-                        display: true,
-                        text: "Stars vs Log10(minutes taken per star)",
-                        fontSize: 24,
-                        fontStyle: "normal",
-                        fontColor: aocColors["main"],
-                        lineHeight: 2.0,
-                    },
-                    scales: {
-                        xAxes: [{
-                            ticks: {
-                                min: 0,
-                                max: 25,
-                                stepSize: 1,
-                                fontColor: aocColors["main"],
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "Day of Advent",
-                                fontColor: aocColors["main"],
-                            },
-                            gridLines: {
-                                color: aocColors["tertiary"],
-                                zeroLineColor: aocColors["secondary"],
-                            },
-                        }],
-                        yAxes: [{
+                    })
+                    .xTickingScale()
+                    .yScale({
                             type: "logarithmic",
                             ticks: {
                                 fontColor: aocColors["main"],
@@ -983,9 +1029,7 @@
                                 color: aocColors["tertiary"],
                                 zeroLineColor: aocColors["secondary"],
                             },
-                        }]
-                    }
-                }
+                    })
             });
 
             return data;
@@ -1034,43 +1078,9 @@
                     labels: range(1, 26),
                     datasets: datasets,
                 },
-                options: {
-                    responsive: true,
-
-                    chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
-                    legend: {
-                        position: "right",
-                        labels: {
-                            fontColor: aocColors["main"],
-                            usePointStyle: true,
-                        },
-                        onClick: legendOnClick
-                    },
-                    title: {
-                        display: true,
-                        text: `Minutes taken per star`,
-                        fontSize: 24,
-                        fontStyle: "normal",
-                        fontColor: aocColors["main"],
-                        lineHeight: 2.0,
-                    },
-                    scales: {
-                        xAxes: [{
-                            stacked: true,
-                            ticks: {
-                                fontColor: aocColors["main"],
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "Day of Advent",
-                                fontColor: aocColors["main"],
-                            },
-                            gridLines: {
-                                color: aocColors["tertiary"],
-                                zeroLineColor: aocColors["secondary"],
-                            },
-                        }],
-                        yAxes: [{
+                options: new ChartOptions(`Minutes taken per star`)
+                    .xStackedScale()
+                    .yScale({
                             stacked: true,
                             ticks: {
                                 max: 240,
@@ -1085,9 +1095,7 @@
                                 color: aocColors["tertiary"],
                                 zeroLineColor: aocColors["secondary"],
                             },
-                        }],
-                    }
-                }
+                    })
             });
 
             return data;
@@ -1122,57 +1130,17 @@
                 data: {
                     datasets: datasets,
                 },
-                options: {
-                    responsive: true,
-                    tooltips: {
+                options: new ChartOptions("Leaderboard (points)")
+                    .tooltips({
                         callbacks: {
                             afterLabel: (item, data) => {
                                 const star = data.datasets[item.datasetIndex].data[item.index].star;
                                 return `(completed day ${star.dayNr} star ${star.starNr})`;
                             },
                         },
-                    },
-                    chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
-                    legend: {
-                        position: "right",
-                        labels: {
-                            fontColor: aocColors["main"],
-                            usePointStyle: true,
-                        },
-                        onClick: legendOnClick
-                    },
-                    title: {
-                        display: true,
-                        text: "Leaderboard (points)",
-                        fontSize: 24,
-                        fontStyle: "normal",
-                        fontColor: aocColors["main"],
-                        lineHeight: 2.0,
-                    },
-                    scales: {
-                        xAxes: [{
-                            type: "time",
-                            time: {
-                                unit: "day",
-                                stepSize: 1,
-                                displayFormats: { day: "D" },
-                            },
-                            ticks: {
-                                min: moment([data.year, 10, 30, 5, 0, 0]),
-                                max: data.maxMoment,
-                                fontColor: aocColors["main"],
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "Day of Advent",
-                                fontColor: aocColors["main"],
-                            },
-                            gridLines: {
-                                color: aocColors["tertiary"],
-                                zeroLineColor: aocColors["secondary"],
-                            },
-                        }],
-                        yAxes: [{
+                    })
+                    .xTimeScale(data)
+                    .yScale({
                             ticks: {
                                 min: 0,
                                 fontColor: aocColors["main"],
@@ -1186,9 +1154,7 @@
                                 color: aocColors["tertiary"],
                                 zeroLineColor: aocColors["secondary"],
                             },
-                        }],
-                    }
-                }
+                    })
             });
 
             return data;
@@ -1223,57 +1189,17 @@
                 data: {
                     datasets: datasets,
                 },
-                options: {
-                    responsive: true,
-                    tooltips: {
+                options: new ChartOptions("Leaderboard (stars)")
+                    .tooltips({
                         callbacks: {
                             afterLabel: (item, data) => {
                                 const star = data.datasets[item.datasetIndex].data[item.index].star;
                                 return `(day ${star.dayNr} star ${star.starNr})`;
                             },
                         },
-                    },
-                    chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
-                    legend: {
-                        position: "right",
-                        labels: {
-                            fontColor: aocColors["main"],
-                            usePointStyle: true,
-                        },
-                        onClick: legendOnClick
-                    },
-                    title: {
-                        display: true,
-                        text: "Leaderboard (stars)",
-                        fontSize: 24,
-                        fontStyle: "normal",
-                        fontColor: aocColors["main"],
-                        lineHeight: 2.0,
-                    },
-                    scales: {
-                        xAxes: [{
-                            type: "time",
-                            time: {
-                                unit: "day",
-                                stepSize: 1,
-                                displayFormats: { day: "D" },
-                            },
-                            ticks: {
-                                min: moment([data.year, 10, 30, 5, 0, 0]),
-                                max: data.maxMoment,
-                                fontColor: aocColors["main"],
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "Day of Advent",
-                                fontColor: aocColors["main"],
-                            },
-                            gridLines: {
-                                color: aocColors["tertiary"],
-                                zeroLineColor: aocColors["secondary"],
-                            },
-                        }],
-                        yAxes: [{
+                    })
+                    .xTimeScale(data)
+                    .yScale({
                             ticks: {
                                 stepSize: 1,
                                 min: 0,
@@ -1288,9 +1214,7 @@
                                 color: aocColors["tertiary"],
                                 zeroLineColor: aocColors["secondary"],
                             },
-                        }],
-                    }
-                }
+                    })
             });
 
             return data;
