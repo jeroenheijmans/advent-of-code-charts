@@ -553,7 +553,6 @@
             this.controls = this.wrapper.appendChild(document.createElement("div"));
             this.medals = this.wrapper.appendChild(document.createElement("div"));
             this.perDayLeaderBoard = this.wrapper.appendChild(document.createElement("div"));
-            this.deltaLeaderBoard = this.wrapper.appendChild(document.createElement("div"));
             this.graphs = this.wrapper.appendChild(document.createElement("div"));
             this.graphs.style.display = "flex";
             this.graphs.style.flexWrap = "wrap";
@@ -566,7 +565,6 @@
                 .then(data => this.loadCacheBustingButton(data))
                 .then(data => this.loadMedalOverview(data))
                 .then(data => this.loadPerDayLeaderBoard(data))
-                .then(data => this.loadDeltaLeaderBoard(data))
                 .then(data => this.loadPointsOverTime(data))
                 .then(data => this.loadStarsOverTime(data))
                 .then(data => this.loadDayVsTime(data))
@@ -614,9 +612,9 @@
         }
 
         loadPerDayLeaderBoard(data) {
-            this.perDayLeaderBoard.title = "Per Day LeaderBoard";
+            this.perDayLeaderBoard.title = "Delta-focused overviews";
             let titleElement = this.perDayLeaderBoard.appendChild(document.createElement("h3"));
-            titleElement.innerText = "Stats Per Day: ";
+            titleElement.innerText = "Delta-focused stats: ";
             titleElement.style.fontFamily = "Source Code Pro, monospace";
             titleElement.style.fontWeight = "normal";
             titleElement.style.marginTop = "32px";
@@ -624,8 +622,11 @@
             this.perDayLeaderBoard.style.marginBottom = "32px";
 
             let displayDay = getDisplayDay();
-            // taking the min to avoid going out of bounds for current year
-            displayDay = displayDay ? Math.min(parseInt(displayDay), data.maxDay) : data.maxDay;
+            
+            if (displayDay !== "overview") {
+                // taking the min to avoid going out of bounds for current year
+                displayDay = displayDay ? Math.min(parseInt(displayDay), data.maxDay) : data.maxDay;
+            }
 
             let tablePerDay = {}, anchorPerDay = {};
 
@@ -638,6 +639,112 @@
                 });
                 a.style.cursor = "pointer";
                 anchorPerDay[d] = a;
+            }
+
+            const divider = titleElement.appendChild(document.createElement("span"));
+            divider.innerText = " | ";
+
+            const overviewAnchor = titleElement.appendChild(document.createElement("a"));
+            overviewAnchor.innerText = "Overview"
+            overviewAnchor.addEventListener("click", () => {
+                setDisplayDay("overview");
+                setVisible("overview");
+            });
+            overviewAnchor.style.cursor = "pointer";
+            anchorPerDay["overview"] = overviewAnchor;
+
+            function generateOverviewTable() {
+                const deltaLeaderBoard = document.createElement("table");
+                tablePerDay[displayDay] = deltaLeaderBoard;
+
+                deltaLeaderBoard.title = "Delta Leaderboard";
+    
+                let table = document.createElement("table");
+                table.style.borderCollapse = "collapse";
+                table.style.fontSize = "16px";
+    
+                function createHeaderCell(text, color = "inherit") {
+                    const td = document.createElement("td");
+                    td.innerText = text;
+                    td.style.padding = "4px 8px";
+                    td.style.color = color;
+                    td.style.textAlign = "center";
+                    td.style.cursor = "pointer";
+                    return td;
+                }
+    
+                {
+                    // table header
+                    let tr = table.appendChild(document.createElement("tr"));
+                    let th = tr.appendChild(document.createElement("th"))
+    
+                    th = tr.appendChild(createHeaderCell("# Gold Stars"));
+                    th = tr.appendChild(createHeaderCell("Median Delta Time", "#ffff66"));
+                }
+    
+                function calculateDeltaTime(member) {
+                    let starsByDay = {}
+                    member.stars.forEach(star => {
+                        if (starsByDay[star.dayNr] === undefined) {
+                            starsByDay[star.dayNr] = []
+                        }
+                        starsByDay[star.dayNr][star.starNr - 1] = star.timeTakenSeconds;
+                    });
+    
+                    let deltas = [];
+                    for (const [key, value] of Object.entries(starsByDay)) {
+                        if (value.length === 2) {
+                            const delta = value[1] - value[0];
+                            deltas.push(delta);
+                        }
+                    }
+                    deltas = deltas.sort((a,b) => a-b);
+    
+                    let medianDelta = deltas.length > 0 ? deltas[Math.floor(deltas.length / 2)] : 0;
+    
+                    let goldStars = member.stars.filter(s => s.starNr === 2).length;
+                    return {
+                        name: member.name,
+                        medianDelta: medianDelta,
+                        goldStars: goldStars
+                    }
+                }
+                let deltaData = data
+                    .members
+                    .map(x => JSON.parse(JSON.stringify(x)))
+                    .map(member => calculateDeltaTime(member))
+                    .sort((memberA, memberB) => memberA.medianDelta - memberB.medianDelta)
+                    .sort((memberA, memberB) => memberB.goldStars - memberA.goldStars);
+    
+                let rank = 0;
+                for (let member of deltaData) {
+                    rank += 1;
+                    let tr = table.appendChild(document.createElement("tr"));
+                    let td = tr.appendChild(document.createElement("td"));
+                    td.style.textAlign = "left";
+                    td.innerText = rank + ". " + member.name;
+                    td.style.border = "1px solid #333";
+                    td.style.padding = "6px";
+    
+                    // Stars
+                    td = tr.appendChild(document.createElement("td"));
+                    td.innerText = member.goldStars;
+                    td.style.textAlign = "center";
+                    td.style.border = "1px solid #333";
+                    td.style.padding = "6px";
+    
+                    // Median delta time
+                    td = tr.appendChild(document.createElement("td"));
+                    let median = formatTimeTaken(member.medianDelta);
+                    td.innerText = median;
+                    td.style.textAlign = "center";
+                    td.style.border = "1px solid #333";
+                    td.style.padding = "6px";
+                }
+    
+                deltaLeaderBoard.appendChild(table);
+
+                return deltaLeaderBoard;
             }
 
             function generateTable(displayDay) {
@@ -866,105 +973,10 @@
                 this.perDayLeaderBoard.appendChild(generateTable(i));
             }
 
+            this.perDayLeaderBoard.appendChild(generateOverviewTable());
+
             setVisible(displayDay);
 
-            return data;
-        }
-
-        loadDeltaLeaderBoard(data) {
-            this.deltaLeaderBoard.title = "Delta Leaderboard";
-            let titleElement = this.deltaLeaderBoard.appendChild(document.createElement("h3"));
-            titleElement.innerText = "Delta Leaderboard: ";
-            titleElement.style.fontFamily = "Source Code Pro, monospace";
-            titleElement.style.fontWeight = "normal";
-            titleElement.style.marginTop = "32px";
-            titleElement.style.marginBottom = "8px";
-            this.deltaLeaderBoard.style.marginBottom = "32px";
-
-            let table = document.createElement("table");
-            table.style.borderCollapse = "collapse";
-            table.style.fontSize = "16px";
-
-            function createHeaderCell(text, color = "inherit") {
-                const td = document.createElement("td");
-                td.innerText = text;
-                td.style.padding = "4px 8px";
-                td.style.color = color;
-                td.style.textAlign = "center";
-                td.style.cursor = "pointer";
-                return td;
-            }
-
-            {
-                // table header
-                let tr = table.appendChild(document.createElement("tr"));
-                let th = tr.appendChild(document.createElement("th"))
-
-                th = tr.appendChild(createHeaderCell("# Gold Stars"));
-                th = tr.appendChild(createHeaderCell("Median Delta Time", "#ffff66"));
-            }
-
-            function calculateDeltaTime(member) {
-                let starsByDay = {}
-                member.stars.forEach(star => {
-                    if (starsByDay[star.dayNr] === undefined) {
-                        starsByDay[star.dayNr] = []
-                    }
-                    starsByDay[star.dayNr][star.starNr - 1] = star.timeTakenSeconds;
-                });
-
-                let deltas = [];
-                for (const [key, value] of Object.entries(starsByDay)) {
-                    if (value.length === 2) {
-                        const delta = value[1] - value[0];
-                        deltas.push(delta);
-                    }
-                }
-                deltas = deltas.sort((a,b) => a-b);
-
-                let medianDelta = deltas.length > 0 ? deltas[Math.floor(deltas.length / 2)] : 0;
-
-                let goldStars = member.stars.filter(s => s.starNr === 2).length;
-                return {
-                    name: member.name,
-                    medianDelta: medianDelta,
-                    goldStars: goldStars
-                }
-            }
-            let deltaData = data
-                .members
-                .map(x => JSON.parse(JSON.stringify(x)))
-                .map(member => calculateDeltaTime(member))
-                .sort((memberA, memberB) => memberA.medianDelta - memberB.medianDelta)
-                .sort((memberA, memberB) => memberB.goldStars - memberA.goldStars);
-
-            let rank = 0;
-            for (let member of deltaData) {
-                rank += 1;
-                let tr = table.appendChild(document.createElement("tr"));
-                let td = tr.appendChild(document.createElement("td"));
-                td.style.textAlign = "left";
-                td.innerText = rank + ". " + member.name;
-                td.style.border = "1px solid #333";
-                td.style.padding = "6px";
-
-                // Stars
-                td = tr.appendChild(document.createElement("td"));
-                td.innerText = member.goldStars;
-                td.style.textAlign = "center";
-                td.style.border = "1px solid #333";
-                td.style.padding = "6px";
-
-                // Median delta time
-                td = tr.appendChild(document.createElement("td"));
-                let median = formatTimeTaken(member.medianDelta);
-                td.innerText = median;
-                td.style.textAlign = "center";
-                td.style.border = "1px solid #333";
-                td.style.padding = "6px";
-            }
-
-            this.deltaLeaderBoard.appendChild(table);
             return data;
         }
 
