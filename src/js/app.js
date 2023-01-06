@@ -1232,6 +1232,17 @@
                 data: {
                     datasets: datasets,
                 },
+                plugins: [{
+                    // See https://stackoverflow.com/a/75034834/419956 by user @LeeLenalee
+                    afterEvent: (chart, evt) => {
+                        const { event: { type, x, y, } } = evt;
+                        if (type !== 'click') return;
+                        const { titleBlock: { top, right, bottom, left, } } = chart;
+                        if (left <= x && x <= right && bottom >= y && y >= top) {
+                            togglePointsOverTimeType()
+                        }
+                    }
+                }],
                 options: new ChartOptions(`Points per Day - 🖱️ ${pointsOverTimeType[graphType]}`)
                     .withTooltips({
                         callbacks: {
@@ -1244,13 +1255,6 @@
                                 return `(completed day ${star.dayNr} star ${star.starNr})`;
                             },
                         },
-                    })
-                    .withOnClick(function(ev) {
-                        // Workaround because titles don't seem to be clickable in
-                        // v3+ anymore. For the moment let's stick with this heavy
-                        // handed option.
-                        // See also: https://stackoverflow.com/q/75034470/419956
-                        togglePointsOverTimeType();
                     })
                     .withXTimeScale(data)
                     .withYScale({
