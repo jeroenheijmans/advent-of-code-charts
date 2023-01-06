@@ -15,3 +15,4 @@ List of fixes for #79, the 2023 updates:
 - PR #60 with new variants of the Points-Per-Day graph
 - Issue #81 update Chart.js and other dependencies
 - Issue #33 make (double) clicking legend items more discoverable
+- PR #58 to add more Delta-Time leaderboard features
