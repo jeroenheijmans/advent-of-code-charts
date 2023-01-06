@@ -74,6 +74,10 @@
         return a.starIndex - b.starIndex;
     }
 
+    function deltaPointsTotalSorter(a, b) {
+        return a.deltaPointsTotal - b.deltaPointsTotal;
+    }
+
     function getPalette(n, rainbow, original) {
         if (original) {
             const basePalette = ["#781c81", "#6e1980", "#65187f", "#5e187e", "#58197e", "#531b7f", "#4f1d81", "#4c2182", "#492484", "#462987", "#442d8a", "#43328d", "#423791", "#413d94", "#404298", "#3f489c", "#3f4ea0", "#3f53a5", "#3f59a9", "#3f5fad", "#4064b1", "#4069b5", "#416fb8", "#4274bb", "#4379be", "#447dc0", "#4582c1", "#4686c2", "#488ac2", "#4a8ec1", "#4b92c0", "#4d95be", "#4f99bb", "#519cb8", "#549fb4", "#56a2b0", "#58a4ac", "#5ba7a7", "#5ea9a2", "#60ab9d", "#63ad98", "#66af93", "#69b18e", "#6cb289", "#70b484", "#73b580", "#77b67b", "#7ab877", "#7eb973", "#82ba6f", "#85ba6b", "#89bb68", "#8dbc65", "#91bd61", "#95bd5e", "#99bd5c", "#9dbe59", "#a1be56", "#a5be54", "#a9be52", "#adbe50", "#b1be4e", "#b5bd4c", "#b9bd4a", "#bcbc48", "#c0bb47", "#c3ba45", "#c7b944", "#cab843", "#cdb641", "#d0b540", "#d3b33f", "#d6b13e", "#d8ae3d", "#dbab3c", "#dda93b", "#dfa53a", "#e0a239", "#e29e38", "#e39a37", "#e49636", "#e59235", "#e68d34", "#e78833", "#e78332", "#e77d31", "#e77730", "#e7712f", "#e66b2d", "#e6642c", "#e55e2b", "#e4572a", "#e35029", "#e24928", "#e14226", "#df3b25", "#de3424", "#dc2e22", "#db2721", "#d92120"];
@@ -104,6 +108,7 @@
 
     function transformRawAocJson(json) {
         let stars = [];
+        let deltas = [];
         let year = parseInt(json.event);
 
         let n_members = Object.keys(json.members).length;
@@ -116,6 +121,10 @@
                 m.borderWidth = m.isLoggedInUser ? 4 : 1;
                 m.pointStyle = m.isLoggedInUser ? "rectRot" : "circle"
                 m.stars = [];
+                m.deltas = [];
+                m.deltaPointsTotal = 0; // Calculated later
+                m.deltaMeanSeconds = null; // Calculated later
+                m.deltaMedianSeconds = null; // Calculated later
                 m.name = m.name || `(anonymous user ${m.id})`;
 
                 for (let dayKey of Object.keys(m.completion_day_level)) {
@@ -151,6 +160,23 @@
                     s.timeTakenSeconds = s.getStarMoment.diff(startOfDay, "seconds");
                 });
 
+                m.stars.filter(s => s.starNr === 2).forEach(star2 => {
+                    const star1 = m.stars.find(s => s.dayNr === star2.dayNr && s.starNr === 1);
+                    const deltaTimeTakenSeconds = star2.timeTakenSeconds - star1.timeTakenSeconds;
+                    const delta = { dayNr: star2.dayNr, dayKey: star2.dayKey, deltaTimeTakenSeconds, member: m, };
+                    deltas.push(delta);
+                    m.deltas.push(delta);
+                });
+
+                const sortedDeltas = m.deltas
+                    .slice()
+                    .filter(d => d.deltaTimeTakenSeconds < 4 * 60 * 60) // Outliers distort images so we exclude them
+                    .sort((a,b) => a.deltaTimeTakenSeconds - b.deltaTimeTakenSeconds);
+                if (sortedDeltas.length > 0) {
+                    m.deltaMedianSeconds = sortedDeltas[Math.trunc(sortedDeltas.length / 2)].deltaTimeTakenSeconds;
+                    m.deltaMeanSeconds = sortedDeltas.map(x => x.deltaTimeTakenSeconds).reduce((a,b) => a+b) / sortedDeltas.length;
+                }
+
                 return m;
             })
             .filter(m => m.stars.length > 0)
@@ -158,6 +184,16 @@
 
         let allMoments = stars.map(s => s.getStarMoment).concat([moment("" + year + "-12-25T00:00:00-0000")]);
         let maxMoment = moment.min([moment.max(allMoments), moment("" + year + "-12-31T00:00:00-0000")]);
+
+        const maxDeltaPoints = members.filter(m => m.deltas.length > 0).length;
+        for (let i = 1; i <= 25; i++) {
+            let availableDeltaPoints = maxDeltaPoints;
+            const sortedDeltas = deltas.filter(d => d.dayNr === i).sort((a,b) => a.deltaTimeTakenSeconds - b.deltaTimeTakenSeconds);
+            for (let delta of sortedDeltas) {
+                delta.points = availableDeltaPoints--;
+                delta.member.deltaPointsTotal += delta.points;
+            }
+        }
 
         let availablePoints = {};
 
@@ -226,6 +262,7 @@
             members: members,
             year: year,
             n_members: n_members,
+            maxDeltaPoints,
         };
     }
 
@@ -653,6 +690,16 @@
             overviewAnchor.style.cursor = "pointer";
             anchorPerDay["overview"] = overviewAnchor;
 
+            function createCell(text, bgColor = "transparent") {
+                const td = document.createElement("td");
+                td.innerText = text;
+                td.style.border = "1px solid #333";
+                td.style.padding = "6px";
+                td.style.textAlign = "center";
+                td.style.backgroundColor = bgColor;
+                return td;
+            }
+
             function generateOverviewTable() {
                 const deltaLeaderBoard = document.createElement("table");
                 tablePerDay[displayDay] = deltaLeaderBoard;
@@ -662,84 +709,77 @@
                 let table = document.createElement("table");
                 table.style.borderCollapse = "collapse";
                 table.style.fontSize = "16px";
-    
-                function createHeaderCell(text, color = "inherit") {
+
+                function createDividerCell() {
                     const td = document.createElement("td");
-                    td.innerText = text;
-                    td.style.padding = "4px 8px";
-                    td.style.color = color;
-                    td.style.textAlign = "center";
-                    td.style.cursor = "pointer";
+                    td.innerHTML = "&nbsp;";
                     return td;
+                }
+    
+                function createHeaderCell(text, color = "inherit", title = "") {
+                    const th = document.createElement("th");
+                    th.innerText = text;
+                    th.title = title;
+                    th.style.padding = "4px 8px";
+                    th.style.color = color;
+                    th.style.textAlign = "center";
+                    th.style.cursor = "pointer";
+                    return th;
                 }
     
                 {
                     // table header
                     let tr = table.appendChild(document.createElement("tr"));
-                    let th = tr.appendChild(document.createElement("th"))
-    
-                    th = tr.appendChild(createHeaderCell("# Gold Stars"));
-                    th = tr.appendChild(createHeaderCell("Median Delta Time", "#ffff66"));
-                }
-    
-                function calculateDeltaTime(member) {
-                    let starsByDay = {}
-                    member.stars.forEach(star => {
-                        if (starsByDay[star.dayNr] === undefined) {
-                            starsByDay[star.dayNr] = []
-                        }
-                        starsByDay[star.dayNr][star.starNr - 1] = star.timeTakenSeconds;
-                    });
-    
-                    let deltas = [];
-                    for (const [key, value] of Object.entries(starsByDay)) {
-                        if (value.length === 2) {
-                            const delta = value[1] - value[0];
-                            deltas.push(delta);
-                        }
-                    }
-                    deltas = deltas.sort((a,b) => a-b);
-    
-                    let medianDelta = deltas.length > 0 ? deltas[Math.floor(deltas.length / 2)] : 0;
-    
-                    let goldStars = member.stars.filter(s => s.starNr === 2).length;
-                    return {
-                        name: member.name,
-                        medianDelta: medianDelta,
-                        goldStars: goldStars
+                    tr.appendChild(createHeaderCell(""))
+                    tr.appendChild(createHeaderCell("Stars"));
+                    tr.appendChild(createHeaderCell(""))
+                    tr.appendChild(createHeaderCell("Delta Points ⬇", "#ffff66"));
+                    tr.appendChild(createDividerCell());
+                    tr.appendChild(createHeaderCell("Mean*", "#ffff66", "deltas of more than 4 hours are not included"));
+                    tr.appendChild(createHeaderCell("Median*", "#ffff66", "deltas of more than 4 hours are not included"));
+                    tr.appendChild(createDividerCell());
+                    for (let d = 1; d <= data.maxDay; ++d) {
+                        let th = tr.appendChild(createHeaderCell(d));
+                        th.style.fontSize = "11px";
+                        th.style.minWidth = "14px";
                     }
                 }
-                let deltaData = data
-                    .members
-                    .map(x => JSON.parse(JSON.stringify(x)))
-                    .map(member => calculateDeltaTime(member))
-                    .sort((memberA, memberB) => memberA.medianDelta - memberB.medianDelta)
-                    .sort((memberA, memberB) => memberB.goldStars - memberA.goldStars);
-    
+
                 let rank = 0;
-                for (let member of deltaData) {
+                const divider = data.maxDeltaPoints * data.maxDeltaPoints; // Comparing quadratics makes distinctions clearer visually
+                for (let member of data.members.slice().sort(deltaPointsTotalSorter).reverse()) {
+                    const bgColor = member.isLoggedInUser ? aocColors["highlight"] : "transparent";
                     rank += 1;
                     let tr = table.appendChild(document.createElement("tr"));
+
                     let td = tr.appendChild(document.createElement("td"));
                     td.style.textAlign = "left";
                     td.innerText = rank + ". " + member.name;
                     td.style.border = "1px solid #333";
                     td.style.padding = "6px";
-    
-                    // Stars
-                    td = tr.appendChild(document.createElement("td"));
-                    td.innerText = member.goldStars;
-                    td.style.textAlign = "center";
-                    td.style.border = "1px solid #333";
-                    td.style.padding = "6px";
-    
-                    // Median delta time
-                    td = tr.appendChild(document.createElement("td"));
-                    let median = formatTimeTaken(member.medianDelta);
-                    td.innerText = median;
-                    td.style.textAlign = "center";
-                    td.style.border = "1px solid #333";
-                    td.style.padding = "6px";
+                    td.style.backgroundColor = member.isLoggedInUser ? aocColors["highlight"] : "transparent";
+
+                    let tdStars = tr.appendChild(createCell(member.stars.length));
+                    let percent = member.stars.length / 50 * 100;
+                    tdStars.style.background = member.isLoggedInUser
+                        ? aocColors["highlight"] 
+                        : `linear-gradient(to right, rgb(255,255,255,0.05) 0%, rgb(255,255,255,0.05) ${percent}%, transparent ${percent}%, transparent 100%)`;
+                    
+                    tr.appendChild(createDividerCell());
+                    tr.appendChild(createCell(member.deltaPointsTotal, bgColor));
+                    tr.appendChild(createDividerCell());
+                    tr.appendChild(createCell(member.deltaMeanSeconds ? formatTimeTaken(member.deltaMeanSeconds) : "", bgColor));
+                    tr.appendChild(createCell(member.deltaMedianSeconds ? formatTimeTaken(member.deltaMedianSeconds) : "", bgColor));
+                    tr.appendChild(createDividerCell());
+
+                    for (let d = 1; d <= data.maxDay; ++d) {
+                        const delta = member.deltas.find(x => x.dayNr === d);
+                        const td = tr.appendChild(createCell(delta?.points || ""));
+                        td.title = "Delta time: " + (delta ? formatTimeTaken(delta.deltaTimeTakenSeconds) : "none");
+                        td.style.padding = "2px";
+                        td.style.fontSize = "11px";
+                        td.style.background = `rgba(255,255,255,${delta ? (delta.points * delta.points) / divider / 10  : 0})`;
+                    }
                 }
     
                 deltaLeaderBoard.appendChild(table);
@@ -855,15 +895,6 @@
                         td.style.color = "#ffffff";
                         td.style.textShadow = "0 0 5px #ffffff";
                     }
-                }
-
-                function createCell(text) {
-                    const td = document.createElement("td");
-                    td.innerText = text;
-                    td.style.border = "1px solid #333";
-                    td.style.padding = "6px";
-                    td.style.textAlign = "center";
-                    return td;
                 }
 
                 const maxSecondsForSparkline = 4 /* hours */ * 3600;
