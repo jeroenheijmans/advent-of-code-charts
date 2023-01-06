@@ -18,6 +18,7 @@
         "secondary": "rgba(150, 150, 150, 0.9)",
         "tertiary": "rgba(100, 100, 100, 0.5)",
         "highlight": "rgba(119,119,165,.2)",
+        "link": "#009900",
     };
 
     const graphColorStyles = [
@@ -29,6 +30,12 @@
     ];
 
     const podiumLength = 3;
+
+    const pointsOverTimeType = [
+        "cumulative points",
+        "percentage points",
+        "percentage points with potential"
+    ];
 
     let presumedLoggedInUserName = null;
     try {
@@ -92,14 +99,65 @@
         return basePoints;
     }
 
+    /**
+     * @typedef {{
+     *   last_star_ts: string | number;
+     *   global_score: number;
+     *   completion_day_level: Record<string, Record<string, { get_star_ts: string; }>>;
+     *   local_score: number;
+     *   name: string | null;
+     *   stars: number;
+     *   id: string;
+     * }} IMemberJson
+     * 
+     * @typedef {{
+     *   event: string, 
+     *   owner_id: string, 
+     *   members: Record<string, IMemberJson>
+     * }} IJson
+     * 
+     * @typedef {{
+     *   memberId: string;
+     *   dayNr: number;
+     *   dayKey: string;
+     *   starNr: number;
+     *   starKey: string;
+     *   getStarDay: number;
+     *   getStarTimestamp: string;
+     *   getStarMoment: moment.Moment;
+     *   timeTaken: number;
+     *   timeTakenSeconds: number;
+     *   nrOfStarsAfterThisOne: number;
+     *   points: number;
+     *   rank: number;
+     *   nrOfPointsAfterThisOne: number;
+     *   awardedPodiumPlace: number;
+     *   awardedPodiumPlaceFirstPuzzle: number;
+     * }} IStar
+     * 
+     * @typedef {Omit<IMemberJson, "stars"> & {
+     *   stars: IStar[];
+     *   score: number;
+     *   podiumPlacesPerDay: number[];
+     *   podiumPlacesPerDayFirstPuzzle: number[];
+     *   color: string;
+     * }} IMember
+     * 
+     * @typedef {ReturnType<transformRawAocJson>} IData;
+     */
+    
+    /**
+    @param {IJson} json
+    */
     function transformRawAocJson(json) {
+        /** @type {IStar[]} */
         let stars = [];
         let year = parseInt(json.event);
 
         let n_members = Object.keys(json.members).length;
         let members = Object.keys(json.members)
             .map(k => json.members[k])
-            .map(m => {
+            .map((/** @type {IMember} */ m) => {
                 let i = 0;
                 m.isLoggedInUser = m.name === presumedLoggedInUserName;
                 m.radius =  m.isLoggedInUser ? 5: 3;
@@ -107,7 +165,6 @@
                 m.pointStyle = m.isLoggedInUser ? "rectRot" : "circle"
                 m.stars = [];
                 m.name = m.name || `(anonymous user ${m.id})`;
-                m.podiumStars = [];
 
                 for (let dayKey of Object.keys(m.completion_day_level)) {
                     for (let starKey of Object.keys(m.completion_day_level[dayKey])) {
@@ -176,7 +233,13 @@
             }
         }
 
+        /** @type {number} */
         let maxDay = Math.max.apply(Math, stars.filter(s => s.starNr === 2).map(s => s.dayNr))
+        /** @type {Record<number, {
+         *   dayNr: number;
+         *   podium: IStar[];
+         *   podiumFirstPuzzle: IStar[];
+         * }>} */
         let days = {};
 
         for (let d = 1; d <= maxDay; d++) {
@@ -189,7 +252,6 @@
             for (let i = 0; i < days[d].podium.length; i++) {
                 days[d].podium[i].awardedPodiumPlace = i;
                 days[d].podiumFirstPuzzle[i].awardedPodiumPlaceFirstPuzzle = i;
-
             }
         }
 
@@ -324,6 +386,15 @@
     function getTimeTableSort() {
         let value = localStorage.getItem("aoc-flag-v1-delta-sort") || "delta";
         return value;
+    }
+
+    function toggleShowPercentage() {
+        localStorage.setItem("aoc-flag-v1-show-percentage", (getPointsOverTimeType() + 1) % pointsOverTimeType.length);
+        location.reload();
+    }
+
+    function getPointsOverTimeType() {
+        return +localStorage.getItem("aoc-flag-v1-show-percentage") || 0;
     }
 
     let prevClick;
@@ -466,6 +537,11 @@
                 }],
                 yAxes: [ ],
             };
+        }
+
+        withOnClick(onClick) {
+            this.onClick = onClick;
+            return this;
         }
 
         withTooltips(definition) {
@@ -1104,9 +1180,67 @@
             return data;
         }
 
+        /**
+        * @param {IData} data
+        */
         loadPointsOverTime(data) {
-            let datasets = data.members.sort((a, b) => a.name.localeCompare(b.name)).map(m => {
-                return {
+            let graphType = getPointsOverTimeType();
+            const maxDayNr = Math.max(...data.stars.map(s => s.dayNr));
+            let maxPointsPerDay = Array.from({ length: maxDayNr }, () => data.n_members * 2);
+            data.stars.forEach(s => maxPointsPerDay[s.dayNr-1] = s.points > 0 ? data.n_members * 2 : 0);
+            let availablePoints = [maxPointsPerDay.map(p => p/2), maxPointsPerDay.map(p => p/2)];
+            data.stars.forEach(s => availablePoints[s.starNr-1][s.dayNr-1] = Math.min(availablePoints[s.starNr-1][s.dayNr-1], Math.max(s.points-1, 0)));
+            let datasets = data.members.sort((a, b) => a.name.localeCompare(b.name)).reduce((p,m) => {
+                const days = m.stars.reduce(
+                    (/** @type {Map<number, {stars: IStar[], points: number}>} */ map, s) => {
+                        const current = map.get(s.dayNr) ?? { stars: [], points:0 };
+                        return map.set(s.dayNr, { 
+                            stars: [...current.stars, s], 
+                            points: current.points + s.points
+                        })},
+                    new Map()
+                )
+                if (graphType === 2 && m.stars.length < maxPointsPerDay.length *2) {
+                    p.push({
+                        label: m.name + ' (potential)',
+                        lineTension: 0.2,
+                        fill: false,
+                        borderWidth: 1.5,
+                        borderColor: m.color,
+                        borderDash: [1,3],
+                        backgroundColor: m.color,
+                        pointStyle: function(context) {
+                            const index = context.dataIndex;
+                            const day = context.dataset.data[index].day;
+                            return day.stars.length === 0 ? 'cross' : day.stars.length === 1 ? 'triangle' : 'circle';
+                        },
+                        data: maxPointsPerDay
+                        .map((max, i) => ({ 
+                            dayNr: i+1, 
+                            ...(days.get(i+1) ?? { stars: [], points:0 })
+                        }))
+                        .map((day,i) => ({
+                            ...day,
+                            points: day.stars.length === 2 
+                                ? day.points 
+                                : day.stars.length === 1 
+                                    ? (day.points + availablePoints[1][i])
+                                    : (availablePoints[0][i] + availablePoints[1][i])
+                        }))
+                        .map((day, i, days) => ({
+                            ...day,
+                            pointsToDay: days.filter(d => d.dayNr <= day.dayNr).map(d => d.points).reduce((a,b) => a+b),
+                            maxPointsToDay: maxPointsPerDay.slice(0, day.dayNr).reduce((p,max) => p+(max ?? 0), 0)
+                        }))
+                        .filter((day, i, days) => !days.filter(d => d.dayNr <= day.dayNr + 1).every(d => d.stars.length === 2))
+                        .map((day) => ({
+                                x: moment([data.year, 10, 30, 0, 0, 0]).add(day.dayNr, "d"),
+                                y: day.pointsToDay / day.maxPointsToDay * 100,
+                                day
+                            }))
+                    })
+                }
+                p.push({
                     label: m.name,
                     lineTension: 0.2,
                     fill: false,
@@ -1115,16 +1249,37 @@
                     radius: m.radius,
                     pointStyle: m.pointStyle,
                     backgroundColor: m.color,
-                    data: m.stars.filter(s => s.starNr === 2).map(s => {
+                    pointStyle: graphType !== 0 ? function(context) {
+                        const index = context.dataIndex;
+                        const day = context.dataset.data[index].day;
+                        return day.stars.length === 0 ? 'cross' : day.stars.length === 1 ? 'triangle' : 'circle';
+                    } : undefined,
+                    data: graphType !== 0 
+                    ? maxPointsPerDay
+                        .map((max, i) => ({ 
+                            dayNr: i+1, 
+                            ...(days.get(i+1) ?? { stars: [], points:0 })
+                        }))
+                        .map((day, i, days) => ({
+                            ...day,
+                            pointsToDay: days.filter(d => d.dayNr <= day.dayNr).map(d => d.points).reduce((a,b) => a+b),
+                            maxPointsToDay: maxPointsPerDay.slice(0, day.dayNr).reduce((p,max) => p+(max ?? 0), 0)
+                        }))
+                        .map((day) => ({
+                                x: moment([data.year, 10, 30, 0, 0, 0]).add(day.dayNr, "d"),
+                                y: day.pointsToDay / day.maxPointsToDay * 100,
+                                day
+                            }))
+                    : m.stars.filter(s => s.starNr === 2).map(s => {
                         return {
                             x: s.getStarMoment,
                             y: s.nrOfPointsAfterThisOne,
                             star: s
                         }
                     })
-                };
-            });
-
+                });
+                return p;
+            }, []);
             let element = this.createGraphCanvas(data, "Points over time per member.");
             this.graphs.appendChild(element);
 
@@ -1133,15 +1288,29 @@
                 data: {
                     datasets: datasets,
                 },
-                options: new ChartOptions("Leaderboard (points)")
+                options: new ChartOptions(`Leaderboard (${pointsOverTimeType[graphType]}) - click to change to ${pointsOverTimeType[(graphType + 1) % pointsOverTimeType.length]}`)
                     .withTooltips({
                         callbacks: {
                             afterLabel: (item, data) => {
+                                if (graphType !== 0) {
+                                    const day = data.datasets[item.datasetIndex].data[item.index].day;
+                                    return `(day ${day.dayNr}. Total: ${day.pointsToDay} of ${day.maxPointsToDay} points. Today: ${day.points} points, ranked ${day.stars.map(s => `${s.rank}.`).join(' and ') || '-'})`;
+                                }
                                 const star = data.datasets[item.datasetIndex].data[item.index].star;
                                 return `(completed day ${star.dayNr} star ${star.starNr})`;
                             },
                         },
                     })
+                    .withOnClick(function(ev) {
+                        console.log("clicky!");
+                        const title = this.titleBlock;
+                        if (!!title) {
+                            if (ev.offsetX > title.left && ev.offsetX < title.right &&
+                                ev.offsetY > title.top && ev.offsetY < title.bottom) {
+                                toggleShowPercentage();
+                            }
+                        }
+                      })
                     .withXTimeScale(data)
                     .withYScale({
                         ticks: {
