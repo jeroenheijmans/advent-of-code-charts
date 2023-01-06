@@ -421,6 +421,12 @@
             this.plugins = {
                 legend: {
                     position: "right",
+                    title: {
+                        display: true,
+                        text: "Change selection: 🖱 (double) click",
+                        color: aocColors["main"],
+                        font: { weight: "bold", },
+                    },
                     labels: {
                         color: aocColors["main"],
                         usePointStyle: true,
