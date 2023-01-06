@@ -99,65 +99,14 @@
         return basePoints;
     }
 
-    /**
-     * @typedef {{
-     *   last_star_ts: string | number;
-     *   global_score: number;
-     *   completion_day_level: Record<string, Record<string, { get_star_ts: string; }>>;
-     *   local_score: number;
-     *   name: string | null;
-     *   stars: number;
-     *   id: string;
-     * }} IMemberJson
-     * 
-     * @typedef {{
-     *   event: string, 
-     *   owner_id: string, 
-     *   members: Record<string, IMemberJson>
-     * }} IJson
-     * 
-     * @typedef {{
-     *   memberId: string;
-     *   dayNr: number;
-     *   dayKey: string;
-     *   starNr: number;
-     *   starKey: string;
-     *   getStarDay: number;
-     *   getStarTimestamp: string;
-     *   getStarMoment: moment.Moment;
-     *   timeTaken: number;
-     *   timeTakenSeconds: number;
-     *   nrOfStarsAfterThisOne: number;
-     *   points: number;
-     *   rank: number;
-     *   nrOfPointsAfterThisOne: number;
-     *   awardedPodiumPlace: number;
-     *   awardedPodiumPlaceFirstPuzzle: number;
-     * }} IStar
-     * 
-     * @typedef {Omit<IMemberJson, "stars"> & {
-     *   stars: IStar[];
-     *   score: number;
-     *   podiumPlacesPerDay: number[];
-     *   podiumPlacesPerDayFirstPuzzle: number[];
-     *   color: string;
-     * }} IMember
-     * 
-     * @typedef {ReturnType<transformRawAocJson>} IData;
-     */
-    
-    /**
-    @param {IJson} json
-    */
     function transformRawAocJson(json) {
-        /** @type {IStar[]} */
         let stars = [];
         let year = parseInt(json.event);
 
         let n_members = Object.keys(json.members).length;
         let members = Object.keys(json.members)
             .map(k => json.members[k])
-            .map((/** @type {IMember} */ m) => {
+            .map((m) => {
                 let i = 0;
                 m.isLoggedInUser = m.name === presumedLoggedInUserName;
                 m.radius =  m.isLoggedInUser ? 5: 3;
@@ -233,13 +182,7 @@
             }
         }
 
-        /** @type {number} */
         let maxDay = Math.max.apply(Math, stars.filter(s => s.starNr === 2).map(s => s.dayNr))
-        /** @type {Record<number, {
-         *   dayNr: number;
-         *   podium: IStar[];
-         *   podiumFirstPuzzle: IStar[];
-         * }>} */
         let days = {};
 
         for (let d = 1; d <= maxDay; d++) {
@@ -1180,9 +1123,6 @@
             return data;
         }
 
-        /**
-        * @param {IData} data
-        */
         loadPointsOverTime(data) {
             let graphType = getPointsOverTimeType();
             const maxDayNr = Math.max(...data.stars.map(s => s.dayNr));
@@ -1192,7 +1132,7 @@
             data.stars.forEach(s => availablePoints[s.starNr-1][s.dayNr-1] = Math.min(availablePoints[s.starNr-1][s.dayNr-1], Math.max(s.points-1, 0)));
             let datasets = data.members.sort((a, b) => a.name.localeCompare(b.name)).reduce((p,m) => {
                 const days = m.stars.reduce(
-                    (/** @type {Map<number, {stars: IStar[], points: number}>} */ map, s) => {
+                    (map, s) => {
                         const current = map.get(s.dayNr) ?? { stars: [], points:0 };
                         return map.set(s.dayNr, { 
                             stars: [...current.stars, s], 
