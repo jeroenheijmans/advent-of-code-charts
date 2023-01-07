@@ -110,13 +110,15 @@
         let stars = [];
         let deltas = [];
         let year = parseInt(json.event);
+        let loggedInUserIsPresumablyKnown = false;
 
         let n_members = Object.keys(json.members).length;
         let members = Object.keys(json.members)
             .map(k => json.members[k])
             .map((m) => {
-                let i = 0;
                 m.isLoggedInUser = m.name === presumedLoggedInUserName;
+                loggedInUserIsPresumablyKnown = loggedInUserIsPresumablyKnown || m.isLoggedInUser;
+
                 m.radius =  m.isLoggedInUser ? 5: 3;
                 m.borderWidth = m.isLoggedInUser ? 4 : 1;
                 m.pointStyle = m.isLoggedInUser ? "rectRot" : "circle"
@@ -263,6 +265,7 @@
             year: year,
             n_members: n_members,
             maxDeltaPoints,
+            loggedInUserIsPresumablyKnown,
         };
     }
 
@@ -1223,7 +1226,7 @@
                     stack: `Stack ${member.name}`,
                     backgroundColor: member.color,
                     data: [],
-                    hidden: idx >= 3
+                    hidden: data.loggedInUserIsPresumablyKnown ? !member.isLoggedInUser : idx >= 3,
                 };
 
                 let star2DataSet = {
@@ -1231,7 +1234,7 @@
                     stack: `Stack ${member.name}`,
                     backgroundColor: colorWithOpacity(member.color, 0.5),
                     data: [],
-                    hidden: idx >= 3
+                    hidden: data.loggedInUserIsPresumablyKnown ? !member.isLoggedInUser : idx >= 3,
                 };
 
                 for (let i = 1; i <= 25; i++) {
@@ -1251,6 +1254,7 @@
 
             let chart = new Chart(element.getContext("2d"), {
                 type: "bar",
+
                 data: {
                     labels: range(1, 26),
                     datasets: datasets,
