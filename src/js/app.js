@@ -669,10 +669,12 @@
 
             for (let d = 1; d <= data.maxDay; ++d) {
                 let a = titleElement.appendChild(document.createElement("a"));
+                a.dataset["key"] = d;
                 a.innerText = " " + d.toString();
-                a.addEventListener("click", () => {
-                    setDisplayDay(d);
-                    setVisible(d);
+                a.addEventListener("click", (evt) => {
+                    const key = evt.target.dataset["key"];
+                    setDisplayDay(key);
+                    setVisible(key);
                 });
                 a.style.cursor = "pointer";
                 anchorPerDay[d] = a;
@@ -688,6 +690,7 @@
                 setVisible("overview");
             });
             overviewAnchor.style.cursor = "pointer";
+            overviewAnchor.dataset["key"] = "overview";
             anchorPerDay["overview"] = overviewAnchor;
 
             function createCell(text, bgColor = "transparent") {
@@ -702,7 +705,7 @@
 
             function generateOverviewTable() {
                 const deltaLeaderBoard = document.createElement("table");
-                tablePerDay[displayDay] = deltaLeaderBoard;
+                tablePerDay["overview"] = deltaLeaderBoard;
 
                 deltaLeaderBoard.title = "Delta Leaderboard";
     
