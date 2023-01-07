@@ -17,12 +17,13 @@
   },
   "homepage": "https://github.com/jeroenheijmans/advent-of-code-charts#readme",
   "dependencies": {
-    "chart.js": "^2.9.4",
-    "moment": "^2.29.4"
+    "chart.js": "4.1.2",
+    "chartjs-adapter-moment": "1.0.1",
+    "moment": "2.29.4"
   },
   "devDependencies": {
-    "livereload": "^0.9.1",
-    "npm-run-all": "^4.1.5",
-    "serve": "^11.3.2"
+    "livereload": "0.9.3",
+    "npm-run-all": "4.1.5",
+    "serve": "14.1.2"
   }
 }

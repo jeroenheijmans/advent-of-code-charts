@@ -1,22 +1,27 @@
 (function (aoc) {
-    // Based on https://stackoverflow.com/a/38493678/419956 by @user6586783
-    Chart.pluginService.register({
-        beforeDraw: function (chart, easing) {
-            if (chart.config.options.chartArea && chart.config.options.chartArea.backgroundColor) {
-                var ctx = chart.chart.ctx;
-                var chartArea = chart.chartArea;
-                ctx.save();
-                ctx.fillStyle = chart.config.options.chartArea.backgroundColor;
-                ctx.fillRect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
-                ctx.restore();
-            }
-        }
+
+    // See https://stackoverflow.com/a/71395413/419956 by user @EJAntonPotot
+    Chart.register({
+        id: 'custom_canvas_background_color',
+        beforeDraw: (chart, _args, _options) => {
+            const {
+              ctx,
+              chartArea: { top, left, width, height },
+            } = chart;
+            ctx.save();
+            ctx.globalCompositeOperation = 'destination-over';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+            ctx.fillRect(left, top, width, height);
+            ctx.restore();
+        },
     });
 
     const aocColors = {
         "main": "rgba(200, 200, 200, 0.9)",
         "secondary": "rgba(150, 150, 150, 0.9)",
         "tertiary": "rgba(100, 100, 100, 0.5)",
+        "highlight": "rgba(119,119,165,.2)",
+        "link": "#009900",
     };
 
     const graphColorStyles = [
@@ -28,6 +33,28 @@
     ];
 
     const podiumLength = 3;
+
+    const pointsOverTimeType = [
+        "(◉ POINTS | ◎ percentages | ◎ percentages with potential)",
+        "(◎ points | ◉ PERCENTAGES | ◎ percentages with potential)",
+        "(◎ points | ◎ percentages | ◉ PERCENTAGES WITH POTENTIAL)",
+    ];
+
+    let presumedLoggedInUserName = null;
+    try {
+        presumedLoggedInUserName = document.querySelector(".user").childNodes[0].textContent.trim();
+        if (!presumedLoggedInUserName) {
+            presumedLoggedInUserName = document
+                .querySelector(".user")
+                .textContent
+                .replace("(AoC++) ", "") // Individual sponsor marking
+                .replace("(Sponsor) ", "") // Company sponsor marking
+                .replace(/\d\d?\*/, "") // E.g. "1*" or "50*"
+                .trim();
+        }
+    } catch (e) {
+        console.info("Could not reliably determine logged in user from AoC website html. Something may have changed in the HTML structure, or perhaps there's an edge case we've missed. Either way, we'll ignore this error and carry on.");
+    }
 
     function range(from, to) {
         return [...Array(to - from).keys()].map(k => k + from);
@@ -44,7 +71,11 @@
     }
 
     function starSorter(a, b) {
-        return a.getStarMoment.utc().diff(b.getStarMoment.utc());
+        return a.starIndex - b.starIndex;
+    }
+
+    function deltaPointsTotalSorter(a, b) {
+        return a.deltaPointsTotal - b.deltaPointsTotal;
     }
 
     function getPalette(n, rainbow, original) {
@@ -77,16 +108,26 @@
 
     function transformRawAocJson(json) {
         let stars = [];
+        let deltas = [];
         let year = parseInt(json.event);
+        let loggedInUserIsPresumablyKnown = false;
 
         let n_members = Object.keys(json.members).length;
         let members = Object.keys(json.members)
             .map(k => json.members[k])
-            .map(m => {
-                let i = 0;
+            .map((m) => {
+                m.isLoggedInUser = m.name === presumedLoggedInUserName;
+                loggedInUserIsPresumablyKnown = loggedInUserIsPresumablyKnown || m.isLoggedInUser;
+
+                m.radius =  m.isLoggedInUser ? 5: 3;
+                m.borderWidth = m.isLoggedInUser ? 4 : 1;
+                m.pointStyle = m.isLoggedInUser ? "rectRot" : "circle"
                 m.stars = [];
+                m.deltas = [];
+                m.deltaPointsTotal = 0; // Calculated later
+                m.deltaMeanSeconds = null; // Calculated later
+                m.deltaMedianSeconds = null; // Calculated later
                 m.name = m.name || `(anonymous user ${m.id})`;
-                m.podiumStars = [];
 
                 for (let dayKey of Object.keys(m.completion_day_level)) {
                     for (let starKey of Object.keys(m.completion_day_level[dayKey])) {
@@ -101,6 +142,7 @@
                             getStarDay: parseInt(`${dayKey}.${starKey}`, 10),
                             getStarTimestamp: m.completion_day_level[dayKey][starKey].get_star_ts,
                             getStarMoment: starMoment,
+                            starIndex: m.completion_day_level[dayKey][starKey].star_index,
                             timeTaken: null, // adding this later on, which is easier :D
                             timeTakenSeconds: null, // adding this later on as well
                         };
@@ -120,6 +162,23 @@
                     s.timeTakenSeconds = s.getStarMoment.diff(startOfDay, "seconds");
                 });
 
+                m.stars.filter(s => s.starNr === 2).forEach(star2 => {
+                    const star1 = m.stars.find(s => s.dayNr === star2.dayNr && s.starNr === 1);
+                    const deltaTimeTakenSeconds = star2.timeTakenSeconds - star1.timeTakenSeconds;
+                    const delta = { dayNr: star2.dayNr, dayKey: star2.dayKey, deltaTimeTakenSeconds, member: m, };
+                    deltas.push(delta);
+                    m.deltas.push(delta);
+                });
+
+                const sortedDeltas = m.deltas
+                    .slice()
+                    .filter(d => d.deltaTimeTakenSeconds < 4 * 60 * 60) // Outliers distort images so we exclude them
+                    .sort((a,b) => a.deltaTimeTakenSeconds - b.deltaTimeTakenSeconds);
+                if (sortedDeltas.length > 0) {
+                    m.deltaMedianSeconds = sortedDeltas[Math.trunc(sortedDeltas.length / 2)].deltaTimeTakenSeconds;
+                    m.deltaMeanSeconds = sortedDeltas.map(x => x.deltaTimeTakenSeconds).reduce((a,b) => a+b) / sortedDeltas.length;
+                }
+
                 return m;
             })
             .filter(m => m.stars.length > 0)
@@ -127,6 +186,16 @@
 
         let allMoments = stars.map(s => s.getStarMoment).concat([moment("" + year + "-12-25T00:00:00-0000")]);
         let maxMoment = moment.min([moment.max(allMoments), moment("" + year + "-12-31T00:00:00-0000")]);
+
+        const maxDeltaPoints = members.filter(m => m.deltas.length > 0).length;
+        for (let i = 1; i <= 25; i++) {
+            let availableDeltaPoints = maxDeltaPoints;
+            const sortedDeltas = deltas.filter(d => d.dayNr === i).sort((a,b) => a.deltaTimeTakenSeconds - b.deltaTimeTakenSeconds);
+            for (let delta of sortedDeltas) {
+                delta.points = availableDeltaPoints--;
+                delta.member.deltaPointsTotal += delta.points;
+            }
+        }
 
         let availablePoints = {};
 
@@ -167,7 +236,6 @@
             for (let i = 0; i < days[d].podium.length; i++) {
                 days[d].podium[i].awardedPodiumPlace = i;
                 days[d].podiumFirstPuzzle[i].awardedPodiumPlaceFirstPuzzle = i;
-
             }
         }
 
@@ -188,6 +256,7 @@
             members.forEach((m, idx) => m.color = colors[idx]);
 
         return {
+            owner_id: json.owner_id,
             maxDay: maxDay,
             maxMoment: maxMoment,
             days: days,
@@ -195,6 +264,8 @@
             members: members,
             year: year,
             n_members: n_members,
+            maxDeltaPoints,
+            loggedInUserIsPresumablyKnown,
         };
     }
 
@@ -303,6 +374,16 @@
         return value;
     }
 
+    function togglePointsOverTimeType() {
+        localStorage.setItem("aoc-flag-v1-points-over-time-type-index", (getPointsOverTimeType() + 1) % pointsOverTimeType.length);
+        location.reload();
+    }
+
+    function getPointsOverTimeType() {
+        return +localStorage.getItem("aoc-flag-v1-points-over-time-type-index") || 0;
+    }
+
+    const defaultLegendClickHandler = Chart.defaults.plugins.legend.onClick;
     let prevClick;
     function isDoubleClick() {
         let now = new Date();
@@ -317,39 +398,6 @@
         return diff < 300;
     }
 
-    function legendOnClick(e, li) {
-        // always do default click behavior
-        Chart.defaults.global.legend.onClick.apply(this, [e, li]);
-
-        if (isDoubleClick()) {
-            let chart = this.chart;
-
-            // always show doubleclicked item
-            chart.getDatasetMeta(li.datasetIndex).hidden = null;
-
-            // count how many hidden datasets are there
-            let hiddenCount = chart.data.datasets
-                .map((_, dataSetIndex) => chart.getDatasetMeta(dataSetIndex))
-                .filter(meta => meta.hidden)
-                .length;
-
-            // deciding to invert items 'hidden' state depending
-            // if they are already mostly hidden
-            let hide = (hiddenCount >= (chart.data.datasets.length - 1) * 0.5) ? null : true;
-
-            chart.data.datasets.forEach((_, dataSetIndex) => {
-                if (dataSetIndex === li.datasetIndex) {
-                    return;
-                }
-
-                let dsMeta = chart.getDatasetMeta(dataSetIndex);
-                dsMeta.hidden = hide;
-            });
-
-            chart.update();
-        }
-    }
-
     function formatTimeTaken(seconds) {
         if (seconds > 24 * 3600) {
             return ">24h"
@@ -360,7 +408,6 @@
     function formatStarMomentForTitle(memberStar) {
         return memberStar.getStarMoment.local().format("HH:mm:ss YYYY-MM-DD") + " (local time)";
     }
-
 
     function getLeaderboardJson() {
         // 1. Check if dummy data was loaded...
@@ -405,6 +452,136 @@
                 console.info("Could not find anchor to JSON feed, assuming no charts can be plotted here.");
                 return new Promise((resolve, reject) => { });
             }
+        }
+    }
+
+    class ChartOptions {
+        constructor(titleText) {
+            this.responsive = true;
+            this.plugins = {
+                legend: {
+                    position: "right",
+                    title: {
+                        display: true,
+                        text: "(🖱 click / 🖱🖱 click)",
+                        color: aocColors["main"],
+                        font: { weight: "bold", },
+                    },
+                    labels: {
+                        color: aocColors["main"],
+                        usePointStyle: true,
+                    },
+                    onClick: function (event, legendItem, legend) {
+                        defaultLegendClickHandler(event, legendItem, legend);
+
+                        if (isDoubleClick()) {
+                            let chart = this.chart;
+
+                            // always show doubleclicked item
+                            chart.getDatasetMeta(legendItem.datasetIndex).hidden = null;
+
+                            // count how many hidden datasets are there
+                            let hiddenCount = chart.data.datasets
+                                .map((_, dataSetIndex) => chart.getDatasetMeta(dataSetIndex))
+                                .filter(meta => meta.hidden)
+                                .length;
+
+                            // deciding to invert items 'hidden' state depending
+                            // if they are already mostly hidden
+                            let hide = (hiddenCount >= (chart.data.datasets.length - 1) * 0.5) ? null : true;
+
+                            chart.data.datasets.forEach((_, dataSetIndex) => {
+                                if (dataSetIndex === legendItem.datasetIndex) {
+                                    return;
+                                }
+
+                                let dsMeta = chart.getDatasetMeta(dataSetIndex);
+                                dsMeta.hidden = hide;
+                            });
+
+                            chart.update();
+                        }
+                    },
+                },
+                title: {
+                    display: true,
+                    text: titleText,
+                    color: aocColors["main"],
+                    font: {
+                        weight: "normal",
+                        size: 24,
+                    },
+                },
+            };
+            this.scales = {
+                x: {
+                    title: {
+                        display: true,
+                        text: "Day of Advent",
+                        color: aocColors["main"],
+                    },
+                    grid: {
+                        color: aocColors["tertiary"],
+                    },
+                },
+                y: { },
+            };
+        }
+
+        withOnClick(onClick) {
+            this.onClick = onClick;
+            return this;
+        }
+
+        withTooltips(definition) {
+            this.plugins = this.plugins || {};
+            this.plugins.tooltip = definition;
+            return this;
+        }
+
+        withXStackedScale() {
+            let x = this.scales.x;
+            x.stacked = true;
+            x.ticks = {
+                fontColor: aocColors["main"],
+            };
+            return this;
+        }
+
+        withXTickingScale() {
+            let x = this.scales.x;
+            x.min = 0;
+            x.max = 25;
+            x.ticks = {
+                color: aocColors["main"],
+                stepSize: 1,
+            };
+            return this;
+        }
+
+        withXTimeScale(data) {
+            let x = this.scales.x;
+            x.type = "time";
+            x.time = {
+                displayFormats: {
+                    day: 'D',
+                },
+            };
+            x.ticks = {
+                color: aocColors["main"],
+                stepSize: 1,
+            };
+            x.min = moment([data.year, 10, 30, 17, 0, 0]);
+            x.max = moment([data.year, 11, 31, 4, 0, 0]);
+            return this;
+        }
+
+        withYScale(definition) {
+            this.scales.y = definition;
+            this.scales.y.ticks = {
+                color: aocColors["main"],
+            };
+            return this;
         }
     }
 
@@ -475,9 +652,9 @@
         }
 
         loadPerDayLeaderBoard(data) {
-            this.perDayLeaderBoard.title = "Per Day LeaderBoard";
+            this.perDayLeaderBoard.title = "Delta-focused overviews";
             let titleElement = this.perDayLeaderBoard.appendChild(document.createElement("h3"));
-            titleElement.innerText = "Stats Per Day: ";
+            titleElement.innerText = "Delta-focused stats: ";
             titleElement.style.fontFamily = "Source Code Pro, monospace";
             titleElement.style.fontWeight = "normal";
             titleElement.style.marginTop = "32px";
@@ -485,20 +662,135 @@
             this.perDayLeaderBoard.style.marginBottom = "32px";
 
             let displayDay = getDisplayDay();
-            // taking the min to avoid going out of bounds for current year
-            displayDay = displayDay ? Math.min(parseInt(displayDay), data.maxDay) : data.maxDay;
+            
+            if (displayDay !== "overview") {
+                // taking the min to avoid going out of bounds for current year
+                displayDay = displayDay ? Math.min(parseInt(displayDay), data.maxDay) : data.maxDay;
+            }
 
             let tablePerDay = {}, anchorPerDay = {};
 
             for (let d = 1; d <= data.maxDay; ++d) {
                 let a = titleElement.appendChild(document.createElement("a"));
+                a.dataset["key"] = d;
                 a.innerText = " " + d.toString();
-                a.addEventListener("click", () => {
-                    setDisplayDay(d);
-                    setVisible(d);
+                a.addEventListener("click", (evt) => {
+                    const key = evt.target.dataset["key"];
+                    setDisplayDay(key);
+                    setVisible(key);
                 });
                 a.style.cursor = "pointer";
                 anchorPerDay[d] = a;
+            }
+
+            const divider = titleElement.appendChild(document.createElement("span"));
+            divider.innerText = " | ";
+
+            const overviewAnchor = titleElement.appendChild(document.createElement("a"));
+            overviewAnchor.innerText = "Overview"
+            overviewAnchor.addEventListener("click", () => {
+                setDisplayDay("overview");
+                setVisible("overview");
+            });
+            overviewAnchor.style.cursor = "pointer";
+            overviewAnchor.dataset["key"] = "overview";
+            anchorPerDay["overview"] = overviewAnchor;
+
+            function createCell(text, bgColor = "transparent") {
+                const td = document.createElement("td");
+                td.innerText = text;
+                td.style.border = "1px solid #333";
+                td.style.padding = "6px";
+                td.style.textAlign = "center";
+                td.style.backgroundColor = bgColor;
+                return td;
+            }
+
+            function generateOverviewTable() {
+                const deltaLeaderBoard = document.createElement("table");
+                tablePerDay["overview"] = deltaLeaderBoard;
+
+                deltaLeaderBoard.title = "Delta Leaderboard";
+    
+                let table = document.createElement("table");
+                table.style.borderCollapse = "collapse";
+                table.style.fontSize = "16px";
+
+                function createDividerCell() {
+                    const td = document.createElement("td");
+                    td.innerHTML = "&nbsp;";
+                    return td;
+                }
+    
+                function createHeaderCell(text, color = "inherit", title = "") {
+                    const th = document.createElement("th");
+                    th.innerText = text;
+                    th.title = title;
+                    th.style.padding = "4px 8px";
+                    th.style.color = color;
+                    th.style.textAlign = "center";
+                    th.style.cursor = "pointer";
+                    return th;
+                }
+    
+                {
+                    // table header
+                    let tr = table.appendChild(document.createElement("tr"));
+                    tr.appendChild(createHeaderCell(""))
+                    tr.appendChild(createHeaderCell("Stars"));
+                    tr.appendChild(createHeaderCell(""))
+                    tr.appendChild(createHeaderCell("Delta Points ⬇", "#ffff66"));
+                    tr.appendChild(createDividerCell());
+                    tr.appendChild(createHeaderCell("Mean*", "#ffff66", "deltas of more than 4 hours are not included"));
+                    tr.appendChild(createHeaderCell("Median*", "#ffff66", "deltas of more than 4 hours are not included"));
+                    tr.appendChild(createDividerCell());
+                    for (let d = 1; d <= data.maxDay; ++d) {
+                        let th = tr.appendChild(createHeaderCell(d));
+                        th.style.fontSize = "11px";
+                        th.style.minWidth = "14px";
+                    }
+                }
+
+                let rank = 0;
+                const divider = data.maxDeltaPoints * data.maxDeltaPoints; // Comparing quadratics makes distinctions clearer visually
+                for (let member of data.members.slice().sort(deltaPointsTotalSorter).reverse()) {
+                    const bgColor = member.isLoggedInUser ? aocColors["highlight"] : "transparent";
+                    rank += 1;
+                    let tr = table.appendChild(document.createElement("tr"));
+
+                    let td = tr.appendChild(document.createElement("td"));
+                    td.style.textAlign = "left";
+                    td.innerText = rank + ". " + member.name;
+                    td.style.border = "1px solid #333";
+                    td.style.padding = "6px";
+                    td.style.backgroundColor = member.isLoggedInUser ? aocColors["highlight"] : "transparent";
+
+                    let tdStars = tr.appendChild(createCell(member.stars.length));
+                    let percent = member.stars.length / 50 * 100;
+                    tdStars.style.background = member.isLoggedInUser
+                        ? aocColors["highlight"] 
+                        : `linear-gradient(to right, rgb(255,255,255,0.05) 0%, rgb(255,255,255,0.05) ${percent}%, transparent ${percent}%, transparent 100%)`;
+                    
+                    tr.appendChild(createDividerCell());
+                    tr.appendChild(createCell(member.deltaPointsTotal, bgColor));
+                    tr.appendChild(createDividerCell());
+                    tr.appendChild(createCell(member.deltaMeanSeconds ? formatTimeTaken(member.deltaMeanSeconds) : "", bgColor));
+                    tr.appendChild(createCell(member.deltaMedianSeconds ? formatTimeTaken(member.deltaMedianSeconds) : "", bgColor));
+                    tr.appendChild(createDividerCell());
+
+                    for (let d = 1; d <= data.maxDay; ++d) {
+                        const delta = member.deltas.find(x => x.dayNr === d);
+                        const td = tr.appendChild(createCell(delta?.points || ""));
+                        td.title = "Delta time: " + (delta ? formatTimeTaken(delta.deltaTimeTakenSeconds) : "none");
+                        td.style.padding = "2px";
+                        td.style.fontSize = "11px";
+                        td.style.background = `rgba(255,255,255,${delta ? (delta.points * delta.points) / divider / 10  : 0})`;
+                    }
+                }
+    
+                deltaLeaderBoard.appendChild(table);
+
+                return deltaLeaderBoard;
             }
 
             function generateTable(displayDay) {
@@ -611,15 +903,6 @@
                     }
                 }
 
-                function createCell(text) {
-                    const td = document.createElement("td");
-                    td.innerText = text;
-                    td.style.border = "1px solid #333";
-                    td.style.padding = "6px";
-                    td.style.textAlign = "center";
-                    return td;
-                }
-
                 const maxSecondsForSparkline = 4 /* hours */ * 3600;
                 let rank = 0;
                 let maxDeltaTime = Math.max.apply(Math, grid
@@ -643,6 +926,9 @@
                     rank += 1;
 
                     let tr = gridElement.appendChild(document.createElement("tr"));
+                    if (member.isLoggedInUser) {
+                        tr.style.backgroundColor = aocColors["highlight"];
+                    }
                     let td = tr.appendChild(createCell(rank.toString() + ". " + member.name))
                     td.style.textAlign = "left";
 
@@ -724,6 +1010,8 @@
                 this.perDayLeaderBoard.appendChild(generateTable(i));
             }
 
+            this.perDayLeaderBoard.appendChild(generateOverviewTable());
+
             setVisible(displayDay);
 
             return data;
@@ -733,6 +1021,12 @@
             const medalHtml = n => n === 0 ? "🥇" : n === 1 ? "🥈" : n === 2 ? "🥉" : `${n}`;
             const medalColor = n => n === 0 ? "gold" : n === 1 ? "silver" : n === 2 ? "#945210" : "rgba(15, 15, 35, 1.0)";
 
+            // The default font stack of AoC is only the first two, so we add a few to the end here
+            // to make sure that systems without the medals in the font will still see them if they
+            // are present in the fallback fonts.
+            // See also: https://github.com/jeroenheijmans/advent-of-code-charts/issues/56
+            const medalFontFamily = '"Source Code Pro", monospace, serif, sans-serif, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"';
+            
             this.medals.title =
               (isShowAllToggled()
                 ? ''
@@ -769,21 +1063,25 @@
                 span.innerText = medalHtml(n);
                 span.style.backgroundColor = medalColor(n);
                 span.style.padding = "1px";
+                span.style.fontFamily = medalFontFamily;
                 td.style.padding = "4px";
                 td.align = "center";
             }
 
             for (let member of grid.sort(memberByPodiumSorter)) {
+                const cellColor = member.isLoggedInUser ? aocColors["highlight"] : "transparent";
                 let tr = document.createElement("tr");
                 let medalCount = 0;
 
                 let td = tr.appendChild(document.createElement("td"));
                 td.innerText = member.name;
+                td.style.backgroundColor = cellColor;
                 td.style.border = "1px solid #333";
                 td.style.padding = "2px 8px";
 
                 for (let d = 1; d <= 25; d++) {
                     let td = tr.appendChild(document.createElement("td"));
+                    td.style.backgroundColor = cellColor;
                     td.style.border = "1px solid #333";
                     td.style.padding = "3px 4px";
                     td.style.textAlign = "center";
@@ -810,6 +1108,7 @@
                         span.style.borderRadius = "2px";
                         span.style.border = "1px solid #333";
                         span.style.backgroundColor = medalColor(secondPuzzlePodiumPlace);
+                        span.style.fontFamily = medalFontFamily;
 
                         let memberStar1 = member.stars.find(s => s.dayNr === d && s.starNr === 1);
                         let memberStar2 = member.stars.find(s => s.dayNr === d && s.starNr === 2);
@@ -834,6 +1133,7 @@
                 for (let n = 0; n < podiumLength; n++) {
                     let td = tr.appendChild(document.createElement("td"));
                     td.innerText = member.podiumPlacesPerDay[n];
+                    td.style.backgroundColor = cellColor;
                     td.style.border = "1px solid #333";
                     td.style.padding = "2px 8px";
                     td.align = "center";
@@ -865,7 +1165,8 @@
                     backgroundColor: m.color,
                     borderWidth: 1,
                     borderColor: "#000",
-                    pointRadius: 6,
+                    pointRadius: m.radius * 2,
+                    pointStyle: m.pointStyle,
                     data: m.stars.map(s => {
                         return {
                             x: s.dayNr + s.starNr / 2 - 1,
@@ -883,69 +1184,32 @@
                 data: {
                     datasets: datasets,
                 },
-                options: {
-                    responsive: true,
-                    tooltips: {
+                options: new ChartOptions("Stars vs Log10(minutes taken per star)")
+                    .withTooltips({
                         callbacks: {
-                            label: (item, _) => {
+                            label: (item) => {
                                 const day = Math.floor(Number(item.label) + 0.5);
                                 const star = Number(item.label) < day ? 1 : 2;
                                 const mins = item.value;
                                 return `Day ${day} star ${star} took ${mins} minutes to complete`;
                             },
                         },
-                    },
-                    chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
-                    legend: {
-                        position: "right",
-                        labels: {
+                    })
+                    .withXTickingScale()
+                    .withYScale({
+                        type: "logarithmic",
+                        ticks: {
                             fontColor: aocColors["main"],
                         },
-                        onClick: legendOnClick
-                    },
-                    title: {
-                        display: true,
-                        text: "Stars vs Log10(minutes taken per star)",
-                        fontSize: 24,
-                        fontStyle: "normal",
-                        fontColor: aocColors["main"],
-                        lineHeight: 2.0,
-                    },
-                    scales: {
-                        xAxes: [{
-                            ticks: {
-                                min: 0,
-                                max: 25,
-                                stepSize: 1,
-                                fontColor: aocColors["main"],
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "Day of Advent",
-                                fontColor: aocColors["main"],
-                            },
-                            gridLines: {
-                                color: aocColors["tertiary"],
-                                zeroLineColor: aocColors["secondary"],
-                            },
-                        }],
-                        yAxes: [{
-                            type: "logarithmic",
-                            ticks: {
-                                fontColor: aocColors["main"],
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "minutes taken per star (log scale)",
-                                fontColor: aocColors["main"],
-                            },
-                            gridLines: {
-                                color: aocColors["tertiary"],
-                                zeroLineColor: aocColors["secondary"],
-                            },
-                        }]
-                    }
-                }
+                        title: {
+                            display: true,
+                            text: "minutes taken per star (log scale)",
+                            color: aocColors["main"],
+                        },
+                        grid: {
+                            color: aocColors["tertiary"],
+                        },
+                    })
             });
 
             return data;
@@ -953,15 +1217,16 @@
 
         loadTimePerStar(data) {
             let datasets = [];
-            let n = Math.min(3, data.members.length);
+            let n = Math.min((isResponsivenessToggled() ? 8 : data.members.length), data.members.length);
             let relevantMembers = data.members.sort((a, b) => b.score - a.score).slice(0, n);
 
-            for (let member of relevantMembers) {
+            relevantMembers.forEach( (member, idx) => {
                 let star1DataSet = {
                     label: `${member.name} (★)`,
                     stack: `Stack ${member.name}`,
                     backgroundColor: member.color,
                     data: [],
+                    hidden: data.loggedInUserIsPresumablyKnown ? !member.isLoggedInUser : idx >= 3,
                 };
 
                 let star2DataSet = {
@@ -969,6 +1234,7 @@
                     stack: `Stack ${member.name}`,
                     backgroundColor: colorWithOpacity(member.color, 0.5),
                     data: [],
+                    hidden: data.loggedInUserIsPresumablyKnown ? !member.isLoggedInUser : idx >= 3,
                 };
 
                 for (let i = 1; i <= 25; i++) {
@@ -979,106 +1245,141 @@
                     star2DataSet.data.push(!!star2 ? star2.timeTaken - star1.timeTaken : 0);
                 }
 
-                // Over 240 minutes? Then just nullify the data, we assume folks didn't try.
-                for (var i = 0; i < star1DataSet.data.length; i++) {
-                    if (star1DataSet.data[i] + star2DataSet.data[i] > 240) {
-                        if (star1DataSet.data[i] > 240) {
-                            star1DataSet.data[i] = null;
-                        }
-                        star2DataSet.data[i] = null;
-                    }
-                }
-
                 datasets.push(star1DataSet);
                 datasets.push(star2DataSet);
-            }
+            });
 
-            let element = this.createGraphCanvas(data, "From the top players, show the number of minutes taken each day. (Exclude results over 4 hours.)");
+            let element = this.createGraphCanvas(data, "From the top players, show the number of minutes taken each day. (Exclude results over 4 hours.) (Toggle Responsive for all users)");
             this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
                 type: "bar",
+
                 data: {
                     labels: range(1, 26),
                     datasets: datasets,
                 },
-                options: {
-                    responsive: true,
-
-                    chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
-                    legend: {
-                        position: "right",
-                        labels: {
+                options: new ChartOptions(`Minutes taken per star`)
+                    .withXStackedScale()
+                    .withYScale({
+                        stacked: true,
+                        max: 240,
+                        ticks: {
                             fontColor: aocColors["main"],
                         },
-                        onClick: legendOnClick
-                    },
-                    title: {
-                        display: true,
-                        text: `Minutes taken per star - top ${n} players`,
-                        fontSize: 24,
-                        fontStyle: "normal",
-                        fontColor: aocColors["main"],
-                        lineHeight: 2.0,
-                    },
-                    scales: {
-                        xAxes: [{
-                            stacked: true,
-                            ticks: {
-                                fontColor: aocColors["main"],
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "Day of Advent",
-                                fontColor: aocColors["main"],
-                            },
-                            gridLines: {
-                                color: aocColors["tertiary"],
-                                zeroLineColor: aocColors["secondary"],
-                            },
-                        }],
-                        yAxes: [{
-                            stacked: true,
-                            ticks: {
-                                fontColor: aocColors["main"],
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "minutes taken per star",
-                                fontColor: aocColors["main"],
-                            },
-                            gridLines: {
-                                color: aocColors["tertiary"],
-                                zeroLineColor: aocColors["secondary"],
-                            },
-                        }],
-                    }
-                }
+                        scaleLabel: {
+                            display: true,
+                            labelString: "minutes taken per star",
+                            fontColor: aocColors["main"],
+                        },
+                        grid: {
+                            color: aocColors["tertiary"],
+                            zeroLineColor: aocColors["secondary"],
+                        },
+                    })
             });
 
             return data;
         }
 
         loadPointsOverTime(data) {
-            let datasets = data.members.sort((a, b) => a.name.localeCompare(b.name)).map(m => {
-                return {
+            const graphType = getPointsOverTimeType();
+            const maxDayNr = Math.max(...data.stars.map(s => s.dayNr));
+            const maxPointsPerDay = Array.from({ length: maxDayNr }, () => data.n_members * 2);
+
+            // TODO: Perhaps do this while parsing so other graphs may use it?
+            data.stars.forEach(s => maxPointsPerDay[s.dayNr-1] = s.points > 0 ? data.n_members * 2 : 0);
+            const availablePoints = [maxPointsPerDay.map(p => p/2), maxPointsPerDay.map(p => p/2)];
+            data.stars.forEach(s => availablePoints[s.starNr-1][s.dayNr-1] = Math.min(availablePoints[s.starNr-1][s.dayNr-1], Math.max(s.points-1, 0)));
+
+            let datasets = data.members.sort((a, b) => a.name.localeCompare(b.name)).reduce((p, m) => {
+                const days = m.stars.reduce(
+                    (map, s) => {
+                        const current = map.get(s.dayNr) ?? { stars: [], points:0 };
+                        return map.set(s.dayNr, {
+                            stars: [...current.stars, s],
+                            points: current.points + s.points
+                        });
+                    },
+                    new Map()
+                );
+
+                if (graphType === 2 && m.stars.length < maxPointsPerDay.length * 2) {
+                    p.push({
+                        label: m.name + ' (potential)',
+                        lineTension: 0.1,
+                        fill: false,
+                        borderWidth: m.borderWidth,
+                        borderColor: m.color,
+                        borderDash: [1, 4],
+                        backgroundColor: m.color,
+                        pointStyle: m.pointStyle,
+                        pointBorderWidth: 0.5,
+                        pointBackgroundColor: "transparent",
+                        data: maxPointsPerDay
+                            .map((max, i) => ({
+                                dayNr: i + 1,
+                                ...(days.get(i + 1) ?? { stars: [], points: 0 })
+                            }))
+                            .map((day,i) => ({
+                                ...day,
+                                points: day.stars.length === 2 
+                                    ? day.points
+                                    : day.stars.length === 1
+                                        ? (day.points + availablePoints[1][i])
+                                        : (availablePoints[0][i] + availablePoints[1][i])
+                            }))
+                            .map((day, i, days) => ({
+                                ...day,
+                                pointsToDay: days.filter(d => d.dayNr <= day.dayNr).map(d => d.points).reduce((a,b) => a+b),
+                                maxPointsToDay: maxPointsPerDay.slice(0, day.dayNr).reduce((p,max) => p+(max ?? 0), 0)
+                            }))
+                            .filter((day, i, days) => !days.filter(d => d.dayNr <= day.dayNr + 1).every(d => d.stars.length === 2))
+                            .map((day) => ({
+                                x: moment([data.year, 10, 30, 0, 0, 0]).add(day.dayNr, "d"),
+                                y: day.pointsToDay / day.maxPointsToDay * 100,
+                                day
+                            })),
+                    });
+                }
+
+                p.push({
                     label: m.name,
-                    lineTension: 0.2,
+                    lineTension: 0.1,
                     fill: false,
-                    borderWidth: 1.5,
+                    borderWidth: m.borderWidth,
                     borderColor: m.color,
+                    radius: m.radius,
+                    pointStyle: m.pointStyle,
                     backgroundColor: m.color,
-                    data: m.stars.filter(s => s.starNr === 2).map(s => {
+                    data: graphType !== 0 
+                    ? maxPointsPerDay
+                        .map((max, i) => ({ 
+                            dayNr: i+1, 
+                            ...(days.get(i+1) ?? { stars: [], points:0 })
+                        }))
+                        .map((day, i, days) => ({
+                            ...day,
+                            pointsToDay: days.filter(d => d.dayNr <= day.dayNr).map(d => d.points).reduce((a,b) => a+b),
+                            maxPointsToDay: maxPointsPerDay.slice(0, day.dayNr).reduce((p,max) => p+(max ?? 0), 0)
+                        }))
+                        .map((day) => ({
+                                x: moment([data.year, 10, 30, 0, 0, 0]).add(day.dayNr, "d"),
+                                y: day.pointsToDay / day.maxPointsToDay * 100,
+                                day
+                            }))
+                    : m.stars.filter(s => s.starNr === 2).map(s => {
                         return {
                             x: s.getStarMoment,
                             y: s.nrOfPointsAfterThisOne,
                             star: s
                         }
                     })
-                };
-            });
+                });
+                return p;
+            }, []);
 
-            let element = this.createGraphCanvas(data, "Points over time per member.");
+            const element = this.createGraphCanvas(data, "Points over time per member.");
             this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
@@ -1086,72 +1387,46 @@
                 data: {
                     datasets: datasets,
                 },
-                options: {
-                    responsive: true,
-                    tooltips: {
+                plugins: [{
+                    // See https://stackoverflow.com/a/75034834/419956 by user @LeeLenalee
+                    afterEvent: (chart, evt) => {
+                        const { event: { type, x, y, } } = evt;
+                        if (type !== 'click') return;
+                        const { titleBlock: { top, right, bottom, left, } } = chart;
+                        if (left <= x && x <= right && bottom >= y && y >= top) {
+                            togglePointsOverTimeType()
+                        }
+                    }
+                }],
+                options: new ChartOptions(`Points per Day - 🖱️ ${pointsOverTimeType[graphType]}`)
+                    .withTooltips({
                         callbacks: {
-                            afterLabel: (item, data) => {
-                                const star = data.datasets[item.datasetIndex].data[item.index].star;
+                            afterLabel: (item) => {
+                                if (graphType !== 0) {
+                                    const day = item.dataset.data[item.dataIndex].day;
+                                    return `(day ${day.dayNr}. Total: ${day.pointsToDay} of ${day.maxPointsToDay} points. Today: ${day.points} points, ranked ${day.stars.map(s => `${s.rank}.`).join(' and ') || '-'})`;
+                                }
+                                const star = item.dataset.data[item.dataIndex].star;
                                 return `(completed day ${star.dayNr} star ${star.starNr})`;
                             },
                         },
-                    },
-                    chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
-                    legend: {
-                        position: "right",
-                        labels: {
+                    })
+                    .withXTimeScale(data)
+                    .withYScale({
+                        ticks: {
+                            min: 0,
                             fontColor: aocColors["main"],
                         },
-                        onClick: legendOnClick
-                    },
-                    title: {
-                        display: true,
-                        text: "Leaderboard (points)",
-                        fontSize: 24,
-                        fontStyle: "normal",
-                        fontColor: aocColors["main"],
-                        lineHeight: 2.0,
-                    },
-                    scales: {
-                        xAxes: [{
-                            type: "time",
-                            time: {
-                                unit: "day",
-                                stepSize: 1,
-                                displayFormats: { day: "D" },
-                            },
-                            ticks: {
-                                min: moment([data.year, 10, 30, 5, 0, 0]),
-                                max: data.maxMoment,
-                                fontColor: aocColors["main"],
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "Day of Advent",
-                                fontColor: aocColors["main"],
-                            },
-                            gridLines: {
-                                color: aocColors["tertiary"],
-                                zeroLineColor: aocColors["secondary"],
-                            },
-                        }],
-                        yAxes: [{
-                            ticks: {
-                                min: 0,
-                                fontColor: aocColors["main"],
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "cumulative points",
-                                fontColor: aocColors["main"],
-                            },
-                            gridLines: {
-                                color: aocColors["tertiary"],
-                                zeroLineColor: aocColors["secondary"],
-                            },
-                        }],
-                    }
-                }
+                        scaleLabel: {
+                            display: true,
+                            labelString: "cumulative points",
+                            fontColor: aocColors["main"],
+                        },
+                        grid: {
+                            color: aocColors["tertiary"],
+                            zeroLineColor: aocColors["secondary"],
+                        },
+                    })
             });
 
             return data;
@@ -1163,8 +1438,10 @@
                     label: m.name,
                     lineTension: 0.2,
                     fill: false,
-                    borderWidth: 1.5,
+                    borderWidth: m.borderWidth,
                     borderColor: m.color,
+                    radius: m.radius,
+                    pointStyle: m.pointStyle,
                     backgroundColor: m.color,
                     data: m.stars.filter(s => s.starNr === 2).map(s => {
                         return {
@@ -1184,73 +1461,32 @@
                 data: {
                     datasets: datasets,
                 },
-                options: {
-                    responsive: true,
-                    tooltips: {
+                options: new ChartOptions("Leaderboard (stars)")
+                    .withTooltips({
                         callbacks: {
-                            afterLabel: (item, data) => {
-                                const star = data.datasets[item.datasetIndex].data[item.index].star;
+                            afterLabel: (item) => {
+                                const star = item.dataset.data[item.dataIndex].star;
                                 return `(day ${star.dayNr} star ${star.starNr})`;
                             },
                         },
-                    },
-                    chartArea: { backgroundColor: "rgba(0, 0, 0, 0.25)" },
-                    legend: {
-                        position: "right",
-                        labels: {
+                    })
+                    .withXTimeScale(data)
+                    .withYScale({
+                        ticks: {
+                            stepSize: 1,
+                            min: 0,
                             fontColor: aocColors["main"],
                         },
-                        onClick: legendOnClick
-                    },
-                    title: {
-                        display: true,
-                        text: "Leaderboard (stars)",
-                        fontSize: 24,
-                        fontStyle: "normal",
-                        fontColor: aocColors["main"],
-                        lineHeight: 2.0,
-                    },
-                    scales: {
-                        xAxes: [{
-                            type: "time",
-                            time: {
-                                unit: "day",
-                                stepSize: 1,
-                                displayFormats: { day: "D" },
-                            },
-                            ticks: {
-                                min: moment([data.year, 10, 30, 5, 0, 0]),
-                                max: data.maxMoment,
-                                fontColor: aocColors["main"],
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "Day of Advent",
-                                fontColor: aocColors["main"],
-                            },
-                            gridLines: {
-                                color: aocColors["tertiary"],
-                                zeroLineColor: aocColors["secondary"],
-                            },
-                        }],
-                        yAxes: [{
-                            ticks: {
-                                stepSize: 1,
-                                min: 0,
-                                fontColor: aocColors["main"],
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: "nr of stars",
-                                fontColor: aocColors["main"],
-                            },
-                            gridLines: {
-                                color: aocColors["tertiary"],
-                                zeroLineColor: aocColors["secondary"],
-                            },
-                        }],
-                    }
-                }
+                        scaleLabel: {
+                            display: true,
+                            labelString: "nr of stars",
+                            fontColor: aocColors["main"],
+                        },
+                        grid: {
+                            color: aocColors["tertiary"],
+                            zeroLineColor: aocColors["secondary"],
+                        },
+                    })
             });
 
             return data;
