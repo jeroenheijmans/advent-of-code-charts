@@ -460,7 +460,7 @@
                     position: "right",
                     title: {
                         display: true,
-                        text: "Change selection: 🖱 (double) click",
+                        text: "(🖱 click / 🖱🖱 click)",
                         color: aocColors["main"],
                         font: { weight: "bold", },
                     },
