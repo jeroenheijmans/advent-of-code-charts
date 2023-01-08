@@ -17,3 +17,7 @@ List of fixes for #79, the 2023 updates:
 - Issue #33 make (double) clicking legend items more discoverable
 - PR #58 to add more Delta-Time leaderboard features
 - See issue #54: rolled back to manifest v2 for now
+
+Further 2023 fixes and changes:
+
+- Issue #70 to improve situation for large and huge leaderboards

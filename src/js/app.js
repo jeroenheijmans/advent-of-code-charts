@@ -60,16 +60,6 @@
         return [...Array(to - from).keys()].map(k => k + from);
     }
 
-    function colorWithOpacity(color, alpha) {
-        if (color.includes("#")) {
-            return Chart.helpers.color(color).alpha(alpha).rgbString();
-        } else if (color.includes("hsl")) {
-            return `${color.slice(0, -1)}, ${alpha})`;
-        } else {
-            return color;
-        }
-    }
-
     function starSorter(a, b) {
         return a.starIndex - b.starIndex;
     }
@@ -80,17 +70,24 @@
 
     function getPalette(n, rainbow, original) {
         if (original) {
-            const basePalette = ["#781c81", "#6e1980", "#65187f", "#5e187e", "#58197e", "#531b7f", "#4f1d81", "#4c2182", "#492484", "#462987", "#442d8a", "#43328d", "#423791", "#413d94", "#404298", "#3f489c", "#3f4ea0", "#3f53a5", "#3f59a9", "#3f5fad", "#4064b1", "#4069b5", "#416fb8", "#4274bb", "#4379be", "#447dc0", "#4582c1", "#4686c2", "#488ac2", "#4a8ec1", "#4b92c0", "#4d95be", "#4f99bb", "#519cb8", "#549fb4", "#56a2b0", "#58a4ac", "#5ba7a7", "#5ea9a2", "#60ab9d", "#63ad98", "#66af93", "#69b18e", "#6cb289", "#70b484", "#73b580", "#77b67b", "#7ab877", "#7eb973", "#82ba6f", "#85ba6b", "#89bb68", "#8dbc65", "#91bd61", "#95bd5e", "#99bd5c", "#9dbe59", "#a1be56", "#a5be54", "#a9be52", "#adbe50", "#b1be4e", "#b5bd4c", "#b9bd4a", "#bcbc48", "#c0bb47", "#c3ba45", "#c7b944", "#cab843", "#cdb641", "#d0b540", "#d3b33f", "#d6b13e", "#d8ae3d", "#dbab3c", "#dda93b", "#dfa53a", "#e0a239", "#e29e38", "#e39a37", "#e49636", "#e59235", "#e68d34", "#e78833", "#e78332", "#e77d31", "#e77730", "#e7712f", "#e66b2d", "#e6642c", "#e55e2b", "#e4572a", "#e35029", "#e24928", "#e14226", "#df3b25", "#de3424", "#dc2e22", "#db2721", "#d92120"];
+            const basePalette = ["rgba(120, 28, 129, 1.0)", "rgba(110, 25, 128, 1.0)", "rgba(101, 24, 127, 1.0)", "rgba(94, 24, 126, 1.0)", "rgba(88, 25, 126, 1.0)", "rgba(83, 27, 127, 1.0)", "rgba(79, 29, 129, 1.0)", "rgba(76, 33, 130, 1.0)", "rgba(73, 36, 132, 1.0)", "rgba(70, 41, 135, 1.0)", "rgba(68, 45, 138, 1.0)", "rgba(67, 50, 141, 1.0)", "rgba(66, 55, 145, 1.0)", "rgba(65, 61, 148, 1.0)", "rgba(64, 66, 152, 1.0)", "rgba(63, 72, 156, 1.0)", "rgba(63, 78, 160, 1.0)", "rgba(63, 83, 165, 1.0)", "rgba(63, 89, 169, 1.0)", "rgba(63, 95, 173, 1.0)", "rgba(64, 100, 177, 1.0)", "rgba(64, 105, 181, 1.0)", "rgba(65, 111, 184, 1.0)", "rgba(66, 116, 187, 1.0)", "rgba(67, 121, 190, 1.0)", "rgba(68, 125, 192, 1.0)", "rgba(69, 130, 193, 1.0)", "rgba(70, 134, 194, 1.0)", "rgba(72, 138, 194, 1.0)", "rgba(74, 142, 193, 1.0)", "rgba(75, 146, 192, 1.0)", "rgba(77, 149, 190, 1.0)", "rgba(79, 153, 187, 1.0)", "rgba(81, 156, 184, 1.0)", "rgba(84, 159, 180, 1.0)", "rgba(86, 162, 176, 1.0)", "rgba(88, 164, 172, 1.0)", "rgba(91, 167, 167, 1.0)", "rgba(94, 169, 162, 1.0)", "rgba(96, 171, 157, 1.0)", "rgba(99, 173, 152, 1.0)", "rgba(102, 175, 147, 1.0)", "rgba(105, 177, 142, 1.0)", "rgba(108, 178, 137, 1.0)", "rgba(112, 180, 132, 1.0)", "rgba(115, 181, 128, 1.0)", "rgba(119, 182, 123, 1.0)", "rgba(122, 184, 119, 1.0)", "rgba(126, 185, 115, 1.0)", "rgba(130, 186, 111, 1.0)", "rgba(133, 186, 107, 1.0)", "rgba(137, 187, 104, 1.0)", "rgba(141, 188, 101, 1.0)", "rgba(145, 189, 97, 1.0)", "rgba(149, 189, 94, 1.0)", "rgba(153, 189, 92, 1.0)", "rgba(157, 190, 89, 1.0)", "rgba(161, 190, 86, 1.0)", "rgba(165, 190, 84, 1.0)", "rgba(169, 190, 82, 1.0)", "rgba(173, 190, 80, 1.0)", "rgba(177, 190, 78, 1.0)", "rgba(181, 189, 76, 1.0)", "rgba(185, 189, 74, 1.0)", "rgba(188, 188, 72, 1.0)", "rgba(192, 187, 71, 1.0)", "rgba(195, 186, 69, 1.0)", "rgba(199, 185, 68, 1.0)", "rgba(202, 184, 67, 1.0)", "rgba(205, 182, 65, 1.0)", "rgba(208, 181, 64, 1.0)", "rgba(211, 179, 63, 1.0)", "rgba(214, 177, 62, 1.0)", "rgba(216, 174, 61, 1.0)", "rgba(219, 171, 60, 1.0)", "rgba(221, 169, 59, 1.0)", "rgba(223, 165, 58, 1.0)", "rgba(224, 162, 57, 1.0)", "rgba(226, 158, 56, 1.0)", "rgba(227, 154, 55, 1.0)", "rgba(228, 150, 54, 1.0)", "rgba(229, 146, 53, 1.0)", "rgba(230, 141, 52, 1.0)", "rgba(231, 136, 51, 1.0)", "rgba(231, 131, 50, 1.0)", "rgba(231, 125, 49, 1.0)", "rgba(231, 119, 48, 1.0)", "rgba(231, 113, 47, 1.0)", "rgba(230, 107, 45, 1.0)", "rgba(230, 100, 44, 1.0)", "rgba(229, 94, 43, 1.0)", "rgba(228, 87, 42, 1.0)", "rgba(227, 80, 41, 1.0)", "rgba(226, 73, 40, 1.0)", "rgba(225, 66, 38, 1.0)", "rgba(223, 59, 37, 1.0)", "rgba(222, 52, 36, 1.0)", "rgba(220, 46, 34, 1.0)", "rgba(219, 39, 33, 1.0)", "rgba(217, 33, 32, 1.0)"];
             let step = basePalette.length / n;
             return [...Array(n).keys()].map(i => basePalette[Math.floor(i * step, 0)]);
         }
 
         if (rainbow)
             // Dynamic rainbow palette using hsl()
-            return [...Array(n).keys()].map(i => "hsl(" + i * 300 / n + ", 100%, 50%)");
+            return [...Array(n).keys()].map(i => "hsla(" + i * 300 / n + ", 100%, 50%, 1.0)");
 
         // Dynamic fire palette red->yellow->green using hsl()
-        return [...Array(n).keys()].map(i => "hsl(" + i * 120 / n + ", 100%, 50%)")
+        return [...Array(n).keys()].map(i => "hsla(" + i * 120 / n + ", 100%, 50%, 1.0)")
+    }
+
+    function lowerAlpha(color, newAlpha) {
+        // Look, this extensions is in "AoC-style", so we're allowed
+        // some shortcuts that cannot be done in software that is meant
+        // to earn big bugs or save lives or whatever. :-)
+        return color.replace(", 1.0)", `, ${newAlpha})`)
     }
 
     function adjustPoinstFor(year, dayKey, starKey, basePoints) {
@@ -111,8 +108,9 @@
         let deltas = [];
         let year = parseInt(json.event);
         let loggedInUserIsPresumablyKnown = false;
-
+        
         let n_members = Object.keys(json.members).length;
+        let isLargeLeaderboard = n_members > 40;
         let members = Object.keys(json.members)
             .map(k => json.members[k])
             .map((m) => {
@@ -249,11 +247,29 @@
         let isRainbow = curGraphColorStyle.includes("rainbow");
         let orderByScore = curGraphColorStyle.includes("score");
         let colors = getPalette(members.length, isRainbow, isOriginal);
+        let muteFactor = 0.25 + ((200 - n_members) / 200 * 0.5);
+
+        members
+            .slice()
+            .sort((a, b) => b.score - a.score)
+            .forEach((m, idx) => { m.rank = idx + 1; });
 
         if (orderByScore)
-            members.sort((a, b) => b.score - a.score).forEach((m, idx) => m.color = colors[idx]);
+            members
+                .sort((a, b) => b.score - a.score)
+                .forEach((m, idx) => {
+                    const color = colors[idx];
+                    m.color = color;
+                    m.colorMuted = lowerAlpha(colors[idx], muteFactor);
+                    m.rank = idx + 1;
+                });
         else
-            members.forEach((m, idx) => m.color = colors[idx]);
+            members
+                .forEach((m, idx) => {
+                    const color = colors[idx];
+                    m.color = color;
+                    m.colorMuted = lowerAlpha(colors[idx], muteFactor);
+                });
 
         return {
             owner_id: json.owner_id,
@@ -266,6 +282,7 @@
             n_members: n_members,
             maxDeltaPoints,
             loggedInUserIsPresumablyKnown,
+            isLargeLeaderboard,
         };
     }
 
@@ -456,14 +473,18 @@
     }
 
     class ChartOptions {
-        constructor(titleText) {
+        constructor(data, titleText) {
             this.responsive = true;
             this.plugins = {
                 legend: {
                     position: "right",
                     title: {
                         display: true,
-                        text: "(🖱 click / 🖱🖱 click)",
+                        // We compromise: for large leaderboards we really need to explain
+                        // that only the top 40 are given a legend item. For smaller
+                        // leaderboards (where all are shown) we make the click feature
+                        // discoverable.
+                        text: data.isLargeLeaderboard ? "Lgend only for Top 40" : "(🖱 click / 🖱🖱 click)",
                         color: aocColors["main"],
                         font: { weight: "bold", },
                     },
@@ -526,6 +547,16 @@
                 },
                 y: { },
             };
+
+            if (data.isLargeLeaderboard) {
+                this.plugins.legend.labels.padding = 4;
+                this.plugins.legend.labels.boxHeight = 6;
+                this.plugins.legend.labels.boxWidth = 6;
+                this.plugins.legend.labels.filter = (legendItem, chartData) => {
+                   const dataset = chartData.datasets[legendItem.datasetIndex];
+                   return dataset.showInLegend;
+                };
+            }
         }
 
         withOnClick(onClick) {
@@ -1162,11 +1193,14 @@
             let datasets = data.members.map(m => {
                 return {
                     label: m.name,
-                    backgroundColor: m.color,
+                    showInLegend: m.isLoggedInUser || m.rank < 40,
+                    order: m.isLoggedInUser ? 0 : 1, // lower one gets drawn on top
+                    backgroundColor: data.isLargeLeaderboard && !m.isLoggedInUser ? m.colorMuted : m.color,
                     borderWidth: 1,
                     borderColor: "#000",
                     pointRadius: m.radius * 2,
                     pointStyle: m.pointStyle,
+                    showInLegend: m.isLoggedInUser || m.rank < 40,
                     data: m.stars.map(s => {
                         return {
                             x: s.dayNr + s.starNr / 2 - 1,
@@ -1184,7 +1218,7 @@
                 data: {
                     datasets: datasets,
                 },
-                options: new ChartOptions("Stars vs Log10(minutes taken per star)")
+                options: new ChartOptions(data, "Stars vs Log10(minutes taken per star)")
                     .withTooltips({
                         callbacks: {
                             label: (item) => {
@@ -1223,16 +1257,24 @@
             relevantMembers.forEach( (member, idx) => {
                 let star1DataSet = {
                     label: `${member.name} (★)`,
+                    order: member.isLoggedInUser ? 0 : 1, // lower one gets drawn on top
+                    pointStyle: member.pointStyle,
                     stack: `Stack ${member.name}`,
                     backgroundColor: member.color,
+                    borderColor: "rgba(0, 0, 0, 0.5)",
+                    borderWidth: 1,
                     data: [],
                     hidden: data.loggedInUserIsPresumablyKnown ? !member.isLoggedInUser : idx >= 3,
                 };
 
                 let star2DataSet = {
                     label: `${member.name} (★★)`,
+                    order: member.isLoggedInUser ? 0 : 1, // lower one gets drawn on top
+                    pointStyle: member.pointStyle,
                     stack: `Stack ${member.name}`,
-                    backgroundColor: colorWithOpacity(member.color, 0.5),
+                    backgroundColor: member.colorMuted,
+                    borderColor: "rgba(0, 0, 0, 0.5)",
+                    borderWidth: 1,
                     data: [],
                     hidden: data.loggedInUserIsPresumablyKnown ? !member.isLoggedInUser : idx >= 3,
                 };
@@ -1259,7 +1301,7 @@
                     labels: range(1, 26),
                     datasets: datasets,
                 },
-                options: new ChartOptions(`Minutes taken per star`)
+                options: new ChartOptions(data, `Minutes taken per star`)
                     .withXStackedScale()
                     .withYScale({
                         stacked: true,
@@ -1307,12 +1349,14 @@
                 if (graphType === 2 && m.stars.length < maxPointsPerDay.length * 2) {
                     p.push({
                         label: m.name + ' (potential)',
+                        showInLegend: m.isLoggedInUser || m.rank < 40,
+                        order: m.isLoggedInUser ? 0 : 1, // lower one gets drawn on top
                         lineTension: 0.1,
                         fill: false,
                         borderWidth: m.borderWidth,
-                        borderColor: m.color,
+                        borderColor: data.isLargeLeaderboard && !m.isLoggedInUser ? m.colorMuted : m.color,
                         borderDash: [1, 4],
-                        backgroundColor: m.color,
+                        backgroundColor: data.isLargeLeaderboard && !m.isLoggedInUser ? m.colorMuted : m.color,
                         pointStyle: m.pointStyle,
                         pointBorderWidth: 0.5,
                         pointBackgroundColor: "transparent",
@@ -1345,13 +1389,15 @@
 
                 p.push({
                     label: m.name,
+                    showInLegend: m.isLoggedInUser || m.rank < 40,
+                    order: m.isLoggedInUser ? 0 : 1, // lower one gets drawn on top
                     lineTension: 0.1,
                     fill: false,
                     borderWidth: m.borderWidth,
-                    borderColor: m.color,
+                    borderColor: data.isLargeLeaderboard && !m.isLoggedInUser ? m.colorMuted : m.color,
                     radius: m.radius,
                     pointStyle: m.pointStyle,
-                    backgroundColor: m.color,
+                    backgroundColor: data.isLargeLeaderboard && !m.isLoggedInUser ? m.colorMuted : m.color,
                     data: graphType !== 0 
                     ? maxPointsPerDay
                         .map((max, i) => ({ 
@@ -1398,7 +1444,7 @@
                         }
                     }
                 }],
-                options: new ChartOptions(`Points per Day - 🖱️ ${pointsOverTimeType[graphType]}`)
+                options: new ChartOptions(data, `Points per Day - 🖱️ ${pointsOverTimeType[graphType]}`)
                     .withTooltips({
                         callbacks: {
                             afterLabel: (item) => {
@@ -1436,13 +1482,15 @@
             let datasets = data.members.map(m => {
                 return {
                     label: m.name,
+                    showInLegend: m.isLoggedInUser || m.rank < 40,
+                    order: m.isLoggedInUser ? 0 : 1, // lower one gets drawn on top
                     lineTension: 0.2,
                     fill: false,
                     borderWidth: m.borderWidth,
-                    borderColor: m.color,
+                    borderColor: data.isLargeLeaderboard && !m.isLoggedInUser ? m.colorMuted : m.color,
                     radius: m.radius,
                     pointStyle: m.pointStyle,
-                    backgroundColor: m.color,
+                    backgroundColor: data.isLargeLeaderboard && !m.isLoggedInUser ? m.colorMuted : m.color,
                     data: m.stars.filter(s => s.starNr === 2).map(s => {
                         return {
                             x: s.getStarMoment,
@@ -1461,7 +1509,7 @@
                 data: {
                     datasets: datasets,
                 },
-                options: new ChartOptions("Leaderboard (stars)")
+                options: new ChartOptions(data, "Leaderboard (stars)")
                     .withTooltips({
                         callbacks: {
                             afterLabel: (item) => {
