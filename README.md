@@ -53,3 +53,8 @@ Read more [about Advent of Code](https://adventofcode.com/2018/about) to learn a
 Here's what it should more or less look like:
 
 ![example-001.png](example-001.png)
+![example-002.png](example-002.png)
+![example-003.png](example-003.png)
+![example-004.png](example-004.png)
+![example-005.png](example-005.png)
+![example-006.png](example-006.png)
