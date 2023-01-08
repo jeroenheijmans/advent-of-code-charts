@@ -33,6 +33,7 @@
     ];
 
     const podiumLength = 3;
+    const largeLeaderboardCutOff = window.innerWidth < 1600 ? 25 : 40;
 
     const pointsOverTimeType = [
         "(◉ POINTS | ◎ percentages | ◎ percentages with potential)",
@@ -110,7 +111,7 @@
         let loggedInUserIsPresumablyKnown = false;
         
         let n_members = Object.keys(json.members).length;
-        let isLargeLeaderboard = n_members > 40;
+        let isLargeLeaderboard = n_members > largeLeaderboardCutOff;
         let members = Object.keys(json.members)
             .map(k => json.members[k])
             .map((m) => {
@@ -353,15 +354,6 @@
         return !!JSON.parse(localStorage.getItem("aoc-flag-v1-show-all"));
     }
 
-    function toggleResponsiveness() {
-        localStorage.setItem("aoc-flag-v1-is-responsive", !isResponsivenessToggled());
-        location.reload();
-    }
-
-    function isResponsivenessToggled() {
-        return !!JSON.parse(localStorage.getItem("aoc-flag-v1-is-responsive"));
-    }
-
     function getCurrentGraphColorStyle() {
         return localStorage.getItem("aoc-flag-v1-color-style");
     }
@@ -475,16 +467,17 @@
     class ChartOptions {
         constructor(data, titleText) {
             this.responsive = true;
+            this.aspectRation = 1;
             this.plugins = {
                 legend: {
                     position: "right",
                     title: {
                         display: true,
                         // We compromise: for large leaderboards we really need to explain
-                        // that only the top 40 are given a legend item. For smaller
+                        // that only the top N are given a legend item. For smaller
                         // leaderboards (where all are shown) we make the click feature
                         // discoverable.
-                        text: data.isLargeLeaderboard ? "Lgend only for Top 40" : "(🖱 click / 🖱🖱 click)",
+                        text: data.isLargeLeaderboard ? `Legend only for Top ${largeLeaderboardCutOff}` : "(🖱 click / 🖱🖱 click)",
                         color: aocColors["main"],
                         font: { weight: "bold", },
                     },
@@ -625,9 +618,6 @@
             this.medals = this.wrapper.appendChild(document.createElement("div"));
             this.perDayLeaderBoard = this.wrapper.appendChild(document.createElement("div"));
             this.graphs = this.wrapper.appendChild(document.createElement("div"));
-            this.graphs.style.display = "flex";
-            this.graphs.style.flexWrap = "wrap";
-            this.graphs.style.flexDirection = "row";
 
             if (!getCurrentGraphColorStyle())
                 toggleCurrentGraphColorStyle();
@@ -656,17 +646,6 @@
             cacheBustLink.style.padding = "2px 8px";
             cacheBustLink.style.border = `1px solid ${aocColors.secondary}`;
             cacheBustLink.addEventListener("click", () => clearCache());
-
-            const responsiveToggleLink = this.controls.appendChild(document.createElement("a"));
-            responsiveToggleLink.innerText = (isResponsivenessToggled() ? "✅" : "❌") + " Responsive > 1800px";
-            responsiveToggleLink.title = "Trigger side-by-side graphs if the viewport is wider than 1800px";
-            responsiveToggleLink.style.cursor = "pointer";
-            responsiveToggleLink.style.background = aocColors.tertiary;
-            responsiveToggleLink.style.display = "inline-block";
-            responsiveToggleLink.style.padding = "2px 8px";
-            responsiveToggleLink.style.border = `1px solid ${aocColors.secondary}`;
-            responsiveToggleLink.style.marginLeft = "8px";
-            responsiveToggleLink.addEventListener("click", () => toggleResponsiveness());
 
             const colorToggleLink = this.controls.appendChild(document.createElement("a"));
             colorToggleLink.innerText = `🎨 Palette: ${getCurrentGraphColorStyle()}`;
@@ -1181,10 +1160,11 @@
         }
 
         createGraphCanvas(data, title = "") {
-            var element = document.createElement("canvas");
-            if (isResponsivenessToggled()) {
-                element.style.maxWidth = window.matchMedia("(min-width: 1800px)").matches ? "50%" : "100%";
-            }
+            const container = document.createElement("div");
+            container.style.position = "relative";
+            container.style.maxWidth = "1600px";
+            this.graphs.appendChild(container);
+            const element = container.appendChild(document.createElement("canvas"));
             element.title = title;
             return element;
         }
@@ -1193,14 +1173,14 @@
             let datasets = data.members.map(m => {
                 return {
                     label: m.name,
-                    showInLegend: m.isLoggedInUser || m.rank < 40,
+                    showInLegend: m.isLoggedInUser || m.rank < largeLeaderboardCutOff,
                     order: m.isLoggedInUser ? 0 : 1, // lower one gets drawn on top
                     backgroundColor: data.isLargeLeaderboard && !m.isLoggedInUser ? m.colorMuted : m.color,
                     borderWidth: 1,
                     borderColor: "#000",
                     pointRadius: m.radius * 2,
                     pointStyle: m.pointStyle,
-                    showInLegend: m.isLoggedInUser || m.rank < 40,
+                    showInLegend: m.isLoggedInUser || m.rank < largeLeaderboardCutOff,
                     data: m.stars.map(s => {
                         return {
                             x: s.dayNr + s.starNr / 2 - 1,
@@ -1211,7 +1191,6 @@
             });
 
             let element = this.createGraphCanvas(data, "Log10 function of the time taken for each user to get the stars");
-            this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
                 type: "scatter",
@@ -1235,11 +1214,6 @@
                         ticks: {
                             fontColor: aocColors["main"],
                         },
-                        title: {
-                            display: true,
-                            text: "minutes taken per star (log scale)",
-                            color: aocColors["main"],
-                        },
                         grid: {
                             color: aocColors["tertiary"],
                         },
@@ -1251,12 +1225,12 @@
 
         loadTimePerStar(data) {
             let datasets = [];
-            let n = Math.min((isResponsivenessToggled() ? 8 : data.members.length), data.members.length);
-            let relevantMembers = data.members.sort((a, b) => b.score - a.score).slice(0, n);
+            let relevantMembers = data.members.sort((a, b) => b.score - a.score);
 
             relevantMembers.forEach( (member, idx) => {
                 let star1DataSet = {
                     label: `${member.name} (★)`,
+                    showInLegend: member.isLoggedInUser || member.rank < 10,
                     order: member.isLoggedInUser ? 0 : 1, // lower one gets drawn on top
                     pointStyle: member.pointStyle,
                     stack: `Stack ${member.name}`,
@@ -1269,6 +1243,7 @@
 
                 let star2DataSet = {
                     label: `${member.name} (★★)`,
+                    showInLegend: member.isLoggedInUser || member.rank < 10,
                     order: member.isLoggedInUser ? 0 : 1, // lower one gets drawn on top
                     pointStyle: member.pointStyle,
                     stack: `Stack ${member.name}`,
@@ -1292,33 +1267,25 @@
             });
 
             let element = this.createGraphCanvas(data, "From the top players, show the number of minutes taken each day. (Exclude results over 4 hours.) (Toggle Responsive for all users)");
-            this.graphs.appendChild(element);
 
+            let options = new ChartOptions(data, `Minutes taken per star`)
+                .withYScale({
+                    max: 240,
+                    ticks: {
+                        fontColor: aocColors["main"],
+                    },
+                    grid: {
+                        color: aocColors["tertiary"],
+                    },
+                });
+            options.plugins.legend.title.text = "Top players";
             let chart = new Chart(element.getContext("2d"), {
                 type: "bar",
-
                 data: {
                     labels: range(1, 26),
                     datasets: datasets,
                 },
-                options: new ChartOptions(data, `Minutes taken per star`)
-                    .withXStackedScale()
-                    .withYScale({
-                        stacked: true,
-                        max: 240,
-                        ticks: {
-                            fontColor: aocColors["main"],
-                        },
-                        scaleLabel: {
-                            display: true,
-                            labelString: "minutes taken per star",
-                            fontColor: aocColors["main"],
-                        },
-                        grid: {
-                            color: aocColors["tertiary"],
-                            zeroLineColor: aocColors["secondary"],
-                        },
-                    })
+                options,
             });
 
             return data;
@@ -1349,7 +1316,7 @@
                 if (graphType === 2 && m.stars.length < maxPointsPerDay.length * 2) {
                     p.push({
                         label: m.name + ' (potential)',
-                        showInLegend: m.isLoggedInUser || m.rank < 40,
+                        showInLegend: m.isLoggedInUser || m.rank < largeLeaderboardCutOff,
                         order: m.isLoggedInUser ? 0 : 1, // lower one gets drawn on top
                         lineTension: 0.1,
                         fill: false,
@@ -1389,7 +1356,7 @@
 
                 p.push({
                     label: m.name,
-                    showInLegend: m.isLoggedInUser || m.rank < 40,
+                    showInLegend: m.isLoggedInUser || m.rank < largeLeaderboardCutOff,
                     order: m.isLoggedInUser ? 0 : 1, // lower one gets drawn on top
                     lineTension: 0.1,
                     fill: false,
@@ -1426,7 +1393,6 @@
             }, []);
 
             const element = this.createGraphCanvas(data, "Points over time per member.");
-            this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
                 type: "line",
@@ -1482,7 +1448,7 @@
             let datasets = data.members.map(m => {
                 return {
                     label: m.name,
-                    showInLegend: m.isLoggedInUser || m.rank < 40,
+                    showInLegend: m.isLoggedInUser || m.rank < largeLeaderboardCutOff,
                     order: m.isLoggedInUser ? 0 : 1, // lower one gets drawn on top
                     lineTension: 0.2,
                     fill: false,
@@ -1502,7 +1468,6 @@
             });
 
             let element = this.createGraphCanvas(data, "Number of stars over time per member.");
-            this.graphs.appendChild(element);
 
             let chart = new Chart(element.getContext("2d"), {
                 type: "line",
