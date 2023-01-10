@@ -112,14 +112,15 @@
         
         let n_members = Object.keys(json.members).length;
         let isLargeLeaderboard = n_members > largeLeaderboardCutOff;
+
         let members = Object.keys(json.members)
             .map(k => json.members[k])
             .map((m) => {
                 m.isLoggedInUser = m.name === presumedLoggedInUserName;
                 loggedInUserIsPresumablyKnown = loggedInUserIsPresumablyKnown || m.isLoggedInUser;
 
-                m.radius =  m.isLoggedInUser ? 5: 3;
-                m.borderWidth = m.isLoggedInUser ? 4 : 1;
+                m.radius =  m.isLoggedInUser ? 4 : 3;
+                m.borderWidth = m.isLoggedInUser ? 2.5 : 1;
                 m.pointStyle = m.isLoggedInUser ? "rectRot" : "circle"
                 m.stars = [];
                 m.deltas = [];
@@ -605,7 +606,7 @@
                 stepSize: 1,
             };
             x.min = moment([data.year, 10, 30, 17, 0, 0]);
-            x.max = moment([data.year, 11, xMax, 4, 0, 0]);
+            x.max = moment([data.year, 11, 31, 4, 0, 0]);
             x.title.text = titleText || "Day of Advent";
             return this;
         }
@@ -1195,7 +1196,6 @@
             this.graphs.appendChild(container);
             const element = container.appendChild(document.createElement("canvas"));
             element.title = title;
-            element.style.with = "100% !important";
             return element;
         }
 
