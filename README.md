@@ -24,7 +24,7 @@ Serve a test website with the dummy data:
 npm run start # runs 'serve' and 'watch' in parallel
 ```
 
-And open up `http://localhost:5000`.
+And open up the URL that's announced in the console.
 
 ## Building
 
@@ -46,7 +46,7 @@ Note that "Advent of Code" and "AoC" are Eric Wastl's.
 This project is not "official", and in no way (directly or indirectly) endorsed by- or affiliated to Advent of Code and its creator/owner.
 Read more [about Advent of Code](https://adventofcode.com/2018/about) to learn about the project itself.
 
-**Oh, and of course, please [consider donating to _Advent of Code_ itself](https://adventofcode.com/2018/support)!**
+**Oh, and of course, please [consider donating to _Advent of Code_ itself](https://adventofcode.com/support)!**
 
 ## Example
 
