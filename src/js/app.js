@@ -153,9 +153,99 @@
         return basePoints;
     }
 
+    /**
+     * @typedef {{
+     *   last_star_ts: string | number;
+     *   global_score: number;
+     *   completion_day_level: Record<string, Record<string, { get_star_ts: number; star_index: number; }>>;
+     *   local_score: number;
+     *   name: string | null;
+     *   stars: number;
+     *   id: string;
+     * }} IMemberJson
+     * 
+     * @typedef {{
+     *   event: string, 
+     *   owner_id: string, 
+     *   members: Record<string, IMemberJson>
+     * }} IJson
+     * 
+     * @typedef {{
+     *   memberId: string;
+     *   dayNr: number;
+     *   dayKey: string;
+     *   starIndex: number;
+     *   starNr: number;
+     *   starKey: string;
+     *   getStarDay: number;
+     *   getStarTimestamp: number;
+     *   getStarMoment: moment.Moment;
+     *   timeTaken: number;
+     *   timeTakenSeconds: number;
+     *   nrOfStarsAfterThisOne: number;
+     *   points: number;
+     *   rank: number;
+     *   nrOfPointsAfterThisOne: number;
+     *   awardedPodiumPlace: number;
+     *   awardedPodiumPlaceFirstPuzzle: number;
+     * }} IStar
+     * 
+     * @typedef {Omit<IMemberJson, "stars"> & {
+     *   isLoggedInUser: boolean;
+     *   radius: number;
+     *   borderWidth: number;
+     *   pointStyle: string;
+     *   stars: IStar[];
+     *   deltas: IDelta[];
+     *   deltaPointsTotal: number;
+     *   deltaMeanSeconds: number;
+     *   deltaMedianSeconds: number;
+     *   rank: number;
+     *   score: number;
+     *   podiumPlacesPerDay: number[];
+     *   podiumPlacesPerDayFirstPuzzle: number[];
+     *   color: string;
+     *   colorMuted: string;
+     * }} IMember
+     * 
+     * @typedef {{
+     *   dayNr: number;
+     *   dayKey: string;
+     *   deltaTimeTakenSeconds: number;
+     *   member: IMember;
+     *   points: number;
+     * }} IDelta
+     * 
+     * @typedef {ReturnType<transformRawAocJson>} IData;
+     * 
+     * @typedef {{
+     *   owner_id: string,
+     *   maxDay: number,
+     *   maxMoment: moment.Moment,
+     *   days: IDaysMap,
+     *   stars: IStar[],
+     *   members: IMember[],
+     *   year: number,
+     *   n_members: number,
+     *   maxDeltaPoints,
+     *   loggedInUserIsPresumablyKnown,
+     *   isLargeLeaderboard,
+     *  }} IAppData
+     * 
+     * @typedef {Record<number, {
+     *   dayNr: number;
+     *   podium: IStar[];
+     *   podiumFirstPuzzle: IStar[];
+     * }>} IDaysMap
+     */
+    
+    /**
+     * @param {IJson} json
+     * @returns {IAppData}
+    */
     function transformRawAocJson(json) {
-        let stars = [];
-        let deltas = [];
+        let /** @type {IStar[]} */ stars = [];
+        let /** @type {IDelta[]} */ deltas = [];
         let year = parseInt(json.event);
         let loggedInUserIsPresumablyKnown = false;
         
@@ -164,6 +254,7 @@
 
         let members = Object.keys(json.members)
             .map(k => json.members[k])
+            .map(m => /** @type {IMember} */ (/** @type {unknown} */ (m)))
             .map((m) => {
                 m.isLoggedInUser = m.name === presumedLoggedInUserName;
                 loggedInUserIsPresumablyKnown = loggedInUserIsPresumablyKnown || m.isLoggedInUser;
@@ -174,15 +265,15 @@
                 m.stars = [];
                 m.deltas = [];
                 m.deltaPointsTotal = 0; // Calculated later
-                m.deltaMeanSeconds = null; // Calculated later
-                m.deltaMedianSeconds = null; // Calculated later
+                m.deltaMeanSeconds = 0; // Calculated later
+                m.deltaMedianSeconds = 0; // Calculated later
                 m.name = m.name || `(anonymous user ${m.id})`;
 
                 for (let dayKey of Object.keys(m.completion_day_level)) {
                     for (let starKey of Object.keys(m.completion_day_level[dayKey])) {
-                        let starMoment = moment.unix(m.completion_day_level[dayKey][starKey].get_star_ts).utc();
+                        let starMoment = moment.unix(+m.completion_day_level[dayKey][starKey].get_star_ts).utc();
 
-                        let star = {
+                        let /** @type {IStar} */ star = {
                             memberId: m.id,
                             dayNr: parseInt(dayKey, 10),
                             dayKey: dayKey,
@@ -192,8 +283,16 @@
                             getStarTimestamp: m.completion_day_level[dayKey][starKey].get_star_ts,
                             getStarMoment: starMoment,
                             starIndex: m.completion_day_level[dayKey][starKey].star_index,
-                            timeTaken: null, // adding this later on, which is easier :D
-                            timeTakenSeconds: null, // adding this later on as well
+
+                            // Setting defaults, calculating these properties later on in loops
+                            timeTaken: 0,
+                            timeTakenSeconds: 0,
+                            nrOfStarsAfterThisOne: 0,
+                            nrOfPointsAfterThisOne: 0,
+                            points: 0,
+                            rank: 0,
+                            awardedPodiumPlace: 0,
+                            awardedPodiumPlaceFirstPuzzle: 0,
                         };
 
                         stars.push(star);
@@ -213,8 +312,8 @@
 
                 m.stars.filter(s => s.starNr === 2).forEach(star2 => {
                     const star1 = m.stars.find(s => s.dayNr === star2.dayNr && s.starNr === 1);
-                    const deltaTimeTakenSeconds = star2.timeTakenSeconds - star1.timeTakenSeconds;
-                    const delta = { dayNr: star2.dayNr, dayKey: star2.dayKey, deltaTimeTakenSeconds, member: m, };
+                    const deltaTimeTakenSeconds = star2.timeTakenSeconds - (star1?.timeTakenSeconds || 0);
+                    const delta = { dayNr: star2.dayNr, dayKey: star2.dayKey, deltaTimeTakenSeconds, member: m, points: 0, };
                     deltas.push(delta);
                     m.deltas.push(delta);
                 });
@@ -231,7 +330,7 @@
                 return m;
             })
             .filter(m => m.stars.length > 0)
-            .sort((a, b) => a.name.localeCompare(b.name));
+            .sort((a, b) => a.name?.localeCompare(b?.name || "") || 0);
 
         let allMoments = stars.map(s => s.getStarMoment).concat([moment("" + year + "-12-25T00:00:00-0000")]);
         let maxMoment = moment.min([moment.max(allMoments), moment("" + year + "-12-31T00:00:00-0000")]);
@@ -272,7 +371,10 @@
             }
         }
 
+        /** @type {number} */
         let maxDay = Math.max.apply(Math, stars.filter(s => s.starNr === 2).map(s => s.dayNr))
+        
+        /** @type {IDaysMap} */
         let days = {};
 
         for (let d = 1; d <= maxDay; d++) {
@@ -337,7 +439,7 @@
         };
     }
 
-    function getPodiumFor(member) {
+    function getPodiumFor(/** @type IMember */ member) {
         let medals = [];
         for (let p = 0; p < podiumLength; p++) {
             medals.push(member.stars.filter(s => s.awardedPodiumPlace === p).length);
@@ -345,7 +447,7 @@
         return medals;
     }
 
-    function getPodiumForFirstPuzzle(member) {
+    function getPodiumForFirstPuzzle(/** @type IMember */ member) {
         let medals = [];
         for (let p = 0; p < podiumLength; p++) {
             medals.push(member.stars.filter(s => s.awardedPodiumPlaceFirstPuzzle === p).length);
@@ -353,7 +455,7 @@
         return medals;
     }
 
-    function memberByPodiumSorter(a, b) {
+    function memberByPodiumSorter(/** @type IMember */ a, /** @type IMember */ b) {
         let aMedals = getPodiumFor(a);
         let bMedals = getPodiumFor(b);
 
@@ -423,7 +525,7 @@
         location.reload();
     }
 
-    function setDisplayDay(dayNumber) {
+    function setDisplayDay(/** @type string */ dayNumber) {
         localStorage.setItem("aoc-flag-v1-display-day", dayNumber);
     }
 
@@ -431,7 +533,7 @@
         return localStorage.getItem("aoc-flag-v1-display-day");
     }
 
-    function setTimeTableSort(sort) {
+    function setTimeTableSort(/** @type string */ sort) {
         localStorage.setItem("aoc-flag-v1-delta-sort", sort);
         location.reload();
     }
@@ -465,17 +567,20 @@
         return diff < 300;
     }
 
-    function formatTimeTaken(seconds) {
+    function formatTimeTaken(/** @type number */ seconds) {
         if (seconds > 24 * 3600) {
             return ">24h"
         }
         return moment().startOf('day').seconds(seconds).format('HH:mm:ss')
     }
 
-    function formatStarMomentForTitle(memberStar) {
+    function formatStarMomentForTitle(/** @type IStar */ memberStar) {
         return memberStar.getStarMoment.local().format("HH:mm:ss YYYY-MM-DD") + " (local time)";
     }
 
+    /** 
+     * @returns {Promise<IAppData>}
+     */
     function getLeaderboardJson() {
         // 1. Check if dummy data was loaded...
         if (!!aoc.dummyData) {
@@ -524,7 +629,7 @@
     }
 
     class ChartOptions {
-        constructor(data, titleText) {
+        constructor(data, /** @type string */ titleText) {
             this.responsive = true;
             this.aspectRation = 1;
             this.plugins = {
@@ -703,7 +808,7 @@
             return data;
         }
 
-        loadCacheBustingButton(data) {
+        loadCacheBustingButton(/** @type {IAppData} */ data) {
             const cacheBustLink = this.controls.appendChild(document.createElement("a"));
             cacheBustLink.innerText = "🔄 Clear Charts Cache";
             cacheBustLink.style.cursor = "pointer";
@@ -738,7 +843,7 @@
             return data;
         }
 
-        loadPerDayLeaderBoard(data) {
+        loadPerDayLeaderBoard(/** @type {IAppData} */ data) {
             this.perDayLeaderBoard.title = "Delta-focused overviews";
             let titleElement = this.perDayLeaderBoard.appendChild(document.createElement("h3"));
             titleElement.innerText = "Delta-focused stats: ";
@@ -748,7 +853,7 @@
             titleElement.style.marginBottom = "8px";
             this.perDayLeaderBoard.style.marginBottom = "32px";
 
-            let displayDay = getDisplayDay();
+            let /** @type {number|string|null} */ displayDay = getDisplayDay();
             
             if (displayDay !== "overview") {
                 // taking the min to avoid going out of bounds for current year
@@ -997,7 +1102,7 @@
                     .map(m => {
                         let memberStar1 = m.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
                         let memberStar2 = m.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
-                        const delta = memberStar2 ? memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds : null;
+                        const delta = memberStar2 ? memberStar2.timeTakenSeconds - (memberStar1?.timeTakenSeconds || 0) : null;
                         return delta || 0 > maxSecondsForSparkline ? null : delta;
                     }))
                 ;
@@ -1030,14 +1135,14 @@
                     td = tr.appendChild(createCell((memberStar1 ? memberStar1.rank : "")))
                     td = tr.appendChild(createCell((memberStar1 ? memberStar1.points : "")))
 
-                    td = tr.appendChild(createCell(memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds) : ""));
+                    td = tr.appendChild(createCell(memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds - (memberStar1?.timeTakenSeconds || 0)) : ""));
                     if (getTimeTableSort() === "delta") {
                         td.style.color = "#ffffff";
                         td.style.textShadow = "0 0 5px #ffffff";
                     }
 
                     if (memberStar2 && maxDeltaTime) {
-                        const delta = memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds;
+                        const delta = memberStar2.timeTakenSeconds - (memberStar1?.timeTakenSeconds || 0);
                         const fraction = Math.min(100, delta / maxDeltaTime * 100);
                         const sparkline = td.appendChild(document.createElement("div"));
                         sparkline.style.height = "2px";
@@ -1105,7 +1210,7 @@
             return data;
         }
 
-        loadMedalOverview(data) {
+        loadMedalOverview(/** @type {IAppData} */ data) {
             const medalHtml = n => n === 0 ? "🥇" : n === 1 ? "🥈" : n === 2 ? "🥉" : `${n}`;
             const medalColor = n => n === 0 ? "gold" : n === 1 ? "silver" : n === 2 ? "#945210" : "rgba(15, 15, 35, 1.0)";
 
@@ -1162,7 +1267,7 @@
                 let medalCount = 0;
 
                 let td = tr.appendChild(document.createElement("td"));
-                td.innerText = member.name;
+                td.innerText = member.name || "-";
                 td.style.backgroundColor = cellColor;
                 td.style.border = "1px solid #333";
                 td.style.padding = "2px 8px";
@@ -1209,7 +1314,7 @@
                             medalCount++;
                             div.style.opacity = `${0.5 + (0.5 * ((podiumLength - secondPuzzlePodiumPlace) / podiumLength))}`;
                         } else {
-                            span.innerText = secondPuzzlePodiumPlace >= 0 ? (secondPuzzlePodiumPlace + 1) : '\u2003';
+                            span.innerText = secondPuzzlePodiumPlace >= 0 ? `${(secondPuzzlePodiumPlace + 1)}` : '\u2003';
                             span.style.opacity = "0.25";
                         }
                     }
@@ -1220,7 +1325,7 @@
 
                 for (let n = 0; n < podiumLength; n++) {
                     let td = tr.appendChild(document.createElement("td"));
-                    td.innerText = member.podiumPlacesPerDay[n];
+                    td.innerText = `${member.podiumPlacesPerDay[n]}`;
                     td.style.backgroundColor = cellColor;
                     td.style.border = "1px solid #333";
                     td.style.padding = "2px 8px";
@@ -1249,7 +1354,7 @@
             return element;
         }
 
-        loadDayVsTime(data) {
+        loadDayVsTime(/** @type {IAppData} */ data) {
             let datasets = data.members.map(m => {
                 return {
                     label: m.name,
@@ -1302,7 +1407,7 @@
             return data;
         }
 
-        loadTimePerStar(data) {
+        loadTimePerStar(/** @type {IAppData} */ data) {
             let datasets = [];
             let relevantMembers = data.members.sort((a, b) => b.score - a.score);
 
@@ -1338,7 +1443,7 @@
                     let star2 = data.stars.find(s => s.memberId === member.id && s.dayNr === i && s.starKey === "2");
 
                     star1DataSet.data.push(!!star1 ? star1.timeTaken : 0);
-                    star2DataSet.data.push(!!star2 ? star2.timeTaken - star1.timeTaken : 0);
+                    star2DataSet.data.push(!!star2 ? star2.timeTaken - (star1?.timeTaken || 0) : 0);
                 }
 
                 datasets.push(star1DataSet);
@@ -1370,7 +1475,10 @@
             return data;
         }
 
-        loadPointsOverTime(data) {
+        /**
+        * @param {IData} data
+        */
+        loadPointsOverTime(/** @type {IAppData} */ data) {
             const graphType = getPointsOverTimeType();
             const maxDayNr = Math.max(...data.stars.map(s => s.dayNr));
             const maxPointsPerDay = Array.from({ length: maxDayNr }, () => data.n_members * 2);
@@ -1380,7 +1488,7 @@
             const availablePoints = [maxPointsPerDay.map(p => p/2), maxPointsPerDay.map(p => p/2)];
             data.stars.forEach(s => availablePoints[s.starNr-1][s.dayNr-1] = Math.min(availablePoints[s.starNr-1][s.dayNr-1], Math.max(s.points-1, 0)));
 
-            let datasets = data.members.sort((a, b) => a.name.localeCompare(b.name)).reduce((p, m) => {
+            let datasets = data.members.sort((a, b) => a.name?.localeCompare(b.name || "") || 0).reduce((p, m) => {
                 const days = m.stars.reduce(
                     (map, s) => {
                         const current = map.get(s.dayNr) ?? { stars: [], points:0 };
@@ -1469,7 +1577,7 @@
                     })
                 });
                 return p;
-            }, []);
+            }, /** @type any[] */ ([]));
 
             const element = this.createGraphCanvas(data, "Points over time per member.");
 
@@ -1523,7 +1631,7 @@
             return data;
         }
 
-        loadStarsOverTime(data) {
+        loadStarsOverTime(/** @type {IAppData} */ data) {
             let datasets = data.members.map(m => {
                 return {
                     label: m.name,
