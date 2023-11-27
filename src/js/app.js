@@ -1,4 +1,14 @@
-(function (aoc) {
+// @ts-check
+
+/**
+ * @typedef moment
+ * @property {import('moment')} moment
+ */
+
+(function (/** @type {any} */ aoc) {
+    // Unsure how to add JSDoc types so for now like this.
+    // See also: https://stackoverflow.com/q/77466760/419956
+    const Chart = /** @type {any} */ (window["Chart"]);
 
     // See https://stackoverflow.com/a/71395413/419956 by user @EJAntonPotot
     Chart.register({
@@ -43,12 +53,12 @@
 
     let presumedLoggedInUserName = null;
     try {
-        presumedLoggedInUserName = document.querySelector(".user").childNodes[0].textContent.trim();
+        presumedLoggedInUserName = document.querySelector(".user")?.childNodes[0].textContent?.trim();
         if (!presumedLoggedInUserName) {
             presumedLoggedInUserName = document
                 .querySelector(".user")
-                .textContent
-                .replace("(AoC++) ", "") // Individual sponsor marking
+                ?.textContent
+                ?.replace("(AoC++) ", "") // Individual sponsor marking
                 .replace("(Sponsor) ", "") // Company sponsor marking
                 .replace(/\d\d?\*/, "") // E.g. "1*" or "50*"
                 .trim();
@@ -57,23 +67,48 @@
         console.info("Could not reliably determine logged in user from AoC website html. Something may have changed in the HTML structure, or perhaps there's an edge case we've missed. Either way, we'll ignore this error and carry on.");
     }
 
+    /**
+     * Create array of numbers in a range
+     * @param {number} from - Starting number (inclusive)
+     * @param {number} to - End of range (exclusive)
+     * @returns {number[]}
+     */
     function range(from, to) {
         return [...Array(to - from).keys()].map(k => k + from);
     }
 
+    /**
+     * Compare two star objects based on the index (first or second star)
+     * @param {{starIndex: number}} a Some star to compare
+     * @param {{starIndex: number}} b Some star to compare
+     * @returns {number}
+     */
     function starSorter(a, b) {
         return a.starIndex - b.starIndex;
     }
 
+    /**
+     * Compare two entries by deltaPointsTotal
+     * @param {{deltaPointsTotal: number}} a Some day to compare
+     * @param {{deltaPointsTotal: number}}  b  Some day to compare
+     * @returns {number}
+     */
     function deltaPointsTotalSorter(a, b) {
         return a.deltaPointsTotal - b.deltaPointsTotal;
     }
 
+    /**
+     * Get an array of color strings for a fixed number of entries
+     * @param {number} n Number of distinct colors needed
+     * @param {boolean} rainbow Whether to create a rainbow pattern
+     * @param {boolean} original Whether to use the original color pattern
+     * @returns {string[]}
+     */
     function getPalette(n, rainbow, original) {
         if (original) {
             const basePalette = ["rgba(120, 28, 129, 1.0)", "rgba(110, 25, 128, 1.0)", "rgba(101, 24, 127, 1.0)", "rgba(94, 24, 126, 1.0)", "rgba(88, 25, 126, 1.0)", "rgba(83, 27, 127, 1.0)", "rgba(79, 29, 129, 1.0)", "rgba(76, 33, 130, 1.0)", "rgba(73, 36, 132, 1.0)", "rgba(70, 41, 135, 1.0)", "rgba(68, 45, 138, 1.0)", "rgba(67, 50, 141, 1.0)", "rgba(66, 55, 145, 1.0)", "rgba(65, 61, 148, 1.0)", "rgba(64, 66, 152, 1.0)", "rgba(63, 72, 156, 1.0)", "rgba(63, 78, 160, 1.0)", "rgba(63, 83, 165, 1.0)", "rgba(63, 89, 169, 1.0)", "rgba(63, 95, 173, 1.0)", "rgba(64, 100, 177, 1.0)", "rgba(64, 105, 181, 1.0)", "rgba(65, 111, 184, 1.0)", "rgba(66, 116, 187, 1.0)", "rgba(67, 121, 190, 1.0)", "rgba(68, 125, 192, 1.0)", "rgba(69, 130, 193, 1.0)", "rgba(70, 134, 194, 1.0)", "rgba(72, 138, 194, 1.0)", "rgba(74, 142, 193, 1.0)", "rgba(75, 146, 192, 1.0)", "rgba(77, 149, 190, 1.0)", "rgba(79, 153, 187, 1.0)", "rgba(81, 156, 184, 1.0)", "rgba(84, 159, 180, 1.0)", "rgba(86, 162, 176, 1.0)", "rgba(88, 164, 172, 1.0)", "rgba(91, 167, 167, 1.0)", "rgba(94, 169, 162, 1.0)", "rgba(96, 171, 157, 1.0)", "rgba(99, 173, 152, 1.0)", "rgba(102, 175, 147, 1.0)", "rgba(105, 177, 142, 1.0)", "rgba(108, 178, 137, 1.0)", "rgba(112, 180, 132, 1.0)", "rgba(115, 181, 128, 1.0)", "rgba(119, 182, 123, 1.0)", "rgba(122, 184, 119, 1.0)", "rgba(126, 185, 115, 1.0)", "rgba(130, 186, 111, 1.0)", "rgba(133, 186, 107, 1.0)", "rgba(137, 187, 104, 1.0)", "rgba(141, 188, 101, 1.0)", "rgba(145, 189, 97, 1.0)", "rgba(149, 189, 94, 1.0)", "rgba(153, 189, 92, 1.0)", "rgba(157, 190, 89, 1.0)", "rgba(161, 190, 86, 1.0)", "rgba(165, 190, 84, 1.0)", "rgba(169, 190, 82, 1.0)", "rgba(173, 190, 80, 1.0)", "rgba(177, 190, 78, 1.0)", "rgba(181, 189, 76, 1.0)", "rgba(185, 189, 74, 1.0)", "rgba(188, 188, 72, 1.0)", "rgba(192, 187, 71, 1.0)", "rgba(195, 186, 69, 1.0)", "rgba(199, 185, 68, 1.0)", "rgba(202, 184, 67, 1.0)", "rgba(205, 182, 65, 1.0)", "rgba(208, 181, 64, 1.0)", "rgba(211, 179, 63, 1.0)", "rgba(214, 177, 62, 1.0)", "rgba(216, 174, 61, 1.0)", "rgba(219, 171, 60, 1.0)", "rgba(221, 169, 59, 1.0)", "rgba(223, 165, 58, 1.0)", "rgba(224, 162, 57, 1.0)", "rgba(226, 158, 56, 1.0)", "rgba(227, 154, 55, 1.0)", "rgba(228, 150, 54, 1.0)", "rgba(229, 146, 53, 1.0)", "rgba(230, 141, 52, 1.0)", "rgba(231, 136, 51, 1.0)", "rgba(231, 131, 50, 1.0)", "rgba(231, 125, 49, 1.0)", "rgba(231, 119, 48, 1.0)", "rgba(231, 113, 47, 1.0)", "rgba(230, 107, 45, 1.0)", "rgba(230, 100, 44, 1.0)", "rgba(229, 94, 43, 1.0)", "rgba(228, 87, 42, 1.0)", "rgba(227, 80, 41, 1.0)", "rgba(226, 73, 40, 1.0)", "rgba(225, 66, 38, 1.0)", "rgba(223, 59, 37, 1.0)", "rgba(222, 52, 36, 1.0)", "rgba(220, 46, 34, 1.0)", "rgba(219, 39, 33, 1.0)", "rgba(217, 33, 32, 1.0)"];
             let step = basePalette.length / n;
-            return [...Array(n).keys()].map(i => basePalette[Math.floor(i * step, 0)]);
+            return [...Array(n).keys()].map(i => basePalette[Math.floor(i * step)]);
         }
 
         if (rainbow)
@@ -84,6 +119,12 @@
         return [...Array(n).keys()].map(i => "hsla(" + i * 120 / n + ", 100%, 50%, 1.0)")
     }
 
+    /**
+     * Take a color string that already has an "1.0" alpha component, and do a quick-and-dirty replace with a new alpha value
+     * @param {string} color
+     * @param {string|number} newAlpha
+     * @returns {string}
+     */
     function lowerAlpha(color, newAlpha) {
         // Look, this extensions is in "AoC-style", so we're allowed
         // some shortcuts that cannot be done in software that is meant
@@ -91,7 +132,15 @@
         return color.replace(", 1.0)", `, ${newAlpha})`)
     }
 
-    function adjustPoinstFor(year, dayKey, starKey, basePoints) {
+    /**
+     * Adjust the points for a star of a given day (used to compensate for exceptions, e.g. a day that was worth 0 points)
+     * @param {number} year
+     * @param {string} dayKey
+     * @param {string} _starKey
+     * @param {number} basePoints
+     * @returns {number}
+     */
+    function adjustPoinstFor(year, dayKey, _starKey, basePoints) {
         // https://github.com/jeroenheijmans/advent-of-code-charts/issues/18
         if (year === 2018 && dayKey === "6") {
             return 0;
@@ -332,7 +381,7 @@
 
     function getCache() {
         console.info("Getting cache", getCacheKey());
-        return JSON.parse(localStorage.getItem(getCacheKey()));
+        return JSON.parse(localStorage.getItem(getCacheKey()) || "");
     }
 
     function updateCache(data) {
@@ -343,29 +392,29 @@
 
     function clearCache() {
         console.log("Clearing cache", getCacheKey());
-        localStorage.setItem(getCacheKey(), null);
+        localStorage.setItem(getCacheKey(), "");
     }
 
     function toggleShowAll() {
-        localStorage.setItem("aoc-flag-v1-show-all", !isShowAllToggled());
+        localStorage.setItem("aoc-flag-v1-show-all", !isShowAllToggled() + "");
         location.reload();
     }
 
     function isShowAllToggled() {
-        return !!JSON.parse(localStorage.getItem("aoc-flag-v1-show-all"));
+        return !!JSON.parse(localStorage.getItem("aoc-flag-v1-show-all") || "");
     }
 
     function toggleResponsiveness() {
-        localStorage.setItem("aoc-flag-v1-is-responsive", !isResponsivenessToggled());
+        localStorage.setItem("aoc-flag-v1-is-responsive", !isResponsivenessToggled() + "");
         location.reload();
     }
 
     function isResponsivenessToggled() {
-        return !!JSON.parse(localStorage.getItem("aoc-flag-v1-is-responsive"));
+        return !!JSON.parse(localStorage.getItem("aoc-flag-v1-is-responsive") || "");
     }
 
     function getCurrentGraphColorStyle() {
-        return localStorage.getItem("aoc-flag-v1-color-style");
+        return localStorage.getItem("aoc-flag-v1-color-style") || "";
     }
 
     function toggleCurrentGraphColorStyle() {
@@ -379,8 +428,7 @@
     }
 
     function getDisplayDay() {
-        let value = localStorage.getItem("aoc-flag-v1-display-day");
-        return value;
+        return localStorage.getItem("aoc-flag-v1-display-day");
     }
 
     function setTimeTableSort(sort) {
@@ -389,17 +437,17 @@
     }
 
     function getTimeTableSort() {
-        let value = localStorage.getItem("aoc-flag-v1-delta-sort") || "delta";
-        return value;
+        return localStorage.getItem("aoc-flag-v1-delta-sort") || "delta";
     }
 
     function togglePointsOverTimeType() {
-        localStorage.setItem("aoc-flag-v1-points-over-time-type-index", (getPointsOverTimeType() + 1) % pointsOverTimeType.length);
+        const value = (getPointsOverTimeType() + 1) % pointsOverTimeType.length;
+        localStorage.setItem("aoc-flag-v1-points-over-time-type-index", value.toString());
         location.reload();
     }
 
     function getPointsOverTimeType() {
-        return +localStorage.getItem("aoc-flag-v1-points-over-time-type-index") || 0;
+        return +(localStorage.getItem("aoc-flag-v1-points-over-time-type-index") || "0") || 0;
     }
 
     const defaultLegendClickHandler = Chart.defaults.plugins.legend.onClick;
@@ -411,7 +459,7 @@
             return false;
         }
 
-        let diff = now - prevClick;
+        let diff = now.getTime() - prevClick;
         prevClick = now;
 
         return diff < 300;
@@ -436,12 +484,13 @@
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
                     resolve(transformRawAocJson(aoc.dummyData));
-                });
-            }, 100);
+                }, 10);
+            });
         }
         // 2. Apparently we can use real calls...
         else {
-            let anchor = document.querySelector("#api_info a");
+            let anchor = /** @type {HTMLAnchorElement} */ (document.querySelector("#api_info a"));
+            
             if (!!anchor) {
                 let url = anchor.href;
 
@@ -453,7 +502,7 @@
                     const ttl = new Date(cache.timestamp + (5 * 60 * 1000));
                     console.info("Found cached value valid until", ttl);
 
-                    if (Date.now() < ttl) {
+                    if (Date.now() < ttl.getTime()) {
                         console.info("Cache was still valid!");
 
                         return Promise.resolve(cache.data)
@@ -593,7 +642,7 @@
             return this;
         }
 
-        withXTimeScale(data, { xMax, titleText } = { xMax, titleText }) {
+        withXTimeScale(data, { xMax = 0, titleText = "Day of Advent" }) {
             let x = this.scales.x;
             x.type = "time";
             x.time = {
@@ -606,8 +655,8 @@
                 stepSize: 1,
             };
             x.min = moment([data.year, 10, 30, 17, 0, 0]);
-            x.max = moment([data.year, 11, 31, 4, 0, 0]);
-            x.title.text = titleText || "Day of Advent";
+            x.max = moment([data.year, 11, xMax || 31, 4, 0, 0]);
+            x.title.text = titleText;
             return this;
         }
 
@@ -710,9 +759,10 @@
 
             for (let d = 1; d <= data.maxDay; ++d) {
                 let a = titleElement.appendChild(document.createElement("a"));
-                a.dataset["key"] = d;
+                a.dataset["key"] = d.toString();
                 a.innerText = " " + d.toString();
                 a.addEventListener("click", (evt) => {
+                    // @ts-ignore
                     const key = evt.target.dataset["key"];
                     setDisplayDay(key);
                     setVisible(key);
@@ -948,7 +998,7 @@
                         let memberStar1 = m.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
                         let memberStar2 = m.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
                         const delta = memberStar2 ? memberStar2.timeTakenSeconds - memberStar1.timeTakenSeconds : null;
-                        return delta > maxSecondsForSparkline ? null : delta;
+                        return delta || 0 > maxSecondsForSparkline ? null : delta;
                     }))
                 ;
 
@@ -1091,7 +1141,7 @@
             let tr = gridElement.appendChild(document.createElement("tr"));
             for (let d = 0; d <= 25; d++) {
                 let td = tr.appendChild(document.createElement("td"));
-                td.innerText = d === 0 ? "" : d;
+                td.innerText = d === 0 ? "" : d.toString();
                 td.align = "center";
             }
             tr.appendChild(document.createElement("td"));
@@ -1157,10 +1207,10 @@
 
                         if (secondPuzzlePodiumPlace >= 0 && secondPuzzlePodiumPlace < podiumLength) {
                             medalCount++;
-                            div.style.opacity = 0.5 + (0.5 * ((podiumLength - secondPuzzlePodiumPlace) / podiumLength));
+                            div.style.opacity = `${0.5 + (0.5 * ((podiumLength - secondPuzzlePodiumPlace) / podiumLength))}`;
                         } else {
                             span.innerText = secondPuzzlePodiumPlace >= 0 ? (secondPuzzlePodiumPlace + 1) : '\u2003';
-                            span.style.opacity = 0.25;
+                            span.style.opacity = "0.25";
                         }
                     }
                 }
@@ -1266,7 +1316,7 @@
                     backgroundColor: member.color,
                     borderColor: "rgba(0, 0, 0, 0.5)",
                     borderWidth: 1,
-                    data: [],
+                    data: /** @type {number[]} */ ([]),
                     hidden: data.loggedInUserIsPresumablyKnown ? !member.isLoggedInUser : idx >= 3,
                 };
 
@@ -1279,7 +1329,7 @@
                     backgroundColor: member.colorMuted,
                     borderColor: "rgba(0, 0, 0, 0.5)",
                     borderWidth: 1,
-                    data: [],
+                    data: /** @type {number[]} */ ([]),
                     hidden: data.loggedInUserIsPresumablyKnown ? !member.isLoggedInUser : idx >= 3,
                 };
 
@@ -1542,7 +1592,7 @@
         new aoc.App();
     }
 
-    if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive") {
+    if (document.readyState === "complete" || document.readyState === "interactive") {
         console.info(`Loading via readyState = ${document.readyState}`);
         loadAdditions();
     } else {
@@ -1550,4 +1600,4 @@
         document.addEventListener("DOMContentLoaded", () => loadAdditions());
     }
 
-}(window.aoc = window.aoc || {}));
+}(window["aoc"] = window["aoc"] || {}));
