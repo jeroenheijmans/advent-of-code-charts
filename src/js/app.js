@@ -519,10 +519,10 @@
         return localStorage.getItem("aoc-flag-v1-color-style") || "";
     }
 
-    function toggleCurrentGraphColorStyle() {
+    function toggleCurrentGraphColorStyle({ shouldReload = true } = {}) {
         let cur = graphColorStyles.indexOf(getCurrentGraphColorStyle());
         localStorage.setItem("aoc-flag-v1-color-style", graphColorStyles[(cur + 1) % graphColorStyles.length]);
-        location.reload();
+        if (shouldReload) location.reload();
     }
 
     function setDisplayDay(/** @type string */ dayNumber) {
@@ -811,7 +811,7 @@
             this.graphs.style.gap = "1rem";
 
             if (!getCurrentGraphColorStyle())
-                toggleCurrentGraphColorStyle();
+                toggleCurrentGraphColorStyle({shouldReload: false});
 
             getLeaderboardJson()
                 .then(data => this.loadControlButtons(data))
