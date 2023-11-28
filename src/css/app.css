@@ -1,0 +1,89 @@
+:root {
+  --aoc-colors-main: rgba(200, 200, 200, 0.9);
+  --aoc-colors-secondary: rgba(150, 150, 150, 0.9);
+  --aoc-colors-tertiary: rgba(100, 100, 100, 0.5);
+  --aoc-colors-highlight: rgba(119,119,165,.2);
+  --aoc-colors-link: #009900;
+}
+
+body.aoc-extension-with-full-screen-overlay > * {
+  display: none !important;
+}
+
+body.aoc-extension-with-full-screen-overlay #aoc-extension {
+  display: block !important;
+}
+
+body.aoc-extension-with-full-screen-overlay #aoc-extension > * {
+  display: none !important;
+}
+
+body.aoc-extension-with-full-screen-overlay #aoc-extension > .aoc-extension-full-screen-subject {
+  display: block !important;
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translate(-50%, 0);
+}
+
+body.aoc-extension-with-full-screen-overlay #aoc-extension > .aoc-extension-full-screen-subject#aoc-extension-graphs {
+  display: grid !important;
+  width: 95%;
+  position: absolute;
+  margin-top: 50px; 
+}
+
+.aoc-extension-full-screen-exit-button {
+  display: none;
+}
+
+body.aoc-extension-with-full-screen-overlay > .aoc-extension-full-screen-exit-button {
+  display: inline-block !important;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(50, 50, 50, 0.8);
+  padding: 10px;
+  border: 1px solid rgba(75, 75, 75, 0.8);
+  z-index: 101;
+  cursor: pointer;
+}
+
+body.aoc-extension-with-full-screen-overlay > .aoc-extension-full-screen-exit-button:hover {
+  background: rgba(75, 75, 75, 0.9);
+}
+
+.aoc-extension-full-screen-buttons {
+  margin-left: 15px;
+  display: inline-block;
+}
+
+.aoc-extension-full-screen-button {
+  background: var(--aoc-colors-tertiary);
+  border: 1px solid var(--aoc-colors-secondary);
+  cursor: pointer;
+  padding: 2px 4px;
+  margin-left: 8px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #18181b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #52525b;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+/* Firefox: */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #52525b #18181b;
+}
