@@ -483,7 +483,7 @@
 
     function getCache() {
         console.info("Getting cache", getCacheKey());
-        return JSON.parse(localStorage.getItem(getCacheKey()) || "");
+        return JSON.parse(localStorage.getItem(getCacheKey()) || "null");
     }
 
     function updateCache(data) {
@@ -503,7 +503,7 @@
     }
 
     function isShowAllToggled() {
-        return !!JSON.parse(localStorage.getItem("aoc-flag-v1-show-all") || "");
+        return !!JSON.parse(localStorage.getItem("aoc-flag-v1-show-all") || "null");
     }
 
     function toggleResponsiveness() {
@@ -512,17 +512,17 @@
     }
 
     function isResponsivenessToggled() {
-        return !!JSON.parse(localStorage.getItem("aoc-flag-v1-is-responsive") || "");
+        return !!JSON.parse(localStorage.getItem("aoc-flag-v1-is-responsive") || "null");
     }
 
     function getCurrentGraphColorStyle() {
         return localStorage.getItem("aoc-flag-v1-color-style") || "";
     }
 
-    function toggleCurrentGraphColorStyle() {
+    function toggleCurrentGraphColorStyle({ shouldReload = true } = {}) {
         let cur = graphColorStyles.indexOf(getCurrentGraphColorStyle());
         localStorage.setItem("aoc-flag-v1-color-style", graphColorStyles[(cur + 1) % graphColorStyles.length]);
-        location.reload();
+        if (shouldReload) location.reload();
     }
 
     function setDisplayDay(/** @type string */ dayNumber) {
@@ -550,6 +550,20 @@
 
     function getPointsOverTimeType() {
         return +(localStorage.getItem("aoc-flag-v1-points-over-time-type-index") || "0") || 0;
+    }
+
+    /** @typedef {"medals"|"perDayLeaderBoard"|"graphs"|null} IFullScreenSubject */
+    function setFullScreenSubject(/** @type IFullScreenSubject */ subject) {
+        localStorage.setItem("aoc-flag-v1-full-screen-subject", subject || "");
+
+        if (subject === "graphs" && !isResponsivenessToggled()) {
+            toggleResponsiveness();
+        }
+    }
+
+    /** @returns {IFullScreenSubject} */
+    function getFullScreenSubject() {
+        return /** @type IFullScreenSubject */ (localStorage.getItem("aoc-flag-v1-full-screen-subject")) || null;
     }
 
     const defaultLegendClickHandler = Chart.defaults.plugins.legend.onClick;
@@ -784,23 +798,30 @@
             this.perDayLeaderBoard = this.wrapper.appendChild(document.createElement("div"));
             this.graphs = this.wrapper.appendChild(document.createElement("div"));
             
+            this.wrapper.id = "aoc-extension";
+            this.medals.id = "aoc-extension-medals";
+            this.perDayLeaderBoard.id = "aoc-extension-perDayLeaderBoard";
+            this.graphs.id = "aoc-extension-graphs";
+
             if (isResponsivenessToggled()) {
                 this.graphs.style.display = "grid";
-                this.graphs.style.gridTemplateColumns = "1fr 1fr";
-                this.graphs.style.gap = "1rem";
             }
 
+            this.graphs.style.gridTemplateColumns = "1fr 1fr";
+            this.graphs.style.gap = "1rem";
+
             if (!getCurrentGraphColorStyle())
-                toggleCurrentGraphColorStyle();
+                toggleCurrentGraphColorStyle({shouldReload: false});
 
             getLeaderboardJson()
-                .then(data => this.loadCacheBustingButton(data))
+                .then(data => this.loadControlButtons(data))
                 .then(data => this.loadMedalOverview(data))
                 .then(data => this.loadPerDayLeaderBoard(data))
                 .then(data => this.loadPointsOverTime(data))
                 .then(data => this.loadStarsOverTime(data))
                 .then(data => this.loadDayVsTime(data))
-                .then(data => this.loadTimePerStar(data));
+                .then(data => this.loadTimePerStar(data))
+                .then(_data => this.setupFullScreenModes());
         }
 
         loadHr(data) {
@@ -808,7 +829,51 @@
             return data;
         }
 
-        loadCacheBustingButton(/** @type {IAppData} */ data) {
+        refreshFullScreenSetup() {
+            const subject = getFullScreenSubject();
+            switch (subject) {
+                case "medals":
+                case "perDayLeaderBoard":
+                case "graphs":
+                    document.body.classList.add('aoc-extension-with-full-screen-overlay');
+                    this.medals.classList.toggle('aoc-extension-full-screen-subject', subject === "medals");
+                    this.perDayLeaderBoard.classList.toggle('aoc-extension-full-screen-subject', subject === "perDayLeaderBoard");
+                    this.graphs.classList.toggle('aoc-extension-full-screen-subject', subject === "graphs");
+                    break;
+
+                case null:
+                default: 
+                    document.body.classList.remove('aoc-extension-with-full-screen-overlay');
+                    break;
+            }
+        }
+
+        setupFullScreenModes(/** @type {IAppData} */ _data) {
+            this.refreshFullScreenSetup();
+            const exitFullScreenButton = document.createElement("div");
+            exitFullScreenButton.className = "aoc-extension-full-screen-exit-button";
+            exitFullScreenButton.innerText = "×";
+            exitFullScreenButton.addEventListener("click", () => {
+                setFullScreenSubject(null);
+                this.refreshFullScreenSetup();
+            });
+            document.body.appendChild(exitFullScreenButton);
+
+            document.documentElement.addEventListener("click", (event) => {
+                if (event.target instanceof HTMLHtmlElement) {
+                    setFullScreenSubject(null);
+                    this.refreshFullScreenSetup();
+                }
+            });
+
+            const fullScreenWarning = document.createElement("div");
+            fullScreenWarning.style.display = "none";
+            fullScreenWarning.classList.add("aoc-extension-full-screen-warning");
+            fullScreenWarning.innerText = "Note: viewing full-screen leaderboard generated by browser extension. Exit with the button top-right.";
+            document.body.appendChild(fullScreenWarning);
+        }
+
+        loadControlButtons(/** @type {IAppData} */ data) {
             const cacheBustLink = this.controls.appendChild(document.createElement("a"));
             cacheBustLink.innerText = "🔄 Clear Charts Cache";
             cacheBustLink.style.cursor = "pointer";
@@ -840,6 +905,36 @@
             colorToggleLink.style.marginLeft = "8px";
             colorToggleLink.addEventListener("click", () => toggleCurrentGraphColorStyle());
 
+            const fullScreenButtons = this.controls.appendChild(document.createElement("div"));
+            fullScreenButtons.innerText = "| Go full screen with: ";
+            fullScreenButtons.title = "Useful for example to show a permanent leaderboard in your office hallway on a monitor.";
+            fullScreenButtons.className = "aoc-extension-full-screen-buttons";
+
+            const medalsButton = document.createElement("a");
+            medalsButton.innerText = "🥇";
+            medalsButton.className = "aoc-extension-full-screen-button";
+            medalsButton.addEventListener("click", () => { 
+                setFullScreenSubject("medals");
+                this.refreshFullScreenSetup();
+            });
+            fullScreenButtons.appendChild(medalsButton);
+            const perDayLeaderBoardButton = document.createElement("a");
+            perDayLeaderBoardButton.innerText = "📆";
+            perDayLeaderBoardButton.className = "aoc-extension-full-screen-button";
+            perDayLeaderBoardButton.addEventListener("click", () => { 
+                setFullScreenSubject("perDayLeaderBoard");
+                this.refreshFullScreenSetup();
+            });
+            fullScreenButtons.appendChild(perDayLeaderBoardButton);
+            const graphsButton = document.createElement("a");
+            graphsButton.innerText = "📈";
+            graphsButton.className = "aoc-extension-full-screen-button";
+            graphsButton.addEventListener("click", () => { 
+                setFullScreenSubject("graphs");
+                this.refreshFullScreenSetup();
+            });
+            fullScreenButtons.appendChild(graphsButton);
+
             return data;
         }
 
@@ -854,6 +949,13 @@
             this.perDayLeaderBoard.style.marginBottom = "32px";
 
             let /** @type {number|string|null} */ displayDay = getDisplayDay();
+
+            if (data.maxDay <= 0) {
+                let noDataText = this.perDayLeaderBoard.appendChild(document.createElement("p"));
+                noDataText.innerText = "No data available yet.";
+                noDataText.style.color = aocColors["secondary"];
+                return data;
+            }
             
             if (displayDay !== "overview") {
                 // taking the min to avoid going out of bounds for current year
@@ -1236,6 +1338,13 @@
             showAllToggleLink.title = "Toggle between showing only medalists or all participants";
             showAllToggleLink.style.cursor = "pointer";
             showAllToggleLink.addEventListener("click", () => toggleShowAll());
+            
+            if (data.maxDay <= 0) {
+                let noDataText = this.medals.appendChild(document.createElement("p"));
+                noDataText.innerText = "No data available yet.";
+                noDataText.style.color = aocColors["secondary"];
+                return data;
+            }
 
             let gridElement = document.createElement("table");
             gridElement.style.borderCollapse = "collapse";
