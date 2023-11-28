@@ -10,6 +10,15 @@ body.aoc-extension-with-full-screen-overlay > * {
   display: none !important;
 }
 
+body.aoc-extension-with-full-screen-overlay .aoc-extension-full-screen-warning {
+  display: block !important;
+  position: absolute;
+  top: 5px;
+  text-align: center;
+  width: 100%;
+  color: var(--aoc-colors-tertiary);
+}
+
 body.aoc-extension-with-full-screen-overlay #aoc-extension {
   display: block !important;
   text-align: center;
@@ -27,6 +36,8 @@ body.aoc-extension-with-full-screen-overlay #aoc-extension > .aoc-extension-full
 body.aoc-extension-with-full-screen-overlay #aoc-extension > .aoc-extension-full-screen-subject#aoc-extension-graphs {
   display: grid !important;
   justify-items: center;
+  max-width: 95%;
+  max-height: 95%;
 }
 
 body.aoc-extension-with-full-screen-overlay #aoc-extension > .aoc-extension-full-screen-subject#aoc-extension-perDayLeaderBoard > table {
