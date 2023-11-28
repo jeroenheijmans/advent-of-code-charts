@@ -942,6 +942,13 @@
             this.perDayLeaderBoard.style.marginBottom = "32px";
 
             let /** @type {number|string|null} */ displayDay = getDisplayDay();
+
+            if (data.maxDay <= 0) {
+                let noDataText = this.perDayLeaderBoard.appendChild(document.createElement("p"));
+                noDataText.innerText = "No data available yet.";
+                noDataText.style.color = aocColors["secondary"];
+                return data;
+            }
             
             if (displayDay !== "overview") {
                 // taking the min to avoid going out of bounds for current year
@@ -1324,6 +1331,13 @@
             showAllToggleLink.title = "Toggle between showing only medalists or all participants";
             showAllToggleLink.style.cursor = "pointer";
             showAllToggleLink.addEventListener("click", () => toggleShowAll());
+            
+            if (data.maxDay <= 0) {
+                let noDataText = this.medals.appendChild(document.createElement("p"));
+                noDataText.innerText = "No data available yet.";
+                noDataText.style.color = aocColors["secondary"];
+                return data;
+            }
 
             let gridElement = document.createElement("table");
             gridElement.style.borderCollapse = "collapse";
