@@ -12,6 +12,7 @@ body.aoc-extension-with-full-screen-overlay > * {
 
 body.aoc-extension-with-full-screen-overlay #aoc-extension {
   display: block !important;
+  text-align: center;
 }
 
 body.aoc-extension-with-full-screen-overlay #aoc-extension > * {
@@ -19,18 +20,17 @@ body.aoc-extension-with-full-screen-overlay #aoc-extension > * {
 }
 
 body.aoc-extension-with-full-screen-overlay #aoc-extension > .aoc-extension-full-screen-subject {
-  display: block !important;
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translate(-50%, 0);
+  display: inline-block !important;
+  margin: 50px auto;
 }
 
 body.aoc-extension-with-full-screen-overlay #aoc-extension > .aoc-extension-full-screen-subject#aoc-extension-graphs {
   display: grid !important;
-  width: 95%;
-  position: absolute;
-  margin-top: 50px; 
+  justify-items: center;
+}
+
+body.aoc-extension-with-full-screen-overlay #aoc-extension > .aoc-extension-full-screen-subject#aoc-extension-perDayLeaderBoard > table {
+  width: 100%;
 }
 
 .aoc-extension-full-screen-exit-button {
@@ -44,8 +44,13 @@ body.aoc-extension-with-full-screen-overlay > .aoc-extension-full-screen-exit-bu
   right: 10px;
   background: rgba(50, 50, 50, 0.8);
   padding: 10px;
+  width: 20px;
+  height: 20px;
   border: 1px solid rgba(75, 75, 75, 0.8);
   z-index: 101;
+  display: flex;
+  text-align: center;
+  justify-content: center;
   cursor: pointer;
 }
 

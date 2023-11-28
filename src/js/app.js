@@ -483,7 +483,7 @@
 
     function getCache() {
         console.info("Getting cache", getCacheKey());
-        return JSON.parse(localStorage.getItem(getCacheKey()) || "");
+        return JSON.parse(localStorage.getItem(getCacheKey()) || "null");
     }
 
     function updateCache(data) {
@@ -503,7 +503,7 @@
     }
 
     function isShowAllToggled() {
-        return !!JSON.parse(localStorage.getItem("aoc-flag-v1-show-all") || "");
+        return !!JSON.parse(localStorage.getItem("aoc-flag-v1-show-all") || "null");
     }
 
     function toggleResponsiveness() {
@@ -512,7 +512,7 @@
     }
 
     function isResponsivenessToggled() {
-        return !!JSON.parse(localStorage.getItem("aoc-flag-v1-is-responsive") || "");
+        return !!JSON.parse(localStorage.getItem("aoc-flag-v1-is-responsive") || "null");
     }
 
     function getCurrentGraphColorStyle() {
@@ -852,7 +852,7 @@
             this.refreshFullScreenSetup();
             const exitFullScreenButton = document.createElement("div");
             exitFullScreenButton.className = "aoc-extension-full-screen-exit-button";
-            exitFullScreenButton.innerText = "↗";
+            exitFullScreenButton.innerText = "×";
             exitFullScreenButton.addEventListener("click", () => {
                 setFullScreenSubject(null);
                 this.refreshFullScreenSetup();
