@@ -1494,9 +1494,10 @@
                     .withTooltips({
                         callbacks: {
                             label: (item) => {
-                                const day = Math.floor(Number(item.label) + 0.5);
-                                const star = Number(item.label) < day ? 1 : 2;
-                                const mins = item.value;
+                                const day = Math.floor(Number(item.parsed?.x || 0) + 0.5);
+                                const star = Number(item.parsed?.x || 0) < day ? 1 : 2;
+                                const mins = item.parsed?.y;
+                                
                                 return `Day ${day} star ${star} took ${mins} minutes to complete`;
                             },
                         },
