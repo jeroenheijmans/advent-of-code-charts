@@ -21,3 +21,9 @@ List of fixes for #79, the 2023 updates:
 Further 2023 fixes and changes:
 
 - Issue #70 to improve situation for large and huge leaderboards
+
+Fixes in Nov 2023:
+
+- Issue #87 was fixed, tooltips in 3rd graph now work properly again
+- Issue #91 was implemented, a "no data" message is displayed when there is no data (yet)
+- PR #94 implements issue #93: "Full Screen" mode, to showcase a leaderboard on a monitor/screen

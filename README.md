@@ -3,7 +3,7 @@
 This is an [unofficial](#license-and-affiliation-disclaimer) small hacked-up set of charts for a private leaderboard for [Advent of Code](https://adventofcode.com/).
 Get it as an extension:
 
-[![browser-store-chrome.png](browser-store-chrome.png)](https://chrome.google.com/webstore/detail/advent-of-code-charts/ipbomkmbokofodhhjpipflmdplipblbe) [![browser-store-firefox.png](browser-store-firefox.png)](https://addons.mozilla.org/en-US/firefox/addon/advent-of-code-charts/)
+[![browser-store-chrome.png](readme-assets/browser-store-chrome.png)](https://chrome.google.com/webstore/detail/advent-of-code-charts/ipbomkmbokofodhhjpipflmdplipblbe) [![browser-store-firefox.png](readme-assets/browser-store-firefox.png)](https://addons.mozilla.org/en-US/firefox/addon/advent-of-code-charts/)
 
 ## Disclaimers
 
@@ -52,9 +52,9 @@ Read more [about Advent of Code](https://adventofcode.com/2018/about) to learn a
 
 Here's what it should more or less look like:
 
-![example-001.png](example-001.png)
-![example-002.png](example-002.png)
-![example-003.png](example-003.png)
-![example-004.png](example-004.png)
-![example-005.png](example-005.png)
-![example-006.png](example-006.png)
+![example-001.png](readme-assets/example-001.png)
+![example-002.png](readme-assets/example-002.png)
+![example-003.png](readme-assets/example-003.png)
+![example-004.png](readme-assets/example-004.png)
+![example-005.png](readme-assets/example-005.png)
+![example-006.png](readme-assets/example-006.png)
