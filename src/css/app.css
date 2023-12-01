@@ -14,8 +14,11 @@ body.aoc-extension-with-full-screen-overlay .aoc-extension-full-screen-warning {
   display: block !important;
   position: absolute;
   top: 5px;
+  left: 50%;
+  transform: translate(-50%, 0);
   text-align: center;
-  width: 100%;
+  width: 95%;
+  box-sizing: border-box;
   color: var(--aoc-colors-tertiary);
 }
 
