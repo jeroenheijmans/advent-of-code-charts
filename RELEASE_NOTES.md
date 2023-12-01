@@ -4,6 +4,10 @@ Some adhoc release notes for changes made, in reverse chronological order.
 
 ## 2023 AoC edition
 
+### 2023-12-01 Bugfix
+
+- Issue #95, bug with incorrect gold medal counts (thanks for reporting @diogotcorreia and submitting a PR to fix it @FXCourel)
+
 ### 2023-11-xx November fixes
 
 - Issue #87 was fixed, tooltips in 3rd graph now work properly again
