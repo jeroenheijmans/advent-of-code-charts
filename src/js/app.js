@@ -291,8 +291,8 @@
                             nrOfPointsAfterThisOne: 0,
                             points: 0,
                             rank: 0,
-                            awardedPodiumPlace: 0,
-                            awardedPodiumPlaceFirstPuzzle: 0,
+                            awardedPodiumPlace: -1,
+                            awardedPodiumPlaceFirstPuzzle: -1,
                         };
 
                         stars.push(star);
