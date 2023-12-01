@@ -1,8 +1,18 @@
 # Release notes
 
-There are no release notes from 2022 and before, except what can be found on Reddit and other various places.
+Some adhoc release notes for changes made, in reverse chronological order.
 
-## 2023
+## 2023 AoC edition
+
+### 2023-11-xx November fixes
+
+- Issue #87 was fixed, tooltips in 3rd graph now work properly again
+- Issue #91 was implemented, a "no data" message is displayed when there is no data (yet)
+- PR #94 implements issue #93: "Full Screen" mode, to showcase a leaderboard on a monitor/screen
+
+### 2023-xx-xx Q1 fixes
+
+A bunch of fixes early in the year.
 
 List of fixes for #79, the 2023 updates:
 
@@ -18,12 +28,10 @@ List of fixes for #79, the 2023 updates:
 - PR #58 to add more Delta-Time leaderboard features
 - See issue #54: rolled back to manifest v2 for now
 
-Further 2023 fixes and changes:
+Further 2023 Q1 fixes and changes:
 
 - Issue #70 to improve situation for large and huge leaderboards
 
-Fixes in Nov 2023:
+## 2022 and before
 
-- Issue #87 was fixed, tooltips in 3rd graph now work properly again
-- Issue #91 was implemented, a "no data" message is displayed when there is no data (yet)
-- PR #94 implements issue #93: "Full Screen" mode, to showcase a leaderboard on a monitor/screen
+There are no release notes from 2022 and before, except what can be found on Reddit and other various places.
