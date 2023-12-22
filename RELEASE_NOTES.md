@@ -4,6 +4,10 @@ Some adhoc release notes for changes made, in reverse chronological order.
 
 ## 2023 AoC edition
 
+### 2023-12-22 Mozilla FireFox update
+
+- Reviewers at Mozilla had requested we'd remove [the MomentJS workaround](https://github.com/jeroenheijmans/advent-of-code-charts/commit/6ea4669fe5588629e110db055313b9c772ba8331) we needed thus far, and it was possible since ChartJS had received updates in the past it seems. So we did a FireFox-only release to patch this
+
 ### 2023-12-01 Bugfix
 
 - Issue #95, bug with incorrect gold medal counts (thanks for reporting @diogotcorreia and submitting a PR to fix it @FXCourel)
