@@ -32,10 +32,27 @@ Run `build.ps1` or `build.sh` to re-create a `/build` folder which is a ready-to
 Test the extension by loading it in the browser.
 For full reference, see Chrome's or Firefox's full documentation, but the basics are:
 
-- Firefox: go to `about:debugging` and load a temporary addon (pick the `/build/manifest.json` file)
+- Firefox: go to `about:debugging` and load a temporary addon (pick the `/build` folder)
 - Chrome: go to `chrome://extensions` and load unpacked extension (pick the `/build` folder)
 
 Test by browsing to a private leaderboard and you should see charts popping up at the bottom.
+
+## Releasing
+
+To release an addon to the store, for Chrome you just zip the `/build` folder files into a file and submit it as a new version.
+
+For Firefox, you need to add this to the manifest in the `/build` folder first:
+
+```json
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "{GUID-GUID-GUID-GUID}"
+        }
+    }
+```
+
+For details see [Mozilla's documentation](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/browser_specific_settings) and [this Stack Overflow post](https://stackoverflow.com/q/56271601/419956) as to why it cannot be there by default.
+(I suppose this step can be automated away later on.)
 
 ## License and Affiliation Disclaimer
 
