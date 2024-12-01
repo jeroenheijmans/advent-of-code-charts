@@ -634,6 +634,7 @@
                 return fetch(url, { credentials: "same-origin" })
                     .then(data => data.json())
                     .then(json => updateCache(json))
+                    .then(() => getCache().data)    // FF refuses to modify the object we fetched (XrayWrapper), so we will create our own copy
                     .then(json => transformRawAocJson(json));
             } else {
                 console.info("Could not find anchor to JSON feed, assuming no charts can be plotted here.");
