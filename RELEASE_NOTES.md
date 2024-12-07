@@ -2,6 +2,16 @@
 
 Some adhoc release notes for changes made, in reverse chronological order.
 
+# 2024 AoC edition
+
+# 2024-12-07
+
+- Issue #105, Firefox error on first load fix
+
+# 2024-11-xx November fixes
+
+- Issue #54, upgrade to Manifest v3 was fixed
+
 ## 2023 AoC edition
 
 ### 2023-12-22 Mozilla FireFox update
