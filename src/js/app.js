@@ -634,6 +634,7 @@
                 return fetch(url, { credentials: "same-origin" })
                     .then(data => data.json())
                     .then(json => updateCache(json))
+                    .then(() => getCache().data) // Workaround for FireFox error with "Xray Vision" / "XrayWrapper", see https://github.com/jeroenheijmans/advent-of-code-charts/issues/105 
                     .then(json => transformRawAocJson(json));
             } else {
                 console.info("Could not find anchor to JSON feed, assuming no charts can be plotted here.");
