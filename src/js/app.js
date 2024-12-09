@@ -1157,7 +1157,7 @@
                     th.colSpan = 1;
                     th = tr.appendChild(createHeaderCell("part2", "----- Part 2 -----", "#ffff66"));
                     th.colSpan = 3;
-                    th = tr.appendChild(createHeaderCell("total", "----- Total -----"));
+                    th = tr.appendChild(createHeaderCell("completion", "----- Total -----"));
                     th.colSpan = 1;
                 }
                 {
