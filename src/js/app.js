@@ -1731,7 +1731,7 @@
                             },
                         },
                     })
-                    .withXTimeScale(data, { xMax: data.daysOfPuzzles })
+                    .withXTimeScale(data, { xMax: 31, titleText: "December" })
                     .withYScale({
                         ticks: {
                             min: 0,
