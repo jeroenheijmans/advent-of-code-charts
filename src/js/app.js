@@ -230,6 +230,7 @@
      *   maxDeltaPoints,
      *   loggedInUserIsPresumablyKnown,
      *   isLargeLeaderboard,
+     *   daysOfPuzzles: number,
      *  }} IAppData
      * 
      * @typedef {Record<number, {
@@ -247,6 +248,7 @@
         let /** @type {IStar[]} */ stars = [];
         let /** @type {IDelta[]} */ deltas = [];
         let year = parseInt(json.event);
+        let daysOfPuzzles = (year >= 2025) ? 12 : 25;
         let loggedInUserIsPresumablyKnown = false;
         
         let n_members = Object.keys(json.members).length;
@@ -336,7 +338,7 @@
         let maxMoment = moment.min([moment.max(allMoments), moment("" + year + "-12-31T00:00:00-0000")]);
 
         const maxDeltaPoints = members.filter(m => m.deltas.length > 0).length;
-        for (let i = 1; i <= 25; i++) {
+        for (let i = 1; i <= daysOfPuzzles; i++) {
             let availableDeltaPoints = maxDeltaPoints;
             const sortedDeltas = deltas.filter(d => d.dayNr === i).sort((a,b) => a.deltaTimeTakenSeconds - b.deltaTimeTakenSeconds);
             for (let delta of sortedDeltas) {
@@ -347,7 +349,7 @@
 
         let availablePoints = {};
 
-        for (let i = 1; i <= 25; i++) {
+        for (let i = 1; i <= daysOfPuzzles; i++) {
             availablePoints[i] = {};
             for (let j = 1; j <= 2; j++) {
                 availablePoints[i][j] = n_members;
@@ -357,6 +359,9 @@
         let orderedStars = stars.sort(starSorter);
 
         for (let star of orderedStars) {
+            if (star.dayNr > daysOfPuzzles) {
+                continue;
+            }
             const basePoints = availablePoints[star.dayKey][star.starKey]--;
             star.points = adjustPoinstFor(year, star.dayKey, star.starKey, basePoints);
             star.rank = n_members - basePoints + 1;
@@ -372,7 +377,10 @@
         }
 
         /** @type {number} */
-        let maxDay = Math.max.apply(Math, stars.filter(s => s.starNr === 2).map(s => s.dayNr))
+        let maxDay = Math.min(
+          Math.max.apply(Math, stars.filter(s => s.starNr === 2).map(s => s.dayNr)),
+          daysOfPuzzles
+        );
         
         /** @type {IDaysMap} */
         let days = {};
@@ -436,6 +444,7 @@
             maxDeltaPoints,
             loggedInUserIsPresumablyKnown,
             isLargeLeaderboard,
+            daysOfPuzzles: daysOfPuzzles,
         };
     }
 
@@ -751,10 +760,10 @@
             return this;
         }
 
-        withXTickingScale() {
+        withXTickingScale(xMax) {
             let x = this.scales.x;
             x.min = 0;
-            x.max = 25;
+            x.max = xMax;
             x.ticks = {
                 color: aocColors["main"],
                 stepSize: 1,
@@ -1354,7 +1363,7 @@
             let grid = data.members;
 
             let tr = gridElement.appendChild(document.createElement("tr"));
-            for (let d = 0; d <= 25; d++) {
+            for (let d = 0; d <= data.daysOfPuzzles; d++) {
                 let td = tr.appendChild(document.createElement("td"));
                 td.innerText = d === 0 ? "" : d.toString();
                 td.align = "center";
@@ -1382,7 +1391,7 @@
                 td.style.border = "1px solid #333";
                 td.style.padding = "2px 8px";
 
-                for (let d = 1; d <= 25; d++) {
+                for (let d = 1; d <= data.daysOfPuzzles; d++) {
                     let td = tr.appendChild(document.createElement("td"));
                     td.style.backgroundColor = cellColor;
                     td.style.border = "1px solid #333";
@@ -1503,7 +1512,7 @@
                             },
                         },
                     })
-                    .withXTickingScale()
+                    .withXTickingScale(data.daysOfPuzzles)
                     .withYScale({
                         type: "logarithmic",
                         ticks: {
@@ -1549,7 +1558,7 @@
                     hidden: data.loggedInUserIsPresumablyKnown ? !member.isLoggedInUser : idx >= 3,
                 };
 
-                for (let i = 1; i <= 25; i++) {
+                for (let i = 1; i <= data.daysOfPuzzles; i++) {
                     let star1 = data.stars.find(s => s.memberId === member.id && s.dayNr === i && s.starKey === "1");
                     let star2 = data.stars.find(s => s.memberId === member.id && s.dayNr === i && s.starKey === "2");
 
@@ -1564,6 +1573,7 @@
             let element = this.createGraphCanvas(data, "From the top players, show the number of minutes taken each day. (Exclude results over 4 hours.) (Toggle Responsive for all users)");
 
             let options = new ChartOptions(data, `Minutes taken per star`)
+                .withXTickingScale(data.daysOfPuzzles)
                 .withYScale({
                     max: 240,
                     ticks: {
@@ -1721,7 +1731,7 @@
                             },
                         },
                     })
-                    .withXTimeScale(data, { xMax: 25 })
+                    .withXTimeScale(data, { xMax: 31, titleText: "December" })
                     .withYScale({
                         ticks: {
                             min: 0,
