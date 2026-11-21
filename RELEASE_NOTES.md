@@ -15,6 +15,8 @@ Some adhoc release notes for changes made, in reverse chronological order.
 - Performance improvements, especially for large leaderboards
 - Cumulative total of stars across all members as bars on second chart
 - Repurpose chart 4 to show more interesting "Delta Times" stats
+- Added a user script build (Tampermonkey, Violentmonkey) as an alternative to the extension option.
+- Build scripts replaced by a cross-platform `npm run build`, output now in `build/addon` and `build/userscript`
 
 ## 2025 AoC edition
 

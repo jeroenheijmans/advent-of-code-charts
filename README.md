@@ -5,6 +5,9 @@ Get it as an extension:
 
 [![browser-store-chrome.png](readme-assets/browser-store-chrome.png)](https://chrome.google.com/webstore/detail/advent-of-code-charts/ipbomkmbokofodhhjpipflmdplipblbe) [![browser-store-firefox.png](readme-assets/browser-store-firefox.png)](https://addons.mozilla.org/en-US/firefox/addon/advent-of-code-charts/)
 
+Prefer a userscript? Install [Tampermonkey](https://www.tampermonkey.net/) or Violentmonkey, then [install the user script](https://github.com/jeroenheijmans/advent-of-code-charts/releases/latest/download/advent-of-code-charts.user.js).
+The extension is the recommended way though; the user script might be less well-tested (if it ever breaks, please do file an issue).
+
 ## Disclaimers
 
 It is *not* a well-architectured, well-written, neat, nice, fluffy, industry-strength piece of code.
@@ -28,20 +31,25 @@ And open up the URL that's announced in the console.
 
 ## Building
 
-Run `build.ps1` or `build.sh` to re-create a `/build` folder which is a ready-to-go browser extension.
+Run `npm run build` to re-create a `/build/addon` folder which is a ready-to-go browser extension.
+This also creates `build/userscript/advent-of-code-charts.user.js`, a single-file userscript you can install in a userscript manager like Tampermonkey or Violentmonkey (by opening the file in the manager or pasting it into a new script).
 Test the extension by loading it in the browser.
 For full reference, see Chrome's or Firefox's full documentation, but the basics are:
 
-- Firefox: go to `about:debugging` and load a temporary addon (pick the `/build` folder)
-- Chrome: go to `chrome://extensions` and load unpacked extension (pick the `/build` folder)
+- Firefox: go to `about:debugging` and load a temporary addon (pick the `/build/addon` folder)
+- Chrome: go to `chrome://extensions` and load unpacked extension (pick the `/build/addon` folder)
 
 Test by browsing to a private leaderboard and you should see charts popping up at the bottom.
 
 ## Releasing
 
-To release an addon to the store, for Chrome you just zip the `/build` folder files into a file and submit it as a new version.
+Bump the version in `addon-assets/manifest.json` first (the user script version is taken from it).
 
-For Firefox, you need to add this to the manifest in the `/build` folder first:
+To release an addon to the store, for Chrome you just zip the `/build/addon` folder files into a file and submit it as a new version.
+
+For the user script, create a GitHub Release with a new tag and attach `build/userscript/advent-of-code-charts.user.js` (keep the filename, the update URLs depend on it).
+
+For Firefox, you need to add this to the manifest in the `/build/addon` folder first:
 
 ```json
     "browser_specific_settings": {

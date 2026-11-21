@@ -2,6 +2,7 @@
   "name": "advent-of-code-charts",
   "description": "Adhoc solution for Advent of Code leaderboard charts",
   "scripts": {
+    "build": "node build.mjs",
     "start": "concurrently \"npm:serve\" \"npm:watch\"",
     "serve": "serve src/.",
     "watch": "livereload src/."
