@@ -31,6 +31,8 @@
         "secondary": "rgba(150, 150, 150, 0.9)",
         "tertiary": "rgba(100, 100, 100, 0.5)",
         "highlight": "rgba(119,119,165,.2)",
+        "extraDays": "rgba(170, 165, 120, 0.8)",
+        "extraDaysBackground": "rgba(170, 165, 120, 0.06)",
         "link": "#009900",
     };
 
@@ -775,12 +777,18 @@
             let x = this.scales.x;
             x.type = "time";
             x.time = {
+                unit: "day",
                 displayFormats: {
                     day: 'D',
                 },
             };
             x.ticks = {
-                color: aocColors["main"],
+                color: (ctx) => {
+                    const m = moment(ctx.tick.value);
+                    return m.month() === 11 && m.date() > data.daysOfPuzzles
+                        ? aocColors["extraDays"]
+                        : aocColors["main"];
+                },
                 stepSize: 1,
             };
             x.min = moment([data.year, 10, 30, 17, 0, 0]);
@@ -796,6 +804,21 @@
             };
             return this;
         }
+    }
+
+    function extraDaysBackgroundPlugin(/** @type {IAppData} */ data) {
+        return {
+            id: "extraDaysBackground",
+            beforeDatasetsDraw: (chart) => {
+                const { ctx, chartArea, scales: { x } } = chart;
+                const left = Math.max(chartArea.left, x.getPixelForValue(moment([data.year, 11, data.daysOfPuzzles + 1, 0, 0, 0]).valueOf()));
+                if (left >= chartArea.right) return;
+                ctx.save();
+                ctx.fillStyle = aocColors["extraDaysBackground"];
+                ctx.fillRect(left, chartArea.top, chartArea.right - left, chartArea.bottom - chartArea.top);
+                ctx.restore();
+            },
+        };
     }
 
     class App {
@@ -1707,7 +1730,7 @@
                 data: {
                     datasets: datasets,
                 },
-                plugins: [{
+                plugins: [extraDaysBackgroundPlugin(data), {
                     // See https://stackoverflow.com/a/75034834/419956 by user @LeeLenalee
                     afterEvent: (chart, evt) => {
                         const { event: { type, x, y, } } = evt;
@@ -1731,7 +1754,7 @@
                             },
                         },
                     })
-                    .withXTimeScale(data, { xMax: 31, titleText: "December" })
+                    .withXTimeScale(data, { xMax: graphType === 0 ? 31 : data.daysOfPuzzles, titleText: "December" })
                     .withYScale({
                         ticks: {
                             min: 0,
@@ -1782,6 +1805,7 @@
                 data: {
                     datasets: datasets,
                 },
+                plugins: [extraDaysBackgroundPlugin(data)],
                 options: new ChartOptions(data, "Leaderboard (stars)")
                     .withTooltips({
                         callbacks: {
