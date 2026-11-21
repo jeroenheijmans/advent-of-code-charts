@@ -10,6 +10,7 @@ Some adhoc release notes for changes made, in reverse chronological order.
 - Data cache TTL raised from 5 to 15 minutes, as requested by the AoC organizer
 - Dev tooling: `npm-run-all` replaced by `concurrently`, `.npmrc` now sets a minimum release age of 4 days
 - Fixed players with only 1 star not showing up
+- Full-screen mode can now also be closed with the Escape key
 - Better 12-day event support, plus an extra 12-day "finished" dummy data set
 - Performance improvements, especially for large leaderboards
 - Cumulative total of stars across all members as bars on second chart

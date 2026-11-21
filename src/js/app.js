@@ -895,6 +895,13 @@
             });
             document.body.appendChild(exitFullScreenButton);
 
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape" && getFullScreenSubject()) {
+                    setFullScreenSubject(null);
+                    this.refreshFullScreenSetup();
+                }
+            });
+
             document.documentElement.addEventListener("click", (event) => {
                 if (event.target instanceof HTMLHtmlElement) {
                     setFullScreenSubject(null);
