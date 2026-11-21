@@ -627,7 +627,7 @@
                 console.info("Found cache", cache);
 
                 if (cache) {
-                    const ttl = new Date(cache.timestamp + (5 * 60 * 1000));
+                    const ttl = new Date(cache.timestamp + (15 * 60 * 1000));
                     console.info("Found cached value valid until", ttl);
 
                     if (Date.now() < ttl.getTime()) {
