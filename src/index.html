@@ -44,8 +44,9 @@
             <br><br>
             The plugin content always sits below
         </div>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.1.2/chart.umd.js" integrity="sha512-t41WshQCxr9T3SWH3DBZoDnAT9gfVLtQS+NKO60fdAwScoB37rXtdxT/oKe986G0BFnP4mtGzXxuYpHrMoMJLA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <!-- Keep these library versions in sync with package.json (dev page only; the extension ships node_modules copies) -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.31.0/moment.min.js" integrity="sha512-iJIt5wigccZYA4F3G8kWt8H0r43JDWpvBweaGct6QsveuU4zmyP6VX2EXMfSfA/Z80b1PfHUNLioFfY1Z55cCg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.6.1/chart.umd.js" integrity="sha512-Vj/VnWZpOof68AJOIBxA90+7KQccA7eISngKbl18q5MQO3KnvO1a0z76Q+7hj8+iDIwETpKUBPN+cLy7PxvTEQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-moment/1.0.1/chartjs-adapter-moment.min.js" integrity="sha512-hVy4KxCKgnXi2ok7rlnlPma4JHXI1VPQeempoaclV1GwRHrDeaiuS1pI6DVldaj5oh6Opy2XJ2CTljQLPkaMrQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script>
             [...document.querySelectorAll(".switcher")].forEach(a => !a.href.includes(window.location.search) || a.classList.add("active"));
