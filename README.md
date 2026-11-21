@@ -56,7 +56,7 @@ For details see [Mozilla's documentation](https://developer.mozilla.org/en-US/do
 
 ## License and Affiliation Disclaimer
 
-The code in this project is MIT licensed, with the explicit exception of `dummyData.js`.
+The code in this project is MIT licensed, with the explicit exception of the `dummyData-*.js` files.
 That file contains JSON in a format thought up by the owner and creator of Advent of Code, but we suppose that using a small snippet of it like this falls under "fair use" (given for one that the AoC website itself suggests using the "JSON API" for integrations, albeit without spamming that API).
 
 Note that "Advent of Code" and "AoC" are Eric Wastl's.

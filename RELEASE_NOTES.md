@@ -2,6 +2,20 @@
 
 Some adhoc release notes for changes made, in reverse chronological order.
 
+# 2026 AoC edition
+
+### 2026-11-21 Dependency update
+
+- Updated Chart.js (4.6.1) and MomentJS (2.31.0), which also fixes a MomentJS security advisory
+- Data cache TTL raised from 5 to 15 minutes, as requested by the AoC organizer
+- Dev tooling: `npm-run-all` replaced by `concurrently`, `.npmrc` now sets a minimum release age of 4 days
+
+## 2025 AoC edition
+
+### 2025-12-06 Version 7.1.0
+
+- Support for the 12-day event format (also added a 12-day dummy data set)
+
 # 2024 AoC edition
 
 # 2024-12-07
