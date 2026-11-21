@@ -2,7 +2,7 @@
   "name": "advent-of-code-charts",
   "description": "Adhoc solution for Advent of Code leaderboard charts",
   "scripts": {
-    "start": "npm-run-all --parallel serve watch",
+    "start": "concurrently \"npm:serve\" \"npm:watch\"",
     "serve": "serve src/.",
     "watch": "livereload src/."
   },
@@ -22,8 +22,8 @@
     "moment": "2.31.0"
   },
   "devDependencies": {
+    "concurrently": "10.0.7",
     "livereload": "0.10.3",
-    "npm-run-all": "4.1.5",
     "serve": "14.2.8"
   }
 }
