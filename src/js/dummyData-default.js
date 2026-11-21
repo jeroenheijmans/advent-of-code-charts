@@ -276,9 +276,9 @@
             },
             "100006": {
                 "name": "biti",
-                "stars": 14,
+                "stars": 15,
                 "id": "100006",
-                "last_star_ts": "1544164899",
+                "last_star_ts": "1544246000",
                 "completion_day_level": {
                     "1": {
                         "1": {
@@ -348,6 +348,12 @@
                         "2": {
                             "star_index": 1544164899,
                             "get_star_ts": 1544164899,
+                        }
+                    },
+                    "8": {
+                        "1": {
+                            "star_index": 1544246000,
+                            "get_star_ts": 1544246000,
                         }
                     }
                 },
@@ -535,13 +541,19 @@
                             "star_index": 1544117777,
                             "get_star_ts": 1544117777,
                         }
+                    },
+                    "8": {
+                        "1": {
+                            "star_index": 1544246300,
+                            "get_star_ts": 1544246300,
+                        }
                     }
                 },
                 "local_score": 302,
                 "global_score": 0,
-                "last_star_ts": "1544117777",
+                "last_star_ts": "1544246300",
                 "id": "100008",
-                "stars": 12,
+                "stars": 13,
                 "name": null
             },
             "100009": {

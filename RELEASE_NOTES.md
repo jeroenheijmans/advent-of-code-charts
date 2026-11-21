@@ -2,6 +2,28 @@
 
 Some adhoc release notes for changes made, in reverse chronological order.
 
+# 2026 AoC edition
+
+### 2026-11-21 Various updates
+
+- Updated Chart.js (4.6.1) and MomentJS (2.31.0), which also fixes a MomentJS security advisory
+- Data cache TTL raised from 5 to 15 minutes, as requested by the AoC organizer
+- Dev tooling: `npm-run-all` replaced by `concurrently`, `.npmrc` now sets a minimum release age of 4 days
+- Fixed players with only 1 star not showing up
+- Full-screen mode can now also be closed with the Escape key
+- Better 12-day event support, plus an extra 12-day "finished" dummy data set
+- Performance improvements, especially for large leaderboards
+- Cumulative total of stars across all members as bars on second chart
+- Repurpose chart 4 to show more interesting "Delta Times" stats
+- Added a user script build (Tampermonkey, Violentmonkey) as an alternative to the extension option.
+- Build scripts replaced by a cross-platform `npm run build`, output now in `build/addon` and `build/userscript`
+
+## 2025 AoC edition
+
+### 2025-12-06 Version 7.1.0
+
+- Support for the 12-day event format (also added a 12-day dummy data set)
+
 # 2024 AoC edition
 
 # 2024-12-07

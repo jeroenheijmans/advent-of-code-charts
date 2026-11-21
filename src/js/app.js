@@ -31,6 +31,8 @@
         "secondary": "rgba(150, 150, 150, 0.9)",
         "tertiary": "rgba(100, 100, 100, 0.5)",
         "highlight": "rgba(119,119,165,.2)",
+        "extraDays": "rgba(170, 165, 120, 0.8)",
+        "extraDaysBackground": "rgba(170, 165, 120, 0.06)",
         "link": "#009900",
     };
 
@@ -378,7 +380,7 @@
 
         /** @type {number} */
         let maxDay = Math.min(
-          Math.max.apply(Math, stars.filter(s => s.starNr === 2).map(s => s.dayNr)),
+          Math.max.apply(Math, stars.map(s => s.dayNr)),
           daysOfPuzzles
         );
         
@@ -392,10 +394,8 @@
                 podiumFirstPuzzle: stars.filter(s => s.dayNr === d && s.starNr === 1).sort(starSorter),
             };
 
-            for (let i = 0; i < days[d].podium.length; i++) {
-                days[d].podium[i].awardedPodiumPlace = i;
-                days[d].podiumFirstPuzzle[i].awardedPodiumPlaceFirstPuzzle = i;
-            }
+            days[d].podium.forEach((s, i) => { s.awardedPodiumPlace = i; });
+            days[d].podiumFirstPuzzle.forEach((s, i) => { s.awardedPodiumPlaceFirstPuzzle = i; });
         }
 
         for (let m of members) {
@@ -627,7 +627,7 @@
                 console.info("Found cache", cache);
 
                 if (cache) {
-                    const ttl = new Date(cache.timestamp + (5 * 60 * 1000));
+                    const ttl = new Date(cache.timestamp + (15 * 60 * 1000));
                     console.info("Found cached value valid until", ttl);
 
                     if (Date.now() < ttl.getTime()) {
@@ -650,6 +650,36 @@
                 return new Promise((resolve, reject) => { });
             }
         }
+    }
+
+    function formatMinutesForAxis(/** @type {number} */ minutes) {
+        if (minutes < 1) return `${Math.round(minutes * 60)}s`;
+        if (minutes < 60) return `${Math.round(minutes)}m`;
+        if (minutes < 1440) return `${Math.round(minutes / 60)}h`;
+        return `${Math.round(minutes / 1440)}d`;
+    }
+
+    function youMarkerPlugin() {
+        return {
+            id: "youMarker",
+            afterDatasetsDraw: (/** @type {any} */ chart) => {
+                const ctx = chart.ctx;
+                chart.data.datasets.forEach((/** @type {any} */ dataset, /** @type {number} */ i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    if (!dataset.isLoggedInUser || meta.hidden) return;
+                    ctx.save();
+                    ctx.fillStyle = aocColors["main"];
+                    ctx.font = "bold 11px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "bottom";
+                    meta.data.forEach((/** @type {any} */ bar, /** @type {number} */ idx) => {
+                        if (dataset.data[idx] === null || dataset.data[idx] === undefined) return;
+                        ctx.fillText("▼", bar.x, bar.y - 2);
+                    });
+                    ctx.restore();
+                });
+            },
+        };
     }
 
     class ChartOptions {
@@ -775,17 +805,28 @@
             let x = this.scales.x;
             x.type = "time";
             x.time = {
+                unit: "day",
                 displayFormats: {
                     day: 'D',
                 },
             };
             x.ticks = {
-                color: aocColors["main"],
+                color: (ctx) => {
+                    const m = moment(ctx.tick.value);
+                    return m.month() === 11 && m.date() > data.daysOfPuzzles
+                        ? aocColors["extraDays"]
+                        : aocColors["main"];
+                },
                 stepSize: 1,
             };
             x.min = moment([data.year, 10, 30, 17, 0, 0]);
             x.max = moment([data.year, 11, xMax || 31, 4, 0, 0]);
             x.title.text = titleText;
+            return this;
+        }
+
+        withSecondaryYScale(definition) {
+            this.scales.y2 = definition;
             return this;
         }
 
@@ -796,6 +837,21 @@
             };
             return this;
         }
+    }
+
+    function extraDaysBackgroundPlugin(/** @type {IAppData} */ data) {
+        return {
+            id: "extraDaysBackground",
+            beforeDatasetsDraw: (chart) => {
+                const { ctx, chartArea, scales: { x } } = chart;
+                const left = Math.max(chartArea.left, x.getPixelForValue(moment([data.year, 11, data.daysOfPuzzles + 1, 0, 0, 0]).valueOf()));
+                if (left >= chartArea.right) return;
+                ctx.save();
+                ctx.fillStyle = aocColors["extraDaysBackground"];
+                ctx.fillRect(left, chartArea.top, chartArea.right - left, chartArea.bottom - chartArea.top);
+                ctx.restore();
+            },
+        };
     }
 
     class App {
@@ -868,6 +924,13 @@
                 this.refreshFullScreenSetup();
             });
             document.body.appendChild(exitFullScreenButton);
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape" && getFullScreenSubject()) {
+                    setFullScreenSubject(null);
+                    this.refreshFullScreenSetup();
+                }
+            });
 
             document.documentElement.addEventListener("click", (event) => {
                 if (event.target instanceof HTMLHtmlElement) {
@@ -973,6 +1036,9 @@
             }
 
             let tablePerDay = {}, anchorPerDay = {};
+
+            /** @type {Object<string, () => void>} */
+            let buildTablePerDay = {};
 
             for (let d = 1; d <= data.maxDay; ++d) {
                 let a = titleElement.appendChild(document.createElement("a"));
@@ -1143,161 +1209,172 @@
                 };
                 grid.sort(sortFns[Object.keys(sortFns).find(k => k === getTimeTableSort()) || "delta"]);
 
-                function createHeaderCell(sorting, text, color = "inherit") {
-                    const td = document.createElement("td");
-                    td.innerText = text;
-                    td.style.padding = "4px 8px";
-                    td.style.color = color;
-                    td.style.textAlign = "center";
-                    td.style.cursor = "pointer";
-                    td.addEventListener("click", () => setTimeTableSort(sorting));
-                    return td;
-                }
+                // To help with performance:
+                const sortedGrid = grid.slice();
 
-                {
-                    // first row header
-                    let tr = gridElement.appendChild(document.createElement("tr"));
-                    let th = tr.appendChild(document.createElement("th"))
+                buildTablePerDay[displayDay] = () => {
 
-                    th = tr.appendChild(createHeaderCell("part1", "----- Part 1 -----", "#9999cc"));
-                    th.colSpan = 3;
-                    th = tr.appendChild(createHeaderCell("delta", "----- Delta -----"));
-                    th.title = "Everyone starting puzzles at different times? See who's the fastest to go from 1 to 2 stars on a day!";
-                    th.colSpan = 1;
-                    th = tr.appendChild(createHeaderCell("part2", "----- Part 2 -----", "#ffff66"));
-                    th.colSpan = 3;
-                    th = tr.appendChild(createHeaderCell("completion", "----- Total -----"));
-                    th.colSpan = 1;
-                }
-                {
-                    // second row header
-                    let tr = gridElement.appendChild(document.createElement("tr"));
-                    let td = tr.appendChild(document.createElement("td"));
-
-                    // Part 1
-                    td = tr.appendChild(createHeaderCell("part1", "Time" + (getTimeTableSort() === "part1" ? " ⬇" : ""), "#9999cc"));
-                    if (getTimeTableSort() === "part1") {
-                        td.style.color = "#9999ee";
-                        td.style.textShadow = "0 0 5px #9999cc";
-                    }
-                    td = tr.appendChild(createHeaderCell("part1", "Rank", "#9999cc"));
-                    td = tr.appendChild(createHeaderCell("part1", "Points", "#9999cc"));
-
-                    // Delta
-                    td = tr.appendChild(createHeaderCell("delta", "Delta Time" + (getTimeTableSort() === "delta" ? " ⬇" : "")));
-                    td.title = "Time difference between Part 2 and Part 1";
-                    if (getTimeTableSort() === "delta") {
-                        td.style.color = "#ffffff";
-                        td.style.textShadow = "0 0 5px #ffffff";
+                    function createHeaderCell(sorting, text, color = "inherit") {
+                        const td = document.createElement("td");
+                        td.innerText = text;
+                        td.style.padding = "4px 8px";
+                        td.style.color = color;
+                        td.style.textAlign = "center";
+                        td.style.cursor = "pointer";
+                        td.addEventListener("click", () => setTimeTableSort(sorting));
+                        return td;
                     }
 
-                    // Part 2
-                    td = tr.appendChild(createHeaderCell("part2", "Time" + (getTimeTableSort() === "part2" ? " ⬇" : ""), "#ffff66"));
-                    if (getTimeTableSort() === "part2") {
-                        td.style.color = "#ffff66";
-                        td.style.textShadow = "0 0 5px #ffff66";
+                    {
+                        // first row header
+                        let tr = gridElement.appendChild(document.createElement("tr"));
+                        let th = tr.appendChild(document.createElement("th"))
+
+                        th = tr.appendChild(createHeaderCell("part1", "----- Part 1 -----", "#9999cc"));
+                        th.colSpan = 3;
+                        th = tr.appendChild(createHeaderCell("delta", "----- Delta -----"));
+                        th.title = "Everyone starting puzzles at different times? See who's the fastest to go from 1 to 2 stars on a day!";
+                        th.colSpan = 1;
+                        th = tr.appendChild(createHeaderCell("part2", "----- Part 2 -----", "#ffff66"));
+                        th.colSpan = 3;
+                        th = tr.appendChild(createHeaderCell("completion", "----- Total -----"));
+                        th.colSpan = 1;
                     }
-                    td = tr.appendChild(createHeaderCell("part2", "Rank", "#ffff66"));
-                    td = tr.appendChild(createHeaderCell("part2", "Points", "#ffff66"));
+                    {
+                        // second row header
+                        let tr = gridElement.appendChild(document.createElement("tr"));
+                        let td = tr.appendChild(document.createElement("td"));
 
-                    // Total
-                    td = tr.appendChild(createHeaderCell("completion", "Points" + (getTimeTableSort() === "completion" ? " ⬇" : "")));
-                    if (getTimeTableSort() === "completion") {
-                        td.style.color = "#ffffff";
-                        td.style.textShadow = "0 0 5px #ffffff";
-                    }
-                }
-
-                const maxSecondsForSparkline = 4 /* hours */ * 3600;
-                let rank = 0;
-                let maxDeltaTime = Math.max.apply(Math, grid
-                    .map(m => {
-                        let memberStar1 = m.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
-                        let memberStar2 = m.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
-                        const delta = memberStar2 ? memberStar2.timeTakenSeconds - (memberStar1?.timeTakenSeconds || 0) : null;
-                        return delta || 0 > maxSecondsForSparkline ? null : delta;
-                    }))
-                ;
-
-                for (let member of grid) {
-                    let memberStar1 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
-                    let memberStar2 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
-
-                    // skip users that didn't solve any problem today
-                    if (!memberStar1 && !memberStar2) {
-                        continue;
-                    }
-
-                    rank += 1;
-
-                    let tr = gridElement.appendChild(document.createElement("tr"));
-                    if (member.isLoggedInUser) {
-                        tr.style.backgroundColor = aocColors["highlight"];
-                    }
-                    let td = tr.appendChild(createCell(rank.toString() + ". " + member.name))
-                    td.style.textAlign = "left";
-
-                    td = tr.appendChild(createCell((memberStar1 ? formatTimeTaken(memberStar1.timeTakenSeconds) : "")))
-                    td.title = memberStar1 ? formatStarMomentForTitle(memberStar1) : "Star 1 not done yet";
-                    if (getTimeTableSort() === "part1") {
-                        td.style.color = "#ffffff";
-                        td.style.textShadow = "0 0 5px #ffffff";
-                    }
-
-                    td = tr.appendChild(createCell((memberStar1 ? memberStar1.rank : "")))
-                    td = tr.appendChild(createCell((memberStar1 ? memberStar1.points : "")))
-
-                    td = tr.appendChild(createCell(memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds - (memberStar1?.timeTakenSeconds || 0)) : ""));
-                    if (getTimeTableSort() === "delta") {
-                        td.style.color = "#ffffff";
-                        td.style.textShadow = "0 0 5px #ffffff";
-                    }
-
-                    if (memberStar2 && maxDeltaTime) {
-                        const delta = memberStar2.timeTakenSeconds - (memberStar1?.timeTakenSeconds || 0);
-                        const fraction = Math.min(100, delta / maxDeltaTime * 100);
-                        const sparkline = td.appendChild(document.createElement("div"));
-                        sparkline.style.height = "2px";
-                        sparkline.style.marginTop = "4px";
-                        sparkline.style.marginBottom = "1px";
-                        sparkline.style.width = `${fraction}%`;
-                        sparkline.style.backgroundColor = "#ffffff";
-                        if (getTimeTableSort() === "delta") {
-                            sparkline.style.boxShadow = "1px 1px 5px rgba(255, 255, 255, 0.5), -1px -1px 5px rgba(255, 255, 255, 0.5)";
+                        // Part 1
+                        td = tr.appendChild(createHeaderCell("part1", "Time" + (getTimeTableSort() === "part1" ? " ⬇" : ""), "#9999cc"));
+                        if (getTimeTableSort() === "part1") {
+                            td.style.color = "#9999ee";
+                            td.style.textShadow = "0 0 5px #9999cc";
                         }
-                        sparkline.style.opacity = delta > maxDeltaTime ? "0.15" : "0.75";
-                        sparkline.title = "Spark line showing relative 'delta time' values (up to a maximum delta time)";
+                        td = tr.appendChild(createHeaderCell("part1", "Rank", "#9999cc"));
+                        td = tr.appendChild(createHeaderCell("part1", "Points", "#9999cc"));
+
+                        // Delta
+                        td = tr.appendChild(createHeaderCell("delta", "Delta Time" + (getTimeTableSort() === "delta" ? " ⬇" : "")));
+                        td.title = "Time difference between Part 2 and Part 1";
+                        if (getTimeTableSort() === "delta") {
+                            td.style.color = "#ffffff";
+                            td.style.textShadow = "0 0 5px #ffffff";
+                        }
+
+                        // Part 2
+                        td = tr.appendChild(createHeaderCell("part2", "Time" + (getTimeTableSort() === "part2" ? " ⬇" : ""), "#ffff66"));
+                        if (getTimeTableSort() === "part2") {
+                            td.style.color = "#ffff66";
+                            td.style.textShadow = "0 0 5px #ffff66";
+                        }
+                        td = tr.appendChild(createHeaderCell("part2", "Rank", "#ffff66"));
+                        td = tr.appendChild(createHeaderCell("part2", "Points", "#ffff66"));
+
+                        // Total
+                        td = tr.appendChild(createHeaderCell("completion", "Points" + (getTimeTableSort() === "completion" ? " ⬇" : "")));
+                        if (getTimeTableSort() === "completion") {
+                            td.style.color = "#ffffff";
+                            td.style.textShadow = "0 0 5px #ffffff";
+                        }
                     }
 
-                    td = tr.appendChild(createCell((memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds) : "")))
-                    td.title = memberStar2 ? formatStarMomentForTitle(memberStar2) : "Star 2 not done yet";
-                    if (getTimeTableSort() === "part2") {
-                        td.style.color = "#ffffff";
-                        td.style.textShadow = "0 0 5px #ffffff";
-                    }
+                    const maxSecondsForSparkline = 4 /* hours */ * 3600;
+                    let rank = 0;
+                    let maxDeltaTime = Math.max.apply(Math, sortedGrid
+                        .map(m => {
+                            let memberStar1 = m.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
+                            let memberStar2 = m.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
+                            const delta = memberStar2 ? memberStar2.timeTakenSeconds - (memberStar1?.timeTakenSeconds || 0) : null;
+                            return delta || 0 > maxSecondsForSparkline ? null : delta;
+                        }))
+                    ;
 
-                    td = tr.appendChild(createCell((memberStar2 ? memberStar2.rank : "")))
-                    td = tr.appendChild(createCell((memberStar2 ? memberStar2.points : "")))
+                    for (let member of sortedGrid) {
+                        let memberStar1 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
+                        let memberStar2 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
 
-                    let totalScore = 0;
-                    if (memberStar1) {
-                        totalScore += memberStar1.points;
-                    }
-                    if (memberStar2) {
-                        totalScore += memberStar2.points;
-                    }
+                        // skip users that didn't solve any problem today
+                        if (!memberStar1 && !memberStar2) {
+                            continue;
+                        }
 
-                    td = tr.appendChild(createCell(totalScore ? totalScore : "0"))
-                    if (getTimeTableSort() === "completion") {
-                        td.style.color = "#ffffff";
-                        td.style.textShadow = "0 0 5px #ffffff";
+                        rank += 1;
+
+                        let tr = gridElement.appendChild(document.createElement("tr"));
+                        if (member.isLoggedInUser) {
+                            tr.style.backgroundColor = aocColors["highlight"];
+                        }
+                        let td = tr.appendChild(createCell(rank.toString() + ". " + member.name))
+                        td.style.textAlign = "left";
+
+                        td = tr.appendChild(createCell((memberStar1 ? formatTimeTaken(memberStar1.timeTakenSeconds) : "")))
+                        td.title = memberStar1 ? formatStarMomentForTitle(memberStar1) : "Star 1 not done yet";
+                        if (getTimeTableSort() === "part1") {
+                            td.style.color = "#ffffff";
+                            td.style.textShadow = "0 0 5px #ffffff";
+                        }
+
+                        td = tr.appendChild(createCell((memberStar1 ? memberStar1.rank : "")))
+                        td = tr.appendChild(createCell((memberStar1 ? memberStar1.points : "")))
+
+                        td = tr.appendChild(createCell(memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds - (memberStar1?.timeTakenSeconds || 0)) : ""));
+                        if (getTimeTableSort() === "delta") {
+                            td.style.color = "#ffffff";
+                            td.style.textShadow = "0 0 5px #ffffff";
+                        }
+
+                        if (memberStar2 && maxDeltaTime) {
+                            const delta = memberStar2.timeTakenSeconds - (memberStar1?.timeTakenSeconds || 0);
+                            const fraction = Math.min(100, delta / maxDeltaTime * 100);
+                            const sparkline = td.appendChild(document.createElement("div"));
+                            sparkline.style.height = "2px";
+                            sparkline.style.marginTop = "4px";
+                            sparkline.style.marginBottom = "1px";
+                            sparkline.style.width = `${fraction}%`;
+                            sparkline.style.backgroundColor = "#ffffff";
+                            if (getTimeTableSort() === "delta") {
+                                sparkline.style.boxShadow = "1px 1px 5px rgba(255, 255, 255, 0.5), -1px -1px 5px rgba(255, 255, 255, 0.5)";
+                            }
+                            sparkline.style.opacity = delta > maxDeltaTime ? "0.15" : "0.75";
+                            sparkline.title = "Spark line showing relative 'delta time' values (up to a maximum delta time)";
+                        }
+
+                        td = tr.appendChild(createCell((memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds) : "")))
+                        td.title = memberStar2 ? formatStarMomentForTitle(memberStar2) : "Star 2 not done yet";
+                        if (getTimeTableSort() === "part2") {
+                            td.style.color = "#ffffff";
+                            td.style.textShadow = "0 0 5px #ffffff";
+                        }
+
+                        td = tr.appendChild(createCell((memberStar2 ? memberStar2.rank : "")))
+                        td = tr.appendChild(createCell((memberStar2 ? memberStar2.points : "")))
+
+                        let totalScore = 0;
+                        if (memberStar1) {
+                            totalScore += memberStar1.points;
+                        }
+                        if (memberStar2) {
+                            totalScore += memberStar2.points;
+                        }
+
+                        td = tr.appendChild(createCell(totalScore ? totalScore : "0"))
+                        if (getTimeTableSort() === "completion") {
+                            td.style.color = "#ffffff";
+                            td.style.textShadow = "0 0 5px #ffffff";
+                        }
                     }
-                }
+                };
 
                 return gridElement;
             }
 
             function setVisible(day) {
+                if (buildTablePerDay[day]) {
+                    buildTablePerDay[day]();
+                    delete buildTablePerDay[day];
+                }
+
                 for (const t in tablePerDay) {
                     tablePerDay[t].style.display = "none";
                 }
@@ -1531,51 +1608,97 @@
             let datasets = [];
             let relevantMembers = data.members.sort((a, b) => b.score - a.score);
 
-            relevantMembers.forEach( (member, idx) => {
-                let star1DataSet = {
-                    label: `${member.name} (★)`,
-                    showInLegend: member.isLoggedInUser || member.rank < 10,
-                    order: member.isLoggedInUser ? 0 : 1, // lower one gets drawn on top
-                    pointStyle: member.pointStyle,
-                    stack: `Stack ${member.name}`,
-                    backgroundColor: member.color,
-                    borderColor: "rgba(0, 0, 0, 0.5)",
-                    borderWidth: 1,
-                    data: /** @type {number[]} */ ([]),
-                    hidden: data.loggedInUserIsPresumablyKnown ? !member.isLoggedInUser : idx >= 3,
-                };
+            // Performance enhancement / workaround:
+            const starLookup = new Map();
+            data.stars.forEach(s => {
+                const key = `${s.memberId}|${s.dayNr}|${s.starKey}`;
+                if (!starLookup.has(key)) starLookup.set(key, s);
+            });
 
-                let star2DataSet = {
-                    label: `${member.name} (★★)`,
+            const nrOfTopMembersByDefault = data.loggedInUserIsPresumablyKnown ? 2 : 3;
+            const shownByDefault = new Set(relevantMembers
+                .filter(m => !m.isLoggedInUser)
+                .slice(0, nrOfTopMembersByDefault));
+
+            relevantMembers.forEach( (member, idx) => {
+                const isShownByDefault = member.isLoggedInUser || shownByDefault.has(member);
+
+                let dataset = {
+                    label: member.name,
                     showInLegend: member.isLoggedInUser || member.rank < 10,
                     order: member.isLoggedInUser ? 0 : 1, // lower one gets drawn on top
-                    pointStyle: member.pointStyle,
-                    stack: `Stack ${member.name}`,
-                    backgroundColor: member.colorMuted,
-                    borderColor: "rgba(0, 0, 0, 0.5)",
+                    backgroundColor: member.color,
+                    borderColor: member.isLoggedInUser ? "rgba(0, 0, 0, 1.0)" : "rgba(0, 0, 0, 0.25)",
                     borderWidth: 1,
-                    data: /** @type {number[]} */ ([]),
-                    hidden: data.loggedInUserIsPresumablyKnown ? !member.isLoggedInUser : idx >= 3,
+                    data: /** @type {(number|null)[]} */ ([]),
+                    hidden: !isShownByDefault,
+                    isLoggedInUser: member.isLoggedInUser,
                 };
 
                 for (let i = 1; i <= data.daysOfPuzzles; i++) {
-                    let star1 = data.stars.find(s => s.memberId === member.id && s.dayNr === i && s.starKey === "1");
-                    let star2 = data.stars.find(s => s.memberId === member.id && s.dayNr === i && s.starKey === "2");
+                    let star1 = starLookup.get(`${member.id}|${i}|1`);
+                    let star2 = starLookup.get(`${member.id}|${i}|2`);
 
-                    star1DataSet.data.push(!!star1 ? star1.timeTaken : 0);
-                    star2DataSet.data.push(!!star2 ? star2.timeTaken - (star1?.timeTaken || 0) : 0);
+                    dataset.data.push(star1 && star2 ? star2.timeTaken - star1.timeTaken : null);
                 }
 
-                datasets.push(star1DataSet);
-                datasets.push(star2DataSet);
+                // Performance tweak:
+                if (!dataset.hidden || dataset.showInLegend) {
+                    datasets.push(dataset);
+                }
             });
 
-            let element = this.createGraphCanvas(data, "From the top players, show the number of minutes taken each day. (Exclude results over 4 hours.) (Toggle Responsive for all users)");
+            // AI-assisted function to get an average of the middle 50% or otherwise a median.
+            const typicalData = range(1, data.daysOfPuzzles + 1).map(day => {
+                const deltas = data.members
+                    .map(m => [starLookup.get(`${m.id}|${day}|1`), starLookup.get(`${m.id}|${day}|2`)])
+                    .filter(([s1, s2]) => s1 && s2)
+                    .map(([s1, s2]) => s2.timeTaken - s1.timeTaken)
+                    .sort((a, b) => a - b);
+                if (deltas.length === 0) return null;
+                if (deltas.length < 4) {
+                    const mid = Math.floor(deltas.length / 2);
+                    return deltas.length % 2 ? deltas[mid] : (deltas[mid - 1] + deltas[mid]) / 2;
+                }
+                const middle = deltas.slice(Math.floor(deltas.length * 0.25), Math.ceil(deltas.length * 0.75));
+                return middle.reduce((a, b) => a + b, 0) / middle.length;
+            });
 
-            let options = new ChartOptions(data, `Minutes taken per star`)
+            datasets.push({
+                type: "bar",
+                label: "Typical (avg. of middle 50%)",
+                showInLegend: true,
+                yAxisID: "y2",
+                order: 10000, // higher gets drawn first, so behind the member bars
+                grouped: false, // don't share day's width with the member bars
+                borderWidth: 0,
+                barPercentage: 1,
+                categoryPercentage: 1,
+                backgroundColor: "rgba(180, 200, 180, 0.15)",
+                data: typicalData,
+            });
+
+            let element = this.createGraphCanvas(data, "Per day, the minutes between getting the first and second star, on a log scale.");
+
+            let options = new ChartOptions(data, `Delta between star 1 and 2 (logarithmic)`)
                 .withXTickingScale(data.daysOfPuzzles)
+                .withSecondaryYScale({
+                    // Same scale as the primary one, so the median is comparable to the bars
+                    type: "logarithmic",
+                    position: "right",
+                    min: 0.1,
+                    max: 43200, // 30 days
+                    display: false,
+                    grid: { drawOnChartArea: false },
+                })
                 .withYScale({
-                    max: 240,
+                    type: "logarithmic",
+                    min: 0.1,
+                    max: 43200, // 30 days
+                    // Human friendly tick positions (in minutes) instead of just powers of ten
+                    afterBuildTicks: (scale) => {
+                        scale.ticks = [1/6, 1, 10, 60, 360, 1440, 10080, 43200].map(value => ({ value }));
+                    },
                     ticks: {
                         fontColor: aocColors["main"],
                     },
@@ -1584,12 +1707,14 @@
                     },
                 });
             options.plugins.legend.title.text = "Top players";
+            options.scales.y.ticks.callback = (value) => formatMinutesForAxis(Number(value));
             let chart = new Chart(element.getContext("2d"), {
                 type: "bar",
                 data: {
                     labels: range(1, 26),
                     datasets: datasets,
                 },
+                plugins: [youMarkerPlugin()],
                 options,
             });
 
@@ -1689,7 +1814,7 @@
                                 y: day.pointsToDay / day.maxPointsToDay * 100,
                                 day
                             }))
-                    : m.stars.filter(s => s.starNr === 2).map(s => {
+                    : m.stars.map(s => {
                         return {
                             x: s.getStarMoment,
                             y: s.nrOfPointsAfterThisOne,
@@ -1707,7 +1832,7 @@
                 data: {
                     datasets: datasets,
                 },
-                plugins: [{
+                plugins: [extraDaysBackgroundPlugin(data), {
                     // See https://stackoverflow.com/a/75034834/419956 by user @LeeLenalee
                     afterEvent: (chart, evt) => {
                         const { event: { type, x, y, } } = evt;
@@ -1731,7 +1856,7 @@
                             },
                         },
                     })
-                    .withXTimeScale(data, { xMax: 31, titleText: "December" })
+                    .withXTimeScale(data, { xMax: graphType === 0 ? 31 : data.daysOfPuzzles, titleText: "December" })
                     .withYScale({
                         ticks: {
                             min: 0,
@@ -1765,7 +1890,7 @@
                     radius: m.radius,
                     pointStyle: m.pointStyle,
                     backgroundColor: data.isLargeLeaderboard && !m.isLoggedInUser ? m.colorMuted : m.color,
-                    data: m.stars.filter(s => s.starNr === 2).map(s => {
+                    data: m.stars.map(s => {
                         return {
                             x: s.getStarMoment,
                             y: s.nrOfStarsAfterThisOne,
@@ -1775,6 +1900,28 @@
                 }
             });
 
+            // Cumulative total of stars for whole leaderboard, on secondary axis, drawn behind the other lines
+            let allStars = data.members.flatMap(m => m.stars).sort((a, b) => a.getStarMoment.valueOf() - b.getStarMoment.valueOf());
+            let totalStarsData = range(1, 32).map(day => {
+                const endOfDay = moment([data.year, 11, day, 0, 0, 0]).add(1, "day");
+                return {
+                    x: moment([data.year, 11, day, 0, 0, 0]), // bar centered on the day's tick (midnight)
+                    y: allStars.filter(s => s.getStarMoment.isBefore(endOfDay)).length,
+                };
+            });
+            datasets.push({
+                type: "bar",
+                label: "Total stars (all members)",
+                showInLegend: true,
+                yAxisID: "y2",
+                order: 10000, // a little hacky but it works: higher gets drawn first, so behind the other lines
+                borderWidth: 0,
+                barPercentage: 0.95,
+                categoryPercentage: 1,
+                backgroundColor: "rgba(180, 200, 180, 0.05)",
+                data: totalStarsData,
+            });
+
             let element = this.createGraphCanvas(data, "Number of stars over time per member.");
 
             let chart = new Chart(element.getContext("2d"), {
@@ -1782,16 +1929,23 @@
                 data: {
                     datasets: datasets,
                 },
+                plugins: [extraDaysBackgroundPlugin(data)],
                 options: new ChartOptions(data, "Leaderboard (stars)")
                     .withTooltips({
                         callbacks: {
                             afterLabel: (item) => {
                                 const star = item.dataset.data[item.dataIndex].star;
-                                return `(day ${star.dayNr} star ${star.starNr})`;
+                                return star ? `(day ${star.dayNr} star ${star.starNr})` : "";
                             },
                         },
                     })
                     .withXTimeScale(data, { xMax: 31, titleText: "December" })
+                    .withSecondaryYScale({
+                        position: "right",
+                        min: 0,
+                        display: false,
+                        grid: { drawOnChartArea: false },
+                    })
                     .withYScale({
                         ticks: {
                             stepSize: 1,
