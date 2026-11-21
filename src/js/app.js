@@ -652,6 +652,36 @@
         }
     }
 
+    function formatMinutesForAxis(/** @type {number} */ minutes) {
+        if (minutes < 1) return `${Math.round(minutes * 60)}s`;
+        if (minutes < 60) return `${Math.round(minutes)}m`;
+        if (minutes < 1440) return `${Math.round(minutes / 60)}h`;
+        return `${Math.round(minutes / 1440)}d`;
+    }
+
+    function youMarkerPlugin() {
+        return {
+            id: "youMarker",
+            afterDatasetsDraw: (/** @type {any} */ chart) => {
+                const ctx = chart.ctx;
+                chart.data.datasets.forEach((/** @type {any} */ dataset, /** @type {number} */ i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    if (!dataset.isLoggedInUser || meta.hidden) return;
+                    ctx.save();
+                    ctx.fillStyle = aocColors["main"];
+                    ctx.font = "bold 11px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "bottom";
+                    meta.data.forEach((/** @type {any} */ bar, /** @type {number} */ idx) => {
+                        if (dataset.data[idx] === null || dataset.data[idx] === undefined) return;
+                        ctx.fillText("▼", bar.x, bar.y - 2);
+                    });
+                    ctx.restore();
+                });
+            },
+        };
+    }
+
     class ChartOptions {
         constructor(data, /** @type string */ titleText) {
             this.responsive = true;
@@ -1585,53 +1615,90 @@
                 if (!starLookup.has(key)) starLookup.set(key, s);
             });
 
-            relevantMembers.forEach( (member, idx) => {
-                let star1DataSet = {
-                    label: `${member.name} (★)`,
-                    showInLegend: member.isLoggedInUser || member.rank < 10,
-                    order: member.isLoggedInUser ? 0 : 1, // lower one gets drawn on top
-                    pointStyle: member.pointStyle,
-                    stack: `Stack ${member.name}`,
-                    backgroundColor: member.color,
-                    borderColor: "rgba(0, 0, 0, 0.5)",
-                    borderWidth: 1,
-                    data: /** @type {number[]} */ ([]),
-                    hidden: data.loggedInUserIsPresumablyKnown ? !member.isLoggedInUser : idx >= 3,
-                };
+            const nrOfTopMembersByDefault = data.loggedInUserIsPresumablyKnown ? 2 : 3;
+            const shownByDefault = new Set(relevantMembers
+                .filter(m => !m.isLoggedInUser)
+                .slice(0, nrOfTopMembersByDefault));
 
-                let star2DataSet = {
-                    label: `${member.name} (★★)`,
+            relevantMembers.forEach( (member, idx) => {
+                const isShownByDefault = member.isLoggedInUser || shownByDefault.has(member);
+
+                let dataset = {
+                    label: member.name,
                     showInLegend: member.isLoggedInUser || member.rank < 10,
                     order: member.isLoggedInUser ? 0 : 1, // lower one gets drawn on top
-                    pointStyle: member.pointStyle,
-                    stack: `Stack ${member.name}`,
-                    backgroundColor: member.colorMuted,
-                    borderColor: "rgba(0, 0, 0, 0.5)",
+                    backgroundColor: member.color,
+                    borderColor: member.isLoggedInUser ? "rgba(0, 0, 0, 1.0)" : "rgba(0, 0, 0, 0.25)",
                     borderWidth: 1,
-                    data: /** @type {number[]} */ ([]),
-                    hidden: data.loggedInUserIsPresumablyKnown ? !member.isLoggedInUser : idx >= 3,
+                    data: /** @type {(number|null)[]} */ ([]),
+                    hidden: !isShownByDefault,
+                    isLoggedInUser: member.isLoggedInUser,
                 };
 
                 for (let i = 1; i <= data.daysOfPuzzles; i++) {
                     let star1 = starLookup.get(`${member.id}|${i}|1`);
                     let star2 = starLookup.get(`${member.id}|${i}|2`);
 
-                    star1DataSet.data.push(!!star1 ? star1.timeTaken : 0);
-                    star2DataSet.data.push(!!star2 ? star2.timeTaken - (star1?.timeTaken || 0) : 0);
+                    dataset.data.push(star1 && star2 ? star2.timeTaken - star1.timeTaken : null);
                 }
 
                 // Performance tweak:
-                [star1DataSet, star2DataSet]
-                    .filter(ds => !ds.hidden || ds.showInLegend)
-                    .forEach(ds => datasets.push(ds));
+                if (!dataset.hidden || dataset.showInLegend) {
+                    datasets.push(dataset);
+                }
             });
 
-            let element = this.createGraphCanvas(data, "From the top players, show the number of minutes taken each day. (Exclude results over 4 hours.) (Toggle Responsive for all users)");
+            // AI-assisted function to get an average of the middle 50% or otherwise a median.
+            const typicalData = range(1, data.daysOfPuzzles + 1).map(day => {
+                const deltas = data.members
+                    .map(m => [starLookup.get(`${m.id}|${day}|1`), starLookup.get(`${m.id}|${day}|2`)])
+                    .filter(([s1, s2]) => s1 && s2)
+                    .map(([s1, s2]) => s2.timeTaken - s1.timeTaken)
+                    .sort((a, b) => a - b);
+                if (deltas.length === 0) return null;
+                if (deltas.length < 4) {
+                    const mid = Math.floor(deltas.length / 2);
+                    return deltas.length % 2 ? deltas[mid] : (deltas[mid - 1] + deltas[mid]) / 2;
+                }
+                const middle = deltas.slice(Math.floor(deltas.length * 0.25), Math.ceil(deltas.length * 0.75));
+                return middle.reduce((a, b) => a + b, 0) / middle.length;
+            });
 
-            let options = new ChartOptions(data, `Minutes taken per star`)
+            datasets.push({
+                type: "bar",
+                label: "Typical (avg. of middle 50%)",
+                showInLegend: true,
+                yAxisID: "y2",
+                order: 10000, // higher gets drawn first, so behind the member bars
+                grouped: false, // don't share day's width with the member bars
+                borderWidth: 0,
+                barPercentage: 1,
+                categoryPercentage: 1,
+                backgroundColor: "rgba(180, 200, 180, 0.15)",
+                data: typicalData,
+            });
+
+            let element = this.createGraphCanvas(data, "Per day, the minutes between getting the first and second star, on a log scale.");
+
+            let options = new ChartOptions(data, `Delta between star 1 and 2 (logarithmic)`)
                 .withXTickingScale(data.daysOfPuzzles)
+                .withSecondaryYScale({
+                    // Same scale as the primary one, so the median is comparable to the bars
+                    type: "logarithmic",
+                    position: "right",
+                    min: 0.1,
+                    max: 43200, // 30 days
+                    display: false,
+                    grid: { drawOnChartArea: false },
+                })
                 .withYScale({
-                    max: 240,
+                    type: "logarithmic",
+                    min: 0.1,
+                    max: 43200, // 30 days
+                    // Human friendly tick positions (in minutes) instead of just powers of ten
+                    afterBuildTicks: (scale) => {
+                        scale.ticks = [1/6, 1, 10, 60, 360, 1440, 10080, 43200].map(value => ({ value }));
+                    },
                     ticks: {
                         fontColor: aocColors["main"],
                     },
@@ -1640,12 +1707,14 @@
                     },
                 });
             options.plugins.legend.title.text = "Top players";
+            options.scales.y.ticks.callback = (value) => formatMinutesForAxis(Number(value));
             let chart = new Chart(element.getContext("2d"), {
                 type: "bar",
                 data: {
                     labels: range(1, 26),
                     datasets: datasets,
                 },
+                plugins: [youMarkerPlugin()],
                 options,
             });
 

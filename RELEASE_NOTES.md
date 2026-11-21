@@ -14,6 +14,7 @@ Some adhoc release notes for changes made, in reverse chronological order.
 - Better 12-day event support, plus an extra 12-day "finished" dummy data set
 - Performance improvements, especially for large leaderboards
 - Cumulative total of stars across all members as bars on second chart
+- Repurpose chart 4 to show more interesting "Delta Times" stats
 
 ## 2025 AoC edition
 
