@@ -380,7 +380,7 @@
 
         /** @type {number} */
         let maxDay = Math.min(
-          Math.max.apply(Math, stars.filter(s => s.starNr === 2).map(s => s.dayNr)),
+          Math.max.apply(Math, stars.map(s => s.dayNr)),
           daysOfPuzzles
         );
         
@@ -394,10 +394,8 @@
                 podiumFirstPuzzle: stars.filter(s => s.dayNr === d && s.starNr === 1).sort(starSorter),
             };
 
-            for (let i = 0; i < days[d].podium.length; i++) {
-                days[d].podium[i].awardedPodiumPlace = i;
-                days[d].podiumFirstPuzzle[i].awardedPodiumPlaceFirstPuzzle = i;
-            }
+            days[d].podium.forEach((s, i) => { s.awardedPodiumPlace = i; });
+            days[d].podiumFirstPuzzle.forEach((s, i) => { s.awardedPodiumPlaceFirstPuzzle = i; });
         }
 
         for (let m of members) {
@@ -1712,7 +1710,7 @@
                                 y: day.pointsToDay / day.maxPointsToDay * 100,
                                 day
                             }))
-                    : m.stars.filter(s => s.starNr === 2).map(s => {
+                    : m.stars.map(s => {
                         return {
                             x: s.getStarMoment,
                             y: s.nrOfPointsAfterThisOne,
@@ -1788,7 +1786,7 @@
                     radius: m.radius,
                     pointStyle: m.pointStyle,
                     backgroundColor: data.isLargeLeaderboard && !m.isLoggedInUser ? m.colorMuted : m.color,
-                    data: m.stars.filter(s => s.starNr === 2).map(s => {
+                    data: m.stars.map(s => {
                         return {
                             x: s.getStarMoment,
                             y: s.nrOfStarsAfterThisOne,
