@@ -995,6 +995,9 @@
 
             let tablePerDay = {}, anchorPerDay = {};
 
+            /** @type {Object<string, () => void>} */
+            let buildTablePerDay = {};
+
             for (let d = 1; d <= data.maxDay; ++d) {
                 let a = titleElement.appendChild(document.createElement("a"));
                 a.dataset["key"] = d.toString();
@@ -1164,161 +1167,172 @@
                 };
                 grid.sort(sortFns[Object.keys(sortFns).find(k => k === getTimeTableSort()) || "delta"]);
 
-                function createHeaderCell(sorting, text, color = "inherit") {
-                    const td = document.createElement("td");
-                    td.innerText = text;
-                    td.style.padding = "4px 8px";
-                    td.style.color = color;
-                    td.style.textAlign = "center";
-                    td.style.cursor = "pointer";
-                    td.addEventListener("click", () => setTimeTableSort(sorting));
-                    return td;
-                }
+                // To help with performance:
+                const sortedGrid = grid.slice();
 
-                {
-                    // first row header
-                    let tr = gridElement.appendChild(document.createElement("tr"));
-                    let th = tr.appendChild(document.createElement("th"))
+                buildTablePerDay[displayDay] = () => {
 
-                    th = tr.appendChild(createHeaderCell("part1", "----- Part 1 -----", "#9999cc"));
-                    th.colSpan = 3;
-                    th = tr.appendChild(createHeaderCell("delta", "----- Delta -----"));
-                    th.title = "Everyone starting puzzles at different times? See who's the fastest to go from 1 to 2 stars on a day!";
-                    th.colSpan = 1;
-                    th = tr.appendChild(createHeaderCell("part2", "----- Part 2 -----", "#ffff66"));
-                    th.colSpan = 3;
-                    th = tr.appendChild(createHeaderCell("completion", "----- Total -----"));
-                    th.colSpan = 1;
-                }
-                {
-                    // second row header
-                    let tr = gridElement.appendChild(document.createElement("tr"));
-                    let td = tr.appendChild(document.createElement("td"));
-
-                    // Part 1
-                    td = tr.appendChild(createHeaderCell("part1", "Time" + (getTimeTableSort() === "part1" ? " ⬇" : ""), "#9999cc"));
-                    if (getTimeTableSort() === "part1") {
-                        td.style.color = "#9999ee";
-                        td.style.textShadow = "0 0 5px #9999cc";
-                    }
-                    td = tr.appendChild(createHeaderCell("part1", "Rank", "#9999cc"));
-                    td = tr.appendChild(createHeaderCell("part1", "Points", "#9999cc"));
-
-                    // Delta
-                    td = tr.appendChild(createHeaderCell("delta", "Delta Time" + (getTimeTableSort() === "delta" ? " ⬇" : "")));
-                    td.title = "Time difference between Part 2 and Part 1";
-                    if (getTimeTableSort() === "delta") {
-                        td.style.color = "#ffffff";
-                        td.style.textShadow = "0 0 5px #ffffff";
+                    function createHeaderCell(sorting, text, color = "inherit") {
+                        const td = document.createElement("td");
+                        td.innerText = text;
+                        td.style.padding = "4px 8px";
+                        td.style.color = color;
+                        td.style.textAlign = "center";
+                        td.style.cursor = "pointer";
+                        td.addEventListener("click", () => setTimeTableSort(sorting));
+                        return td;
                     }
 
-                    // Part 2
-                    td = tr.appendChild(createHeaderCell("part2", "Time" + (getTimeTableSort() === "part2" ? " ⬇" : ""), "#ffff66"));
-                    if (getTimeTableSort() === "part2") {
-                        td.style.color = "#ffff66";
-                        td.style.textShadow = "0 0 5px #ffff66";
+                    {
+                        // first row header
+                        let tr = gridElement.appendChild(document.createElement("tr"));
+                        let th = tr.appendChild(document.createElement("th"))
+
+                        th = tr.appendChild(createHeaderCell("part1", "----- Part 1 -----", "#9999cc"));
+                        th.colSpan = 3;
+                        th = tr.appendChild(createHeaderCell("delta", "----- Delta -----"));
+                        th.title = "Everyone starting puzzles at different times? See who's the fastest to go from 1 to 2 stars on a day!";
+                        th.colSpan = 1;
+                        th = tr.appendChild(createHeaderCell("part2", "----- Part 2 -----", "#ffff66"));
+                        th.colSpan = 3;
+                        th = tr.appendChild(createHeaderCell("completion", "----- Total -----"));
+                        th.colSpan = 1;
                     }
-                    td = tr.appendChild(createHeaderCell("part2", "Rank", "#ffff66"));
-                    td = tr.appendChild(createHeaderCell("part2", "Points", "#ffff66"));
+                    {
+                        // second row header
+                        let tr = gridElement.appendChild(document.createElement("tr"));
+                        let td = tr.appendChild(document.createElement("td"));
 
-                    // Total
-                    td = tr.appendChild(createHeaderCell("completion", "Points" + (getTimeTableSort() === "completion" ? " ⬇" : "")));
-                    if (getTimeTableSort() === "completion") {
-                        td.style.color = "#ffffff";
-                        td.style.textShadow = "0 0 5px #ffffff";
-                    }
-                }
-
-                const maxSecondsForSparkline = 4 /* hours */ * 3600;
-                let rank = 0;
-                let maxDeltaTime = Math.max.apply(Math, grid
-                    .map(m => {
-                        let memberStar1 = m.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
-                        let memberStar2 = m.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
-                        const delta = memberStar2 ? memberStar2.timeTakenSeconds - (memberStar1?.timeTakenSeconds || 0) : null;
-                        return delta || 0 > maxSecondsForSparkline ? null : delta;
-                    }))
-                ;
-
-                for (let member of grid) {
-                    let memberStar1 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
-                    let memberStar2 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
-
-                    // skip users that didn't solve any problem today
-                    if (!memberStar1 && !memberStar2) {
-                        continue;
-                    }
-
-                    rank += 1;
-
-                    let tr = gridElement.appendChild(document.createElement("tr"));
-                    if (member.isLoggedInUser) {
-                        tr.style.backgroundColor = aocColors["highlight"];
-                    }
-                    let td = tr.appendChild(createCell(rank.toString() + ". " + member.name))
-                    td.style.textAlign = "left";
-
-                    td = tr.appendChild(createCell((memberStar1 ? formatTimeTaken(memberStar1.timeTakenSeconds) : "")))
-                    td.title = memberStar1 ? formatStarMomentForTitle(memberStar1) : "Star 1 not done yet";
-                    if (getTimeTableSort() === "part1") {
-                        td.style.color = "#ffffff";
-                        td.style.textShadow = "0 0 5px #ffffff";
-                    }
-
-                    td = tr.appendChild(createCell((memberStar1 ? memberStar1.rank : "")))
-                    td = tr.appendChild(createCell((memberStar1 ? memberStar1.points : "")))
-
-                    td = tr.appendChild(createCell(memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds - (memberStar1?.timeTakenSeconds || 0)) : ""));
-                    if (getTimeTableSort() === "delta") {
-                        td.style.color = "#ffffff";
-                        td.style.textShadow = "0 0 5px #ffffff";
-                    }
-
-                    if (memberStar2 && maxDeltaTime) {
-                        const delta = memberStar2.timeTakenSeconds - (memberStar1?.timeTakenSeconds || 0);
-                        const fraction = Math.min(100, delta / maxDeltaTime * 100);
-                        const sparkline = td.appendChild(document.createElement("div"));
-                        sparkline.style.height = "2px";
-                        sparkline.style.marginTop = "4px";
-                        sparkline.style.marginBottom = "1px";
-                        sparkline.style.width = `${fraction}%`;
-                        sparkline.style.backgroundColor = "#ffffff";
-                        if (getTimeTableSort() === "delta") {
-                            sparkline.style.boxShadow = "1px 1px 5px rgba(255, 255, 255, 0.5), -1px -1px 5px rgba(255, 255, 255, 0.5)";
+                        // Part 1
+                        td = tr.appendChild(createHeaderCell("part1", "Time" + (getTimeTableSort() === "part1" ? " ⬇" : ""), "#9999cc"));
+                        if (getTimeTableSort() === "part1") {
+                            td.style.color = "#9999ee";
+                            td.style.textShadow = "0 0 5px #9999cc";
                         }
-                        sparkline.style.opacity = delta > maxDeltaTime ? "0.15" : "0.75";
-                        sparkline.title = "Spark line showing relative 'delta time' values (up to a maximum delta time)";
+                        td = tr.appendChild(createHeaderCell("part1", "Rank", "#9999cc"));
+                        td = tr.appendChild(createHeaderCell("part1", "Points", "#9999cc"));
+
+                        // Delta
+                        td = tr.appendChild(createHeaderCell("delta", "Delta Time" + (getTimeTableSort() === "delta" ? " ⬇" : "")));
+                        td.title = "Time difference between Part 2 and Part 1";
+                        if (getTimeTableSort() === "delta") {
+                            td.style.color = "#ffffff";
+                            td.style.textShadow = "0 0 5px #ffffff";
+                        }
+
+                        // Part 2
+                        td = tr.appendChild(createHeaderCell("part2", "Time" + (getTimeTableSort() === "part2" ? " ⬇" : ""), "#ffff66"));
+                        if (getTimeTableSort() === "part2") {
+                            td.style.color = "#ffff66";
+                            td.style.textShadow = "0 0 5px #ffff66";
+                        }
+                        td = tr.appendChild(createHeaderCell("part2", "Rank", "#ffff66"));
+                        td = tr.appendChild(createHeaderCell("part2", "Points", "#ffff66"));
+
+                        // Total
+                        td = tr.appendChild(createHeaderCell("completion", "Points" + (getTimeTableSort() === "completion" ? " ⬇" : "")));
+                        if (getTimeTableSort() === "completion") {
+                            td.style.color = "#ffffff";
+                            td.style.textShadow = "0 0 5px #ffffff";
+                        }
                     }
 
-                    td = tr.appendChild(createCell((memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds) : "")))
-                    td.title = memberStar2 ? formatStarMomentForTitle(memberStar2) : "Star 2 not done yet";
-                    if (getTimeTableSort() === "part2") {
-                        td.style.color = "#ffffff";
-                        td.style.textShadow = "0 0 5px #ffffff";
-                    }
+                    const maxSecondsForSparkline = 4 /* hours */ * 3600;
+                    let rank = 0;
+                    let maxDeltaTime = Math.max.apply(Math, sortedGrid
+                        .map(m => {
+                            let memberStar1 = m.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
+                            let memberStar2 = m.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
+                            const delta = memberStar2 ? memberStar2.timeTakenSeconds - (memberStar1?.timeTakenSeconds || 0) : null;
+                            return delta || 0 > maxSecondsForSparkline ? null : delta;
+                        }))
+                    ;
 
-                    td = tr.appendChild(createCell((memberStar2 ? memberStar2.rank : "")))
-                    td = tr.appendChild(createCell((memberStar2 ? memberStar2.points : "")))
+                    for (let member of sortedGrid) {
+                        let memberStar1 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 1);
+                        let memberStar2 = member.stars.find(s => s.dayNr === displayDay && s.starNr === 2);
 
-                    let totalScore = 0;
-                    if (memberStar1) {
-                        totalScore += memberStar1.points;
-                    }
-                    if (memberStar2) {
-                        totalScore += memberStar2.points;
-                    }
+                        // skip users that didn't solve any problem today
+                        if (!memberStar1 && !memberStar2) {
+                            continue;
+                        }
 
-                    td = tr.appendChild(createCell(totalScore ? totalScore : "0"))
-                    if (getTimeTableSort() === "completion") {
-                        td.style.color = "#ffffff";
-                        td.style.textShadow = "0 0 5px #ffffff";
+                        rank += 1;
+
+                        let tr = gridElement.appendChild(document.createElement("tr"));
+                        if (member.isLoggedInUser) {
+                            tr.style.backgroundColor = aocColors["highlight"];
+                        }
+                        let td = tr.appendChild(createCell(rank.toString() + ". " + member.name))
+                        td.style.textAlign = "left";
+
+                        td = tr.appendChild(createCell((memberStar1 ? formatTimeTaken(memberStar1.timeTakenSeconds) : "")))
+                        td.title = memberStar1 ? formatStarMomentForTitle(memberStar1) : "Star 1 not done yet";
+                        if (getTimeTableSort() === "part1") {
+                            td.style.color = "#ffffff";
+                            td.style.textShadow = "0 0 5px #ffffff";
+                        }
+
+                        td = tr.appendChild(createCell((memberStar1 ? memberStar1.rank : "")))
+                        td = tr.appendChild(createCell((memberStar1 ? memberStar1.points : "")))
+
+                        td = tr.appendChild(createCell(memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds - (memberStar1?.timeTakenSeconds || 0)) : ""));
+                        if (getTimeTableSort() === "delta") {
+                            td.style.color = "#ffffff";
+                            td.style.textShadow = "0 0 5px #ffffff";
+                        }
+
+                        if (memberStar2 && maxDeltaTime) {
+                            const delta = memberStar2.timeTakenSeconds - (memberStar1?.timeTakenSeconds || 0);
+                            const fraction = Math.min(100, delta / maxDeltaTime * 100);
+                            const sparkline = td.appendChild(document.createElement("div"));
+                            sparkline.style.height = "2px";
+                            sparkline.style.marginTop = "4px";
+                            sparkline.style.marginBottom = "1px";
+                            sparkline.style.width = `${fraction}%`;
+                            sparkline.style.backgroundColor = "#ffffff";
+                            if (getTimeTableSort() === "delta") {
+                                sparkline.style.boxShadow = "1px 1px 5px rgba(255, 255, 255, 0.5), -1px -1px 5px rgba(255, 255, 255, 0.5)";
+                            }
+                            sparkline.style.opacity = delta > maxDeltaTime ? "0.15" : "0.75";
+                            sparkline.title = "Spark line showing relative 'delta time' values (up to a maximum delta time)";
+                        }
+
+                        td = tr.appendChild(createCell((memberStar2 ? formatTimeTaken(memberStar2.timeTakenSeconds) : "")))
+                        td.title = memberStar2 ? formatStarMomentForTitle(memberStar2) : "Star 2 not done yet";
+                        if (getTimeTableSort() === "part2") {
+                            td.style.color = "#ffffff";
+                            td.style.textShadow = "0 0 5px #ffffff";
+                        }
+
+                        td = tr.appendChild(createCell((memberStar2 ? memberStar2.rank : "")))
+                        td = tr.appendChild(createCell((memberStar2 ? memberStar2.points : "")))
+
+                        let totalScore = 0;
+                        if (memberStar1) {
+                            totalScore += memberStar1.points;
+                        }
+                        if (memberStar2) {
+                            totalScore += memberStar2.points;
+                        }
+
+                        td = tr.appendChild(createCell(totalScore ? totalScore : "0"))
+                        if (getTimeTableSort() === "completion") {
+                            td.style.color = "#ffffff";
+                            td.style.textShadow = "0 0 5px #ffffff";
+                        }
                     }
-                }
+                };
 
                 return gridElement;
             }
 
             function setVisible(day) {
+                if (buildTablePerDay[day]) {
+                    buildTablePerDay[day]();
+                    delete buildTablePerDay[day];
+                }
+
                 for (const t in tablePerDay) {
                     tablePerDay[t].style.display = "none";
                 }
@@ -1552,6 +1566,13 @@
             let datasets = [];
             let relevantMembers = data.members.sort((a, b) => b.score - a.score);
 
+            // Performance enhancement / workaround:
+            const starLookup = new Map();
+            data.stars.forEach(s => {
+                const key = `${s.memberId}|${s.dayNr}|${s.starKey}`;
+                if (!starLookup.has(key)) starLookup.set(key, s);
+            });
+
             relevantMembers.forEach( (member, idx) => {
                 let star1DataSet = {
                     label: `${member.name} (★)`,
@@ -1580,15 +1601,17 @@
                 };
 
                 for (let i = 1; i <= data.daysOfPuzzles; i++) {
-                    let star1 = data.stars.find(s => s.memberId === member.id && s.dayNr === i && s.starKey === "1");
-                    let star2 = data.stars.find(s => s.memberId === member.id && s.dayNr === i && s.starKey === "2");
+                    let star1 = starLookup.get(`${member.id}|${i}|1`);
+                    let star2 = starLookup.get(`${member.id}|${i}|2`);
 
                     star1DataSet.data.push(!!star1 ? star1.timeTaken : 0);
                     star2DataSet.data.push(!!star2 ? star2.timeTaken - (star1?.timeTaken || 0) : 0);
                 }
 
-                datasets.push(star1DataSet);
-                datasets.push(star2DataSet);
+                // Performance tweak:
+                [star1DataSet, star2DataSet]
+                    .filter(ds => !ds.hidden || ds.showInLegend)
+                    .forEach(ds => datasets.push(ds));
             });
 
             let element = this.createGraphCanvas(data, "From the top players, show the number of minutes taken each day. (Exclude results over 4 hours.) (Toggle Responsive for all users)");
