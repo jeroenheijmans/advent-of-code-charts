@@ -795,6 +795,11 @@
             return this;
         }
 
+        withSecondaryYScale(definition) {
+            this.scales.y2 = definition;
+            return this;
+        }
+
         withYScale(definition) {
             this.scales.y = definition;
             this.scales.y.ticks = {
@@ -1819,6 +1824,28 @@
                 }
             });
 
+            // Cumulative total of stars for whole leaderboard, on secondary axis, drawn behind the other lines
+            let allStars = data.members.flatMap(m => m.stars).sort((a, b) => a.getStarMoment.valueOf() - b.getStarMoment.valueOf());
+            let totalStarsData = range(1, 32).map(day => {
+                const endOfDay = moment([data.year, 11, day, 0, 0, 0]).add(1, "day");
+                return {
+                    x: moment([data.year, 11, day, 0, 0, 0]), // bar centered on the day's tick (midnight)
+                    y: allStars.filter(s => s.getStarMoment.isBefore(endOfDay)).length,
+                };
+            });
+            datasets.push({
+                type: "bar",
+                label: "Total stars (all members)",
+                showInLegend: true,
+                yAxisID: "y2",
+                order: 10000, // a little hacky but it works: higher gets drawn first, so behind the other lines
+                borderWidth: 0,
+                barPercentage: 0.95,
+                categoryPercentage: 1,
+                backgroundColor: "rgba(180, 200, 180, 0.05)",
+                data: totalStarsData,
+            });
+
             let element = this.createGraphCanvas(data, "Number of stars over time per member.");
 
             let chart = new Chart(element.getContext("2d"), {
@@ -1832,11 +1859,17 @@
                         callbacks: {
                             afterLabel: (item) => {
                                 const star = item.dataset.data[item.dataIndex].star;
-                                return `(day ${star.dayNr} star ${star.starNr})`;
+                                return star ? `(day ${star.dayNr} star ${star.starNr})` : "";
                             },
                         },
                     })
                     .withXTimeScale(data, { xMax: 31, titleText: "December" })
+                    .withSecondaryYScale({
+                        position: "right",
+                        min: 0,
+                        display: false,
+                        grid: { drawOnChartArea: false },
+                    })
                     .withYScale({
                         ticks: {
                             stepSize: 1,
